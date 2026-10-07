@@ -14,7 +14,6 @@ export const metadata: Metadata = {
 
 export default async function AboutPage() {
   const store = await getStore();
-  const mapQuery = store.lat && store.lng ? `${store.lat},${store.lng}` : `${store.name}, ${store.address}`;
 
   return (
     <div className="mx-auto max-w-6xl px-4 pt-5">
@@ -83,21 +82,12 @@ export default async function AboutPage() {
         </div>
 
         <div className="space-y-3">
-          <div className="relative aspect-[4/3] overflow-hidden rounded-tag border border-line bg-sunken">
-            <iframe
-              title="Peta lokasi Toko New Agung"
-              src={`https://www.google.com/maps?q=${encodeURIComponent(mapQuery)}&output=embed`}
-              loading="lazy"
-              referrerPolicy="no-referrer-when-downgrade"
-              className="absolute inset-0 size-full border-0"
-            />
-          </div>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid gap-3">
             <div className="relative aspect-[4/3] overflow-hidden rounded-tag">
-              <Image src={kalkulator} alt="Etalase kalkulator Casio dan lorong tinta" fill placeholder="blur" sizes="(min-width: 768px) 280px, 50vw" className="object-cover" />
+              <Image src={kalkulator} alt="Etalase kalkulator Casio dan lorong tinta" fill placeholder="blur" sizes="(min-width: 768px) 560px, 100vw" className="object-cover" />
             </div>
-            <div className="relative aspect-[4/3] overflow-hidden rounded-tag">
-              <Image src={papan} alt="Papan gantung lorong di dalam toko" fill placeholder="blur" sizes="(min-width: 768px) 280px, 50vw" className="object-cover" />
+            <div className="relative aspect-[5/2] overflow-hidden rounded-tag">
+              <Image src={papan} alt="Papan gantung lorong di dalam toko" fill placeholder="blur" sizes="(min-width: 768px) 560px, 100vw" className="object-cover" />
             </div>
           </div>
         </div>

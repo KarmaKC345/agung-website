@@ -1,4 +1,4 @@
-import type { DayKey, WeeklyHours } from './types';
+import type { DayKey, OpeningHours, WeeklyHours } from './types';
 
 const DAY_KEYS: DayKey[] = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
 
@@ -35,6 +35,11 @@ function zonedNow(now: Date, timeZone: string): { day: DayKey; minutes: number }
   const get = (type: string) => parts.find((p) => p.type === type)?.value ?? '';
   const day = get('weekday').toLowerCase().slice(0, 3) as DayKey;
   return { day, minutes: Number(get('hour')) * 60 + Number(get('minute')) };
+}
+
+/** Jam buka hari ini menurut zona waktu toko, atau null bila tutup */
+export function hoursToday(hours: WeeklyHours, timeZone: string, now: Date = new Date()): OpeningHours | null {
+  return hours[zonedNow(now, timeZone).day] ?? null;
 }
 
 export interface OpenStatus {

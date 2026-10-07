@@ -1,8 +1,8 @@
 'use client';
 
 import Link from 'next/link';
-import { useState } from 'react';
-import { formatRupiah, type Fulfilment } from '@newagung/shared';
+import { useMemo, useState } from 'react';
+import { formatRupiah, formatTime, hoursToday, summarizeHours, type Fulfilment, type WeeklyHours } from '@newagung/shared';
 import { cartTotal, useShop, type CartLine } from '@/lib/cart';
 import { API_URL } from '@/lib/config';
 import { useHydrated } from '@/lib/use-hydrated';
@@ -13,13 +13,23 @@ type Sent = { code: string; waUrl: string; total: number };
 
 const key = (l: { variantId: string; unit: string }) => `${l.variantId}|${l.unit}`;
 
-export function CartView() {
+export function CartView({ hours, timezone }: { hours: WeeklyHours; timezone: string }) {
   const hydrated = useHydrated();
   const { lines, customer, setQty, remove, setCustomer, clear, recordOrder } = useShop();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [problems, setProblems] = useState<Map<string, Problem['reason']>>(new Map());
   const [sent, setSent] = useState<Sent | null>(null);
+  // rentang jam ambil = jam buka hari ini (WITA); cadangan 05.00–22.00
+  const today = useMemo(() => hoursToday(hours, timezone), [hours, timezone]);
+  const window_ = today ?? { open: '05:00', close: '22:00' };
+  const summary = summarizeHours(hours);
+  const hoursInfo = summary
+    ? `${summary} WITA.`
+    : today
+      ? `Hari ini buka ${formatTime(today.open)}–${formatTime(today.close)} WITA.`
+      : 'Hari ini toko tutup.';
+  const pickupTime = customer.pickupTime ?? '';
 
   if (!hydrated) return <div className="h-64" aria-busy />;
 
@@ -63,6 +73,10 @@ export function CartView() {
   async function submit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const form = new FormData(e.currentTarget);
+    if (customer.fulfilment === 'ambil' && pickupTime && (pickupTime < window_.open || pickupTime > window_.close)) {
+      setError(`Jam ambil harus antara ${formatTime(window_.open)} dan ${formatTime(window_.close)}.`);
+      return;
+    }
     setBusy(true);
     setError(null);
     setProblems(new Map());
@@ -73,7 +87,7 @@ export function CartView() {
         body: JSON.stringify({
           customerName: customer.name.trim(),
           fulfilment: customer.fulfilment,
-          pickupNote: customer.pickupNote.trim(),
+          pickupNote: customer.fulfilment === 'ambil' ? (pickupTime ? `jam ${formatTime(pickupTime)}` : '') : customer.pickupNote.trim(),
           items: lines.map((l) => ({ variantId: l.variantId, unit: l.unit, qty: l.qty })),
           website: String(form.get('website') ?? ''),
         }),
@@ -197,17 +211,52 @@ export function CartView() {
         </fieldset>
         {customer.fulfilment === 'antar' && <p className="mt-2 text-[13px] text-muted">Ongkir dan alamat dibicarakan di WhatsApp.</p>}
 
-        <label className="mt-4 block text-[14px] font-semibold" htmlFor="catatan">
-          {customer.fulfilment === 'ambil' ? 'Jam ambil (opsional)' : 'Catatan (opsional)'}
-        </label>
-        <input
-          id="catatan"
-          maxLength={200}
-          placeholder={customer.fulfilment === 'ambil' ? 'mis. jam 16.00' : 'mis. kantor di Jl. Sudirman'}
-          value={customer.pickupNote}
-          onChange={(e) => setCustomer({ pickupNote: e.target.value })}
-          className="mt-1 h-11 w-full rounded-tag border border-line-strong bg-surface px-3"
-        />
+        {customer.fulfilment === 'ambil' ? (
+          <>
+            <label className="mt-4 block text-[14px] font-semibold" htmlFor="jam-ambil">
+              Jam ambil (opsional)
+            </label>
+            <div className="mt-1 flex items-center gap-2">
+              <input
+                id="jam-ambil"
+                type="time"
+                min={window_.open}
+                max={window_.close}
+                step={900}
+                value={pickupTime}
+                onChange={(e) => setCustomer({ pickupTime: e.target.value })}
+                aria-describedby="jam-ambil-info"
+                className="h-11 min-w-0 flex-1 rounded-tag border border-line-strong bg-surface px-3 tabular-nums"
+              />
+              {pickupTime && (
+                <button
+                  type="button"
+                  onClick={() => setCustomer({ pickupTime: '' })}
+                  className="tap shrink-0 text-[13px] font-medium text-muted underline underline-offset-4 hover:text-ink"
+                >
+                  Kosongkan
+                </button>
+              )}
+            </div>
+            <p id="jam-ambil-info" className="mt-1 text-[12px] text-muted">
+              {hoursInfo} Kosongkan bila belum tahu.
+            </p>
+          </>
+        ) : (
+          <>
+            <label className="mt-4 block text-[14px] font-semibold" htmlFor="catatan">
+              Catatan (opsional)
+            </label>
+            <input
+              id="catatan"
+              maxLength={200}
+              placeholder="mis. kantor di Jl. Sudirman"
+              value={customer.pickupNote}
+              onChange={(e) => setCustomer({ pickupNote: e.target.value })}
+              className="mt-1 h-11 w-full rounded-tag border border-line-strong bg-surface px-3"
+            />
+          </>
+        )}
 
         {/* jebakan bot: disembunyikan dari pengguna */}
         <div aria-hidden className="absolute -left-[9999px]">

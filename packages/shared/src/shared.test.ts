@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { buildOrderMessage, formatPhone, formatRupiah, getOpenStatus, slugify, summarizeHours, waLink } from './index';
+import { buildOrderMessage, formatPhone, formatRupiah, getOpenStatus, hoursToday, slugify, summarizeHours, waLink } from './index';
 
 const everyDay = { open: '05:00', close: '22:00' };
 const hours = { mon: everyDay, tue: everyDay, wed: everyDay, thu: everyDay, fri: everyDay, sat: everyDay, sun: everyDay };
@@ -31,6 +31,13 @@ describe('opening hours (WITA)', () => {
   it('is closed before 05.00', () => {
     const s = getOpenStatus(hours, 'Asia/Makassar', new Date('2026-10-06T20:00:00Z')); // 04.00 WITA
     expect(s).toEqual({ isOpen: false, label: 'Tutup · buka 05.00' });
+  });
+  it('returns today\'s hours in WITA, even when UTC is still yesterday', () => {
+    const sunClosed = { ...hours, sun: null };
+    // 2026-10-04 (Minggu) 23.00 UTC = Senin 07.00 WITA
+    expect(hoursToday(sunClosed, 'Asia/Makassar', new Date('2026-10-04T23:00:00Z'))).toEqual(everyDay);
+    // 2026-10-04 (Minggu) 03.00 UTC = Minggu 11.00 WITA → tutup
+    expect(hoursToday(sunClosed, 'Asia/Makassar', new Date('2026-10-04T03:00:00Z'))).toBeNull();
   });
   it('summarizes uniform hours', () => {
     expect(summarizeHours(hours)).toBe('Setiap hari, 05.00–22.00');

@@ -26,6 +26,9 @@ export interface PastOrder {
 interface Customer {
   name: string;
   fulfilment: Fulfilment;
+  /** jam ambil 'HH:MM' (dipilih lewat time picker), kosong = kapan saja */
+  pickupTime: string;
+  /** catatan bebas untuk pesanan diantar */
   pickupNote: string;
 }
 
@@ -53,7 +56,7 @@ export const useShop = create<ShopState>()(
       lines: [],
       favorites: [],
       history: [],
-      customer: { name: '', fulfilment: 'ambil', pickupNote: '' },
+      customer: { name: '', fulfilment: 'ambil', pickupTime: '', pickupNote: '' },
       add: (line, qty) =>
         set((s) => {
           const existing = s.lines.find((l) => same(l, line.variantId, line.unit));

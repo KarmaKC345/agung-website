@@ -1,7 +1,7 @@
 ---
 name: Papan Lorong
 description: Fondasi desain Toko New Agung — rak ATK yang bisa dibuka dari HP, dengan papan lorong gantung sebagai navigasi dan label harga rak sebagai tokoh utama.
-version: 1.2.0
+version: 1.3.0
 source_of_truth: apps/web/app/globals.css
 colors:
   light:
@@ -272,8 +272,8 @@ Status buka/tutup dihitung di perangkat dalam WITA, supaya tidak basi walau hala
 - Detail barang (foto, varian, satuan, jumlah, catatan harga diperbarui).
 - Keranjang + nota + formulir pemesanan + layar sukses dengan kode pesanan.
 - Favorit dan riwayat dengan "Pesan lagi".
-- Halaman alamat & jam buka dengan peta.
-- Footer.
+- Halaman alamat & jam buka (foto toko).
+- Footer dengan peta Google Maps lokasi toko (`MapEmbed`, dimuat saat discroll): info di kiri, peta di kanan pada ≥1024px, di bawah info pada HP. Peta hanya ada di footer, tidak diulang di halaman lain.
 - Navigasi bawah HP.
 - Panel: masuk, atur sandi, pesanan masuk, daftar dan form barang, ubah harga (satu-satu & massal), kategori & merek, import/export, info toko, pegawai.
 - Dialog panel (konfirmasi & isian) memakai `<dialog>` asli: fokus terkunci dan Esc menutup. Pada aksi hapus atau batal, fokus awal ada di "Batal" dan tombol aksinya merah dengan label yang menyebut aksinya ("Hapus kategori", "Batalkan pesanan"). Pada aksi lain, tombol aksinya `ink`.
@@ -310,7 +310,7 @@ Front matter YAML di atas mendefinisikan peran visual. Implementasinya ada di fi
 | Papan Lorong | rel, tali (2), nama kategori dengan "&"/"," menjadi "/", jumlah barang, keadaan aktif (`aria-current="page"`: papan terbalik `ink` di atas `surface`) |
 | Kartu barang | foto atau pengganti, tombol favorit, titik warna (maks. 5 + "+n"), nama (maks. 2 baris), "mulai" bila harga varian berbeda, label harga, satuan, status stok, aksi (tombol "+" untuk barang satu varian, "Pilih" untuk barang bervarian, tanpa aksi bila habis) |
 | Label harga | "Rp", angka, satuan ("/pcs", "/rim") |
-| Nota keranjang | baris barang (nama, varian, harga satuan, stepper, hapus, subtotal), perkiraan total, jumlah jenis barang, garis putus-putus, nama, cara terima (ambil/antar), jam ambil atau catatan, galat, tombol WhatsApp, petunjuk "tekan kirim di WhatsApp" |
+| Nota keranjang | baris barang (nama, varian, harga satuan, stepper, hapus, subtotal), perkiraan total, jumlah jenis barang, garis putus-putus, nama, cara terima (ambil/antar), jam ambil (`<input type="time">` dibatasi jam buka hari itu, kelipatan 15 menit, bisa dikosongkan) atau catatan teks untuk diantar, galat, tombol WhatsApp, petunjuk "tekan kirim di WhatsApp" |
 | Dialog panel | judul (pertanyaan berisi nama objek), pesan akibat, input (khusus isian), "Batal", tombol aksi berlabel kata kerja + objek |
 | Kartu pesanan panel | kode (mono), chip status, waktu WITA, nama, cara terima, catatan, daftar barang (jumlah + satuan tebal di depan), total, aksi berikutnya ("Mulai siapkan" → "Tandai siap" → "Tandai selesai"), batalkan |
 
