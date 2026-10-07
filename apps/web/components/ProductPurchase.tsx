@@ -61,7 +61,7 @@ export function ProductPurchase({ product }: { product: ProductDetail }) {
                   type="button"
                   onClick={() => pickVariant(i)}
                   aria-pressed={selected}
-                  className={`h-10 rounded-tag border px-3.5 text-[14px] font-medium ${
+                  className={`h-11 rounded-tag border px-3.5 text-[14px] font-medium ${
                     selected ? 'border-ink bg-ink text-surface' : 'border-line-strong bg-surface hover:border-ink'
                   } ${soldOut ? 'line-through opacity-60' : ''}`}
                 >
@@ -86,7 +86,7 @@ export function ProductPurchase({ product }: { product: ProductDetail }) {
                   type="button"
                   onClick={() => setUnit(p.unit)}
                   aria-pressed={p.unit === price.unit}
-                  className={`rounded-[3px] px-3.5 py-1.5 text-left ${p.unit === price.unit ? 'bg-ink text-surface' : 'hover:bg-sunken'}`}
+                  className={`min-h-11 rounded-tag px-3.5 py-1.5 text-left ${p.unit === price.unit ? 'bg-ink text-surface' : 'hover:bg-sunken'}`}
                 >
                   <span className="block text-[14px] font-semibold capitalize">
                     {p.unit}

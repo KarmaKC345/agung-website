@@ -27,7 +27,7 @@ export function SortSelect({ withRelevance = false }: { withRelevance?: boolean 
           next.delete('page');
           router.push(`${path}?${next.toString()}`, { scroll: false });
         }}
-        className="h-9 rounded-tag border border-line-strong bg-surface px-2 font-medium"
+        className="h-11 rounded-tag border border-line-strong bg-surface px-2 font-medium"
       >
         {options.map((o) => (
           <option key={o.label} value={o.value}>

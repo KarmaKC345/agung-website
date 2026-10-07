@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { formatRupiah, ORDER_STATUS_LABEL, type OrderStatus, type OrderView } from '@newagung/shared';
 import { btnSecondary, inputCls, PageTitle } from '@/components/panel/PanelShell';
+import { useDialog } from '@/components/panel/Dialog';
 import { adminFetch } from '@/lib/admin';
 
 const FLOW: OrderStatus[] = ['baru', 'disiapkan', 'siap', 'selesai'];
@@ -27,6 +28,7 @@ export default function OrdersPage() {
   const [data, setData] = useState<{ items: OrderView[]; total: number; pageSize: number } | null>(null);
   const [counts, setCounts] = useState<Record<string, number>>({});
   const [error, setError] = useState<string | null>(null);
+  const dialog = useDialog();
 
   const load = useCallback(async () => {
     const sp = new URLSearchParams({ page: String(page) });
@@ -68,7 +70,7 @@ export default function OrdersPage() {
               setPage(1);
             }}
             aria-pressed={status === s}
-            className="h-9 rounded-full border border-line-strong bg-surface px-3.5 text-[14px] font-medium aria-pressed:border-ink aria-pressed:bg-ink aria-pressed:text-surface"
+            className="tap h-9 rounded-full border border-line-strong bg-surface px-3.5 text-[14px] font-medium aria-pressed:border-ink aria-pressed:bg-ink aria-pressed:text-surface"
           >
             {s ? ORDER_STATUS_LABEL[s] : 'Semua'}
             {s && counts[s] ? <span className="ml-1.5 tabular-nums opacity-70">{counts[s]}</span> : null}
@@ -132,8 +134,16 @@ export default function OrdersPage() {
                   )}
                   {o.status !== 'batal' && o.status !== 'selesai' && (
                     <button
-                      className="h-10 px-2 text-[13px] text-muted underline underline-offset-4 hover:text-danger"
-                      onClick={() => confirm(`Batalkan pesanan ${o.code}?`) && update(o.id, 'batal')}
+                      className="h-11 px-2 text-[13px] text-muted underline underline-offset-4 hover:text-danger"
+                      onClick={async () => {
+                        const ok = await dialog.confirm({
+                          title: `Batalkan pesanan ${o.code}?`,
+                          message: `Pesanan ${o.customerName} ditandai batal. Status bisa dilihat lagi di filter “Batal”.`,
+                          confirmLabel: 'Batalkan pesanan',
+                          danger: true,
+                        });
+                        if (ok) await update(o.id, 'batal');
+                      }}
                     >
                       Batalkan
                     </button>

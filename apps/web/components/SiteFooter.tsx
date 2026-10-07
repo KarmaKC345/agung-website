@@ -9,7 +9,7 @@ export function SiteFooter({ store }: { store: StoreInfo }) {
         <div className="lg:col-span-2">
           <p className="signage text-[13px] text-muted">Alamat</p>
           <p className="mt-2 max-w-sm leading-relaxed">{store.address}</p>
-          <a href={store.mapsUrl} target="_blank" rel="noopener" className="mt-2 inline-block font-semibold text-brand-text underline underline-offset-4">
+          <a href={store.mapsUrl} target="_blank" rel="noopener" className="tap mt-2 inline-block font-semibold text-brand-text underline underline-offset-4">
             Buka rute di Google Maps
           </a>
         </div>
@@ -53,7 +53,7 @@ export function SiteFooter({ store }: { store: StoreInfo }) {
         <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-2 px-4 py-4 text-[13px] text-muted">
           <span>{store.name}, Makassar</span>
           <span>
-            Harga di website adalah perkiraan, dikonfirmasi toko saat memesan. <Link href="/panel" className="ml-2 hover:text-ink">Panel toko</Link>
+            Harga di website adalah perkiraan, dikonfirmasi toko saat memesan. <Link href="/panel" className="tap ml-2 hover:text-ink">Panel toko</Link>
           </span>
         </div>
       </div>

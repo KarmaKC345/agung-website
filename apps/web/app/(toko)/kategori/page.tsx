@@ -17,7 +17,7 @@ export default async function CategoriesPage() {
       <ul className="mt-6 grid gap-x-4 gap-y-8 sm:grid-cols-2 lg:grid-cols-3">
         {tree.map((c) => (
           <li key={c.id} className="aisle-rail">
-            <Link href={`/kategori/${c.slug}`} className="aisle-sign">
+            <Link href={`/kategori/${c.slug}`} className="aisle-sign flex min-h-11 flex-col justify-center">
               <span className="flex items-baseline justify-between gap-3">
                 <span className="signage text-[15px]">{signText(c.name)}</span>
                 <span className="text-[12px] text-muted tabular-nums">{c.productCount}</span>
@@ -27,7 +27,7 @@ export default async function CategoriesPage() {
               <ul className="mt-2 space-y-0.5 pl-3 text-[15px]">
                 {c.children.map((ch) => (
                   <li key={ch.id}>
-                    <Link href={`/kategori/${ch.slug}`} className="flex justify-between py-1 hover:underline">
+                    <Link href={`/kategori/${ch.slug}`} className="flex min-h-11 items-center justify-between hover:underline">
                       {ch.name}
                       <span className="text-muted tabular-nums">{ch.productCount}</span>
                     </Link>
@@ -47,7 +47,7 @@ export default async function CategoriesPage() {
             <li key={b.id}>
               <Link
                 href={`/merek/${b.slug}`}
-                className="inline-flex h-10 items-center gap-2 rounded-tag border border-line-strong bg-surface px-3.5 text-[15px] font-semibold hover:border-ink"
+                className="inline-flex h-11 items-center gap-2 rounded-tag border border-line-strong bg-surface px-3.5 text-[15px] font-semibold hover:border-ink"
               >
                 {b.name}
                 <span className="text-[12px] font-normal text-muted tabular-nums">{b.productCount}</span>

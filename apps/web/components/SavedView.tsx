@@ -121,7 +121,7 @@ function OrderCard({ order }: { order: PastOrder }) {
           type="button"
           onClick={reorder}
           disabled={busy}
-          className="h-10 rounded-tag bg-ink px-4 text-[14px] font-semibold text-surface disabled:opacity-60"
+          className="h-11 rounded-tag bg-ink px-4 text-[14px] font-semibold text-surface disabled:opacity-60"
         >
           {busy ? 'Memeriksa harga…' : 'Pesan lagi'}
         </button>
@@ -179,7 +179,7 @@ export function SavedView() {
       role="tab"
       aria-selected={tab === id}
       onClick={() => router.replace(id === 'favorit' ? '/favorit' : '/favorit?tab=riwayat', { scroll: false })}
-      className="h-10 border-b-2 border-transparent px-1 text-[16px] font-semibold text-muted aria-selected:border-ink aria-selected:text-ink"
+      className="h-11 border-b-2 border-transparent px-1 text-[16px] font-semibold text-muted aria-selected:border-ink aria-selected:text-ink"
     >
       {label}
     </button>

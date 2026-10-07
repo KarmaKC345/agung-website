@@ -13,7 +13,7 @@ export function Pagination({
 }) {
   const pages = Math.ceil(total / pageSize);
   if (pages <= 1) return null;
-  const btn = 'inline-flex h-10 items-center rounded-tag border border-line-strong bg-surface px-4 font-semibold hover:border-ink';
+  const btn = 'inline-flex h-11 items-center rounded-tag border border-line-strong bg-surface px-4 font-semibold hover:border-ink';
   return (
     <nav aria-label="Halaman" className="mt-8 flex items-center justify-center gap-3 text-[15px]">
       {page > 1 ? (

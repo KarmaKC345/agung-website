@@ -80,7 +80,7 @@ export default function ProductsAdminPage() {
                   </div>
                   <div className="min-w-0 flex-1">
                     <p className="truncate font-medium">
-                      {p.name} {!p.isActive && <span className="ml-1 rounded bg-sunken px-1.5 text-[11px] text-muted">disembunyikan</span>}
+                      {p.name} {!p.isActive && <span className="ml-1 rounded-tag bg-sunken px-1.5 text-[11px] text-muted">disembunyikan</span>}
                     </p>
                     <p className="truncate text-[13px] text-muted">
                       {[p.category, p.brand, `${p.variantCount} varian`].filter(Boolean).join(' · ')}

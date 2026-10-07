@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import Image from 'next/image';
+import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { waLink } from '@newagung/shared';
 import { Breadcrumbs } from '@/components/Breadcrumbs';
@@ -95,9 +96,9 @@ export default async function ProductPage({ params }: Props) {
 
         <div>
           {product.brand && (
-            <a href={`/merek/${product.brand.slug}`} className="signage text-[13px] text-brand-text hover:underline">
+            <Link href={`/merek/${product.brand.slug}`} className="tap signage text-[13px] text-brand-text hover:underline">
               {product.brand.name}
-            </a>
+            </Link>
           )}
           <h1 className="mt-1 text-[26px] leading-tight font-bold sm:text-[30px]">{product.name}</h1>
           {product.description && <p className="mt-3 max-w-prose leading-relaxed text-muted">{product.description}</p>}
@@ -112,7 +113,7 @@ export default async function ProductPage({ params }: Props) {
               href={waLink(store.whatsapp, `Halo New Agung, saya mau tanya tentang ${product.name}.`)}
               target="_blank"
               rel="noopener"
-              className="mt-2 inline-block font-semibold text-wa-text underline underline-offset-4"
+              className="tap mt-2 inline-block font-semibold text-wa-text underline underline-offset-4"
             >
               Tanya barang ini via WhatsApp
             </a>

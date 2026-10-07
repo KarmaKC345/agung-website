@@ -62,7 +62,7 @@ export default async function HomePage() {
             <h2 id="lorong" className="text-[20px] font-bold">
               Pilih lorong
             </h2>
-            <Link href="/kategori" className="text-[14px] font-semibold text-brand-text hover:underline">
+            <Link href="/kategori" className="tap text-[14px] font-semibold text-brand-text hover:underline">
               Semua kategori
             </Link>
           </div>
@@ -82,7 +82,7 @@ export default async function HomePage() {
               <h2 id="kertas" className="text-[20px] font-bold">
                 Kertas per rim & box
               </h2>
-              <Link href="/kategori/kertas" className="text-[14px] font-semibold text-brand-text hover:underline">
+              <Link href="/kategori/kertas" className="tap text-[14px] font-semibold text-brand-text hover:underline">
                 Lorong kertas
               </Link>
             </div>
@@ -120,7 +120,7 @@ export default async function HomePage() {
               <div>
                 <dt className="signage text-[12px] text-muted">Ulasan Google</dt>
                 <dd className="mt-0.5">
-                  <a href={store.mapsUrl} target="_blank" rel="noopener" className="underline underline-offset-4">
+                  <a href={store.mapsUrl} target="_blank" rel="noopener" className="tap underline underline-offset-4">
                     4,5 dari 10.000+ ulasan
                   </a>
                 </dd>

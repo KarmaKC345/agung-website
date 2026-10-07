@@ -66,11 +66,11 @@ export default function StaffPage() {
               <span className="text-muted">Anda ({s.role === 'owner' ? 'pemilik' : 'pegawai'})</span>
             ) : (
               <>
-                <select value={s.role} onChange={(e) => update(s.userId, { role: e.target.value as StaffRole })} className={`${inputCls} h-9 w-auto`} aria-label={`Peran ${s.email}`}>
+                <select value={s.role} onChange={(e) => update(s.userId, { role: e.target.value as StaffRole })} className={`${inputCls} w-auto`} aria-label={`Peran ${s.email}`}>
                   <option value="staff">Pegawai</option>
                   <option value="owner">Pemilik</option>
                 </select>
-                <button onClick={() => update(s.userId, { active: !s.active })} className="text-[13px] font-semibold text-brand-text">
+                <button onClick={() => update(s.userId, { active: !s.active })} className="tap text-[13px] font-semibold text-brand-text">
                   {s.active ? 'Nonaktifkan' : 'Aktifkan lagi'}
                 </button>
               </>

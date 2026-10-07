@@ -59,7 +59,7 @@ export function ProductCard({ product, priority }: { product: ProductSummary; pr
             ) : !out ? (
               <Link
                 href={href}
-                className="grid h-9 place-items-center rounded-tag border border-line-strong px-2.5 text-[12px] font-semibold hover:border-ink"
+                className="tap grid h-9 place-items-center rounded-tag border border-line-strong px-2.5 text-[12px] font-semibold hover:border-ink"
               >
                 Pilih
               </Link>

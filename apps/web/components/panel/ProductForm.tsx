@@ -7,6 +7,7 @@ import { useEffect, useState } from 'react';
 import type { Brand, Category, ProductDetail, StockStatus } from '@newagung/shared';
 import { adminFetch, compressImage, getToken } from '@/lib/admin';
 import { API_URL } from '@/lib/config';
+import { useDialog } from './Dialog';
 import { btnPrimary, btnSecondary, inputCls, PageTitle, useMe } from './PanelShell';
 
 interface PriceDraft {
@@ -32,6 +33,7 @@ const emptyVariant = (): VariantDraft => ({ key: newKey(), label: '', colorHex: 
 export function ProductForm({ product }: { product?: ProductDetail }) {
   const router = useRouter();
   const me = useMe();
+  const dialog = useDialog();
   const [cats, setCats] = useState<Category[]>([]);
   const [brands, setBrands] = useState<Brand[]>([]);
   const [name, setName] = useState(product?.name ?? '');
@@ -85,10 +87,10 @@ export function ProductForm({ product }: { product?: ProductDetail }) {
   }
 
   async function addBrand() {
-    const n = prompt('Nama merek baru');
-    if (!n?.trim()) return;
+    const n = await dialog.prompt({ title: 'Tambah merek', label: 'Nama merek baru', confirmLabel: 'Tambah merek' });
+    if (!n) return;
     try {
-      const b = await adminFetch<Brand>('/brands', { method: 'POST', json: { name: n.trim() } });
+      const b = await adminFetch<Brand>('/brands', { method: 'POST', json: { name: n } });
       setBrands((bs) => [...bs, b].sort((a, c) => a.name.localeCompare(c.name)));
       setBrandId(b.id);
     } catch (e) {
@@ -132,7 +134,14 @@ export function ProductForm({ product }: { product?: ProductDetail }) {
   }
 
   async function remove() {
-    if (!product || !confirm(`Hapus “${product.name}” permanen? Untuk sementara menyembunyikan, matikan “Tampil di website”.`)) return;
+    if (!product) return;
+    const ok = await dialog.confirm({
+      title: `Hapus “${product.name}”?`,
+      message: 'Barang, varian, dan harganya dihapus permanen. Untuk menyembunyikan sementara, matikan “Tampil di website”.',
+      confirmLabel: 'Hapus barang',
+      danger: true,
+    });
+    if (!ok) return;
     await adminFetch(`/products/${product.id}`, { method: 'DELETE' });
     router.push('/panel/barang');
   }
@@ -176,7 +185,7 @@ export function ProductForm({ product }: { product?: ProductDetail }) {
           <label className="text-[14px] font-semibold" htmlFor="desc">Keterangan singkat</label>
           <textarea id="desc" rows={2} maxLength={2000} value={description} onChange={(e) => setDescription(e.target.value)} placeholder="mis. isi 500 lembar per rim" className={`mt-1 ${inputCls} h-auto py-2`} />
         </div>
-        <label className="flex items-center gap-2 text-[15px]">
+        <label className="flex min-h-11 items-center gap-2 text-[15px]">
           <input type="checkbox" checked={isActive} onChange={(e) => setIsActive(e.target.checked)} className="size-5" />
           Tampil di website
         </label>
@@ -189,9 +198,9 @@ export function ProductForm({ product }: { product?: ProductDetail }) {
             <li key={src} className="relative size-24 overflow-hidden rounded-tag border border-line bg-white">
               <Image src={src} alt="" fill sizes="96px" className="object-contain" />
               {i === 0 && <span className="absolute bottom-0 left-0 bg-ink px-1 text-[10px] text-surface">utama</span>}
-              <button type="button" onClick={() => setImages(images.filter((x) => x !== src))} className="absolute top-1 right-1 grid size-6 place-items-center rounded-full bg-surface text-[14px] ring-1 ring-line" aria-label="Hapus foto">×</button>
+              <button type="button" onClick={() => setImages(images.filter((x) => x !== src))} className="tap absolute top-1 right-1 grid size-6 place-items-center rounded-full bg-surface text-[14px] ring-1 ring-line" aria-label="Hapus foto">×</button>
               {i > 0 && (
-                <button type="button" onClick={() => setImages([src, ...images.filter((x) => x !== src)])} className="absolute bottom-1 right-1 rounded bg-surface px-1 text-[10px] ring-1 ring-line">jadikan utama</button>
+                <button type="button" onClick={() => setImages([src, ...images.filter((x) => x !== src)])} className="tap absolute right-1 bottom-1 rounded-tag bg-surface px-1 text-[10px] ring-1 ring-line">jadikan utama</button>
               )}
             </li>
           ))}
@@ -216,10 +225,10 @@ export function ProductForm({ product }: { product?: ProductDetail }) {
               <legend className="px-1 text-[13px] text-muted">Varian {vi + 1}</legend>
               <div className="grid gap-3 sm:grid-cols-[1fr_auto_1fr_auto]">
                 <input value={v.label} onChange={(e) => setVariant(v.key, { label: e.target.value })} placeholder="Nama varian (mis. Biru, 58 lembar)" className={inputCls} aria-label="Nama varian" />
-                <label className="flex items-center gap-2 text-[14px]">
-                  <input type="checkbox" checked={v.colorHex !== null} onChange={(e) => setVariant(v.key, { colorHex: e.target.checked ? '#1F3FAE' : null })} />
+                <label className="flex min-h-11 items-center gap-2 text-[14px]">
+                  <input type="checkbox" className="size-5" checked={v.colorHex !== null} onChange={(e) => setVariant(v.key, { colorHex: e.target.checked ? '#1F3FAE' : null })} />
                   Warna
-                  {v.colorHex !== null && <input type="color" value={v.colorHex} onChange={(e) => setVariant(v.key, { colorHex: e.target.value.toUpperCase() })} className="h-8 w-10" aria-label="Pilih warna" />}
+                  {v.colorHex !== null && <input type="color" value={v.colorHex} onChange={(e) => setVariant(v.key, { colorHex: e.target.value.toUpperCase() })} className="h-11 w-12" aria-label="Pilih warna" />}
                 </label>
                 <input value={v.sku} onChange={(e) => setVariant(v.key, { sku: e.target.value })} placeholder="Kode kasir (opsional)" className={inputCls} aria-label="Kode kasir" />
                 <select value={v.stockStatus} onChange={(e) => setVariant(v.key, { stockStatus: e.target.value as StockStatus })} className={`${inputCls} w-auto`} aria-label="Stok">
@@ -251,7 +260,7 @@ export function ProductForm({ product }: { product?: ProductDetail }) {
                       </td>
                       <td className="pb-2">
                         {v.prices.length > 1 && (
-                          <button type="button" onClick={() => setVariant(v.key, { prices: v.prices.filter((_, i) => i !== pi) })} className="px-2 text-muted hover:text-danger" aria-label="Hapus satuan">×</button>
+                          <button type="button" onClick={() => setVariant(v.key, { prices: v.prices.filter((_, i) => i !== pi) })} className="tap px-2 text-muted hover:text-danger" aria-label="Hapus satuan">×</button>
                         )}
                       </td>
                     </tr>
@@ -279,7 +288,7 @@ export function ProductForm({ product }: { product?: ProductDetail }) {
         <button disabled={busy} className={btnPrimary}>{busy ? 'Menyimpan…' : 'Simpan'}</button>
         <Link href="/panel/barang" className={btnSecondary}>Batal</Link>
         {product && me.role === 'owner' && (
-          <button type="button" onClick={remove} className="ml-auto text-[14px] text-muted underline underline-offset-4 hover:text-danger">Hapus barang</button>
+          <button type="button" onClick={remove} className="tap ml-auto text-[14px] text-muted underline underline-offset-4 hover:text-danger">Hapus barang</button>
         )}
       </div>
     </form>

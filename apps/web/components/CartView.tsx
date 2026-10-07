@@ -125,8 +125,8 @@ export function CartView() {
                   </p>
                 )}
                 <div className="mt-2 flex items-center gap-3">
-                  <div className="flex h-9 items-center rounded-tag border border-line-strong">
-                    <button type="button" className="h-full w-9" onClick={() => setQty(l.variantId, l.unit, l.qty - 1)} aria-label={`Kurangi ${l.name}`}>
+                  <div className="flex h-12 items-center rounded-tag border border-line-strong">
+                    <button type="button" className="h-full w-11" onClick={() => setQty(l.variantId, l.unit, l.qty - 1)} aria-label={`Kurangi ${l.name}`}>
                       −
                     </button>
                     <input
@@ -138,12 +138,12 @@ export function CartView() {
                       aria-label={`Jumlah ${l.name}`}
                       className="price h-full w-12 bg-transparent text-center text-[17px] [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none"
                     />
-                    <button type="button" className="h-full w-9" onClick={() => setQty(l.variantId, l.unit, l.qty + 1)} aria-label={`Tambah ${l.name}`}>
+                    <button type="button" className="h-full w-11" onClick={() => setQty(l.variantId, l.unit, l.qty + 1)} aria-label={`Tambah ${l.name}`}>
                       +
                     </button>
                   </div>
                   <span className="text-[13px] text-muted">{l.unit}</span>
-                  <button type="button" onClick={() => remove(l.variantId, l.unit)} className="ml-auto text-[13px] font-medium text-muted underline underline-offset-4 hover:text-danger">
+                  <button type="button" onClick={() => remove(l.variantId, l.unit)} className="tap ml-auto text-[13px] font-medium text-muted underline underline-offset-4 hover:text-danger">
                     Hapus
                   </button>
                 </div>

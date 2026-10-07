@@ -59,7 +59,7 @@ export default async function CategoryPage({ params, searchParams }: Props) {
               <Link
                 href={`/kategori/${parent?.slug ?? category.slug}`}
                 aria-current={!parent ? 'page' : undefined}
-                className="inline-flex h-9 items-center rounded-full border border-line-strong bg-surface px-3.5 text-[14px] font-medium aria-[current=page]:border-ink aria-[current=page]:bg-ink aria-[current=page]:text-surface"
+                className="tap inline-flex h-9 items-center rounded-full border border-line-strong bg-surface px-3.5 text-[14px] font-medium aria-[current=page]:border-ink aria-[current=page]:bg-ink aria-[current=page]:text-surface"
               >
                 Semua
               </Link>
@@ -69,7 +69,7 @@ export default async function CategoryPage({ params, searchParams }: Props) {
                 <Link
                   href={`/kategori/${c.slug}`}
                   aria-current={c.slug === slug ? 'page' : undefined}
-                  className="inline-flex h-9 items-center gap-1.5 rounded-full border border-line-strong bg-surface px-3.5 text-[14px] font-medium aria-[current=page]:border-ink aria-[current=page]:bg-ink aria-[current=page]:text-surface"
+                  className="tap inline-flex h-9 items-center gap-1.5 rounded-full border border-line-strong bg-surface px-3.5 text-[14px] font-medium aria-[current=page]:border-ink aria-[current=page]:bg-ink aria-[current=page]:text-surface"
                 >
                   {c.name}
                   <span className="text-[12px] opacity-60 tabular-nums">{c.productCount}</span>
@@ -89,7 +89,7 @@ export default async function CategoryPage({ params, searchParams }: Props) {
             id="merek"
             name="merek"
             defaultValue={sp.merek ?? ''}
-            className="h-9 rounded-tag border border-line-strong bg-surface px-2 font-medium"
+            className="h-11 rounded-tag border border-line-strong bg-surface px-2 font-medium"
           >
             <option value="">Semua merek</option>
             {brandsHere.map((b) => (
@@ -99,7 +99,7 @@ export default async function CategoryPage({ params, searchParams }: Props) {
             ))}
           </select>
           {sp.sort && <input type="hidden" name="sort" value={sp.sort} />}
-          <button className="h-9 rounded-tag border border-line-strong bg-surface px-3 font-semibold hover:border-ink">Terapkan</button>
+          <button className="h-11 rounded-tag border border-line-strong bg-surface px-3 font-semibold hover:border-ink">Terapkan</button>
         </form>
         <Suspense>
           <SortSelect />

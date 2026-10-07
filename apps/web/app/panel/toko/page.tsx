@@ -75,8 +75,8 @@ export default function StoreSettingsPage() {
                 <tr key={d}>
                   <th className="py-1 pr-4 text-left font-medium">{DAY_LABEL[d]}</th>
                   <td className="py-1 pr-3">
-                    <label className="flex items-center gap-1.5">
-                      <input type="checkbox" checked={h !== null} onChange={(e) => setDay(e.target.checked ? { open: '05:00', close: '22:00' } : null)} />
+                    <label className="flex min-h-11 items-center gap-2">
+                      <input type="checkbox" className="size-5" checked={h !== null} onChange={(e) => setDay(e.target.checked ? { open: '05:00', close: '22:00' } : null)} />
                       Buka
                     </label>
                   </td>

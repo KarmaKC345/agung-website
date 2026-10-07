@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import type { Brand, Category } from '@newagung/shared';
 import { btnPrimary, btnSecondary, inputCls, PageTitle, useMe } from '@/components/panel/PanelShell';
+import { useDialog } from '@/components/panel/Dialog';
 import { adminFetch } from '@/lib/admin';
 
 export default function CategoriesAdminPage() {
@@ -14,6 +15,7 @@ export default function CategoriesAdminPage() {
   const [newName, setNewName] = useState('');
   const [newParent, setNewParent] = useState('');
   const [newBrand, setNewBrand] = useState('');
+  const dialog = useDialog();
 
   const load = useCallback(async () => {
     const [c, b] = await Promise.all([adminFetch<Category[]>('/categories'), adminFetch<Brand[]>('/brands')]);
@@ -34,13 +36,25 @@ export default function CategoriesAdminPage() {
     }
   }
 
-  const rename = (c: Category) => {
-    const name = prompt('Nama kategori', c.name);
-    if (name?.trim() && name !== c.name)
-      void run(() => adminFetch(`/categories/${c.id}`, { method: 'PUT', json: { name: name.trim(), parentId: c.parentId, sortOrder: c.sortOrder } }));
+  const rename = async (c: Category) => {
+    const name = await dialog.prompt({ title: 'Ganti nama kategori', label: 'Nama kategori', defaultValue: c.name, confirmLabel: 'Simpan nama' });
+    if (name && name !== c.name)
+      void run(() => adminFetch(`/categories/${c.id}`, { method: 'PUT', json: { name, parentId: c.parentId, sortOrder: c.sortOrder } }));
   };
-  const del = (c: Category) =>
-    confirm(`Hapus kategori “${c.name}”? Barang di dalamnya tetap ada tapi tanpa kategori.`) && void run(() => adminFetch(`/categories/${c.id}`, { method: 'DELETE' }));
+  const del = async (c: Category) => {
+    const ok = await dialog.confirm({
+      title: `Hapus kategori “${c.name}”?`,
+      message: (() => {
+        const kids = c.children ?? [];
+        const direct = c.productCount - kids.reduce((n, k) => n + k.productCount, 0);
+        const own = direct > 0 ? `${direct} barang yang langsung ada di sini tetap ada, tapi tanpa kategori sampai dipindahkan.` : 'Tidak ada barang yang langsung ada di kategori ini.';
+        return kids.length ? `${own} ${kids.length} sub-kategorinya menjadi kategori utama beserta barangnya.` : own;
+      })(),
+      confirmLabel: 'Hapus kategori',
+      danger: true,
+    });
+    if (ok) void run(() => adminFetch(`/categories/${c.id}`, { method: 'DELETE' }));
+  };
 
   const move = (list: Category[], i: number, dir: -1 | 1) => {
     const j = i + dir;
@@ -53,10 +67,10 @@ export default function CategoriesAdminPage() {
   const actions = (c: Category, list: Category[], i: number) =>
     isOwner && (
       <span className="ml-auto flex shrink-0 gap-1 text-[13px]">
-        <button onClick={() => move(list, i, -1)} disabled={i === 0} className="px-1.5 text-muted disabled:opacity-30" aria-label={`Naikkan ${c.name}`}>↑</button>
-        <button onClick={() => move(list, i, 1)} disabled={i === list.length - 1} className="px-1.5 text-muted disabled:opacity-30" aria-label={`Turunkan ${c.name}`}>↓</button>
-        <button onClick={() => rename(c)} className="px-1.5 text-brand-text">Ganti nama</button>
-        <button onClick={() => del(c)} className="px-1.5 text-muted hover:text-danger">Hapus</button>
+        <button onClick={() => move(list, i, -1)} disabled={i === 0} className="tap px-1.5 text-muted disabled:opacity-30" aria-label={`Naikkan ${c.name}`}>↑</button>
+        <button onClick={() => move(list, i, 1)} disabled={i === list.length - 1} className="tap px-1.5 text-muted disabled:opacity-30" aria-label={`Turunkan ${c.name}`}>↓</button>
+        <button onClick={() => rename(c)} className="tap px-1.5 text-brand-text">Ganti nama</button>
+        <button onClick={() => del(c)} className="tap px-1.5 text-muted hover:text-danger">Hapus</button>
       </span>
     );
 
@@ -134,17 +148,25 @@ export default function CategoriesAdminPage() {
                 {isOwner && (
                   <span className="ml-auto flex gap-1 text-[13px]">
                     <button
-                      className="px-1.5 text-brand-text"
-                      onClick={() => {
-                        const name = prompt('Nama merek', b.name);
-                        if (name?.trim() && name !== b.name) void run(() => adminFetch(`/brands/${b.id}`, { method: 'PUT', json: { name: name.trim() } }));
+                      className="tap px-1.5 text-brand-text"
+                      onClick={async () => {
+                        const name = await dialog.prompt({ title: 'Ganti nama merek', label: 'Nama merek', defaultValue: b.name, confirmLabel: 'Simpan nama' });
+                        if (name && name !== b.name) void run(() => adminFetch(`/brands/${b.id}`, { method: 'PUT', json: { name } }));
                       }}
                     >
                       Ganti nama
                     </button>
                     <button
-                      className="px-1.5 text-muted hover:text-danger"
-                      onClick={() => confirm(`Hapus merek “${b.name}”?`) && void run(() => adminFetch(`/brands/${b.id}`, { method: 'DELETE' }))}
+                      className="tap px-1.5 text-muted hover:text-danger"
+                      onClick={async () => {
+                        const ok = await dialog.confirm({
+                          title: `Hapus merek “${b.name}”?`,
+                          message: `${b.productCount ?? 0} barang tetap ada, tapi tanpa merek.`,
+                          confirmLabel: 'Hapus merek',
+                          danger: true,
+                        });
+                        if (ok) void run(() => adminFetch(`/brands/${b.id}`, { method: 'DELETE' }));
+                      }}
                     >
                       Hapus
                     </button>

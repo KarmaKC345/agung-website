@@ -6,6 +6,7 @@ import { createContext, useContext, useEffect, useState } from 'react';
 import type { StaffRole } from '@newagung/shared';
 import { adminFetch, ApiError, signOut } from '@/lib/admin';
 import { LogoMark } from '../Logo';
+import { DialogProvider } from './Dialog';
 
 interface Me {
   userId: string;
@@ -45,13 +46,13 @@ export function PanelShell({ children }: { children: React.ReactNode }) {
       });
   }, [isPublic, path, router]);
 
-  if (isPublic) return <>{children}</>;
+  if (isPublic) return <DialogProvider>{children}</DialogProvider>;
   if (error) {
     return (
       <div className="mx-auto max-w-md p-8">
         <p className="font-semibold text-danger">{error}</p>
         <button
-          className="mt-4 h-10 rounded-tag border border-line-strong px-4 font-semibold"
+          className="mt-4 h-11 rounded-tag border border-line-strong px-4 font-semibold"
           onClick={async () => {
             await signOut();
             router.replace('/panel/masuk');
@@ -69,12 +70,13 @@ export function PanelShell({ children }: { children: React.ReactNode }) {
 
   return (
     <MeContext.Provider value={me}>
+      <DialogProvider>
       <div className="min-h-dvh md:grid md:grid-cols-[220px_1fr]">
         <aside className="border-b border-line bg-surface md:sticky md:top-0 md:h-dvh md:border-r md:border-b-0">
           <div className="flex items-center gap-2 px-4 py-3">
             <LogoMark className="h-7 w-7" />
             <span className="font-bold">Panel toko</span>
-            <Link href="/" className="ml-auto text-[13px] text-muted hover:text-ink md:hidden">
+            <Link href="/" className="tap ml-auto text-[13px] text-muted hover:text-ink md:hidden">
               Lihat website
             </Link>
           </div>
@@ -85,7 +87,7 @@ export function PanelShell({ children }: { children: React.ReactNode }) {
                   <Link
                     href={n.href}
                     aria-current={isActive(n.href) ? 'page' : undefined}
-                    className="block rounded-tag px-3 py-2 text-[14px] font-medium whitespace-nowrap text-muted hover:bg-sunken hover:text-ink aria-[current=page]:bg-ink aria-[current=page]:text-surface"
+                    className="flex min-h-11 items-center rounded-tag px-3 text-[14px] font-medium whitespace-nowrap text-muted hover:bg-sunken hover:text-ink aria-[current=page]:bg-ink aria-[current=page]:text-surface"
                   >
                     {n.label}
                   </Link>
@@ -97,7 +99,7 @@ export function PanelShell({ children }: { children: React.ReactNode }) {
             <p className="truncate">{me.email}</p>
             <p className="capitalize">{me.role === 'owner' ? 'Pemilik' : 'Pegawai'}</p>
             <div className="mt-2 flex gap-3">
-              <Link href="/" className="hover:text-ink">
+              <Link href="/" className="tap hover:text-ink">
                 Lihat website
               </Link>
               <button
@@ -105,7 +107,7 @@ export function PanelShell({ children }: { children: React.ReactNode }) {
                   await signOut();
                   router.replace('/panel/masuk');
                 }}
-                className="hover:text-ink"
+                className="tap hover:text-ink"
               >
                 Keluar
               </button>
@@ -114,6 +116,7 @@ export function PanelShell({ children }: { children: React.ReactNode }) {
         </aside>
         <main className="min-w-0 px-4 py-6 md:px-8">{children}</main>
       </div>
+      </DialogProvider>
     </MeContext.Provider>
   );
 }
@@ -127,7 +130,7 @@ export function PageTitle({ children, actions }: { children: React.ReactNode; ac
   );
 }
 
-export const inputCls = 'h-10 w-full rounded-tag border border-line-strong bg-surface px-3 text-[15px]';
-export const btnPrimary = 'inline-flex h-10 items-center justify-center rounded-tag bg-ink px-4 text-[14px] font-semibold text-surface disabled:opacity-50';
+export const inputCls = 'h-11 w-full rounded-tag border border-line-strong bg-surface px-3 text-[15px]';
+export const btnPrimary = 'inline-flex h-11 items-center justify-center rounded-tag bg-ink px-4 text-[14px] font-semibold text-surface disabled:opacity-50';
 export const btnSecondary =
-  'inline-flex h-10 items-center justify-center rounded-tag border border-line-strong bg-surface px-4 text-[14px] font-semibold hover:border-ink disabled:opacity-50';
+  'inline-flex h-11 items-center justify-center rounded-tag border border-line-strong bg-surface px-4 text-[14px] font-semibold hover:border-ink disabled:opacity-50';

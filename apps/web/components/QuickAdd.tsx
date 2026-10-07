@@ -30,7 +30,7 @@ export function QuickAdd({ product }: { product: ProductSummary }) {
         setTimeout(() => setAdded(false), 1400);
       }}
       aria-label={`Tambah ${product.name} ke keranjang`}
-      className={`grid size-9 shrink-0 place-items-center rounded-tag text-[22px] leading-none font-semibold transition-colors ${
+      className={`tap grid size-9 shrink-0 place-items-center rounded-tag text-[22px] leading-none font-semibold transition-colors ${
         added ? 'bg-ok text-white' : 'bg-ink text-surface hover:bg-accent'
       }`}
     >

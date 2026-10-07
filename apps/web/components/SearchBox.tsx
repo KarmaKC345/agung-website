@@ -83,8 +83,8 @@ export function SearchBox({ large = false }: { large?: boolean }) {
         Cari barang
       </label>
       <div
-        className={`flex items-center gap-2 rounded-tag border border-line-strong bg-surface focus-within:border-brand-text ${
-          large ? 'h-14 px-4 text-[17px]' : 'h-11 px-3 text-[15px]'
+        className={`flex items-center gap-2 rounded-tag border border-line-strong bg-surface focus-within:border-brand-text focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-brand-text ${
+          large ? 'h-14 px-4 text-[17px]' : 'h-12 px-3 text-[15px]'
         }`}
       >
         <svg viewBox="0 0 20 20" className="size-[18px] shrink-0 text-muted" aria-hidden>
@@ -122,7 +122,7 @@ export function SearchBox({ large = false }: { large?: boolean }) {
           }}
         />
         {large && (
-          <button type="submit" className="hidden h-10 shrink-0 rounded-tag bg-ink px-4 text-sm font-semibold text-surface sm:block">
+          <button type="submit" className="tap hidden h-10 shrink-0 rounded-tag bg-ink px-4 text-sm font-semibold text-surface sm:block">
             Cari
           </button>
         )}

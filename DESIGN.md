@@ -1,7 +1,7 @@
 ---
 name: Papan Lorong
 description: Fondasi desain Toko New Agung — rak ATK yang bisa dibuka dari HP, dengan papan lorong gantung sebagai navigasi dan label harga rak sebagai tokoh utama.
-version: 1.0.0
+version: 1.1.0
 source_of_truth: apps/web/app/globals.css
 colors:
   light:
@@ -47,28 +47,30 @@ typography:
     thesis:   { size: "40px → 52px (≥640)", line-height: 0.95, weight: 800, stretch: "82%", tracking: "-0.015em" }
     page-title: { size: "26–28px", weight: 700 }
     section:  { size: "20px", weight: 700 }
-    body:     { size: "15–16px", line-height: 1.6 }
+    body:     { size: "15–16px", line-height: "1.5 (paragraf: 1.625)" }
     card-name: { size: "14px", line-height: 1.35 }
     signage:  { size: "12–20px", weight: 700, stretch: "88%", transform: uppercase, tracking: "0.035em", line-height: 1.12 }
     price:    { size: "22px kartu / 40px detail / 30px nota", weight: 750, stretch: "78%", numeric: tabular-nums, tracking: "-0.01em", line-height: 1, currency: "Rp 0.62em, naik 0.42em" }
     code:     { family: mono, weight: 500, size: "15–26px" }
 rounded:
-  sign: 2px
+  sign: 2px         # --radius-sign
   tag: 4px          # kontrol, input, kartu, bingkai foto
   pill: 9999px      # chip status, chip sub-kategori, badge jumlah
   swatch: 9999px    # titik warna varian, tombol favorit
 spacing:
   container: 1152px
   gutter: 16px
-  touch-target: 44px
+  touch-target: 44px  # ukuran nyata, atau area .tap 44×44 di sekitar kontrol yang tampil lebih kecil
+  search-height: "48px header / 56px pembuka"
   rail-drop: 26px   # jarak rel ke papan (panjang tali)
 breakpoints: { sm: 640px, md: 768px, lg: 1024px }
 elevation:
   flat: none
-  popover: "0 8px 24px -12px rgb(0 0 0 / 0.25)"
+  popover: "0 8px 24px -12px rgb(0 0 0 / 0.25)"   # saran pencarian, dialog
+  backdrop: "rgb(15 17 34 / 0.45)"                 # di belakang dialog
   header: "surface 95% + backdrop-blur"
 motion:
-  control: 120–200ms ease-out
+  control: "150ms ease-out — color, background, border, outline, opacity (semua a/button/input/select)"
   sign-swing: "rotate(-1.2deg) 180ms ease-out, poros di tali"
   quick-add-confirm: 1400ms
   reduced-motion: "semua durasi 0, papan tidak berayun"
@@ -82,6 +84,8 @@ components:
   status-pill:    { file: apps/web/components/StatusPill.tsx }
   search-box:     { file: apps/web/components/SearchBox.tsx }
   panel-shell:    { file: apps/web/components/panel/PanelShell.tsx }
+  dialog:         { file: apps/web/components/panel/Dialog.tsx }
+  tap-target:     { css: .tap }
 ---
 
 # Papan Lorong
@@ -210,18 +214,18 @@ Kontainer maksimal 1152px dengan gutter 16px.
 - Navigasi bawah tetap 56px (Beranda · Kategori · Favorit · Keranjang) dan menghormati `safe-area-inset-bottom`.
 - Sidebar panel menjadi tab horizontal yang bisa digeser.
 
-Semua target sentuh minimal 44px.
+Semua kontrol punya target sentuh minimal 44×44px. Ada dua cara: ukurannya memang 44px (`h-11`), atau kelas `.tap` memperluas area sentuh tanpa mengubah ukuran visualnya. Cara kedua dipakai pada tombol "+" dan favorit di kartu, chip sub-kategori, breadcrumb, tautan "Semua kategori", dan tautan kecil di panel. Nama barang di kartu membentangkan area kliknya ke seluruh kartu. Kotak centang berukuran 20px di dalam label setinggi 44px. Hanya tautan di dalam kalimat yang dikecualikan (WCAG 2.5.8, *inline*).
 
 ## Elevasi dan kedalaman
 
-Gunakan perubahan permukaan (`paper` → `surface`) dan garis 1px sebelum bayangan. Kartu, panel, dan blok info **datar**. Hanya daftar saran pencarian yang memakai bayangan `0 8px 24px -12px rgb(0 0 0 / .25)`. Header yang menempel memakai `surface` 95% dengan blur latar. Merah tidak boleh menjadi pendaran, dan tidak ada bayangan berwarna.
+Gunakan perubahan permukaan (`paper` → `surface`) dan garis 1px sebelum bayangan. Kartu, panel, dan blok info **datar**. Hanya daftar saran pencarian dan dialog panel yang memakai bayangan `0 8px 24px -12px rgb(0 0 0 / .25)`. Dialog diberi latar belakang `rgb(15 17 34 / .45)`. Header yang menempel memakai `surface` 95% dengan blur latar. Merah tidak boleh menjadi pendaran, dan tidak ada bayangan berwarna.
 
 ## Bentuk
 
 | Radius | Dipakai untuk |
 |---|---|
-| 2px + bingkai `ink` 1,5px | Papan lorong |
-| 4px (`--radius-tag`) | Tombol, input, kartu, bingkai foto, nota |
+| 2px (`--radius-sign`) + bingkai `ink` 1,5px | Papan lorong dan rel |
+| 4px (`--radius-tag`) | Tombol, input, kartu, bingkai foto, nota, dialog, segmen pemilih satuan |
 | Pill | Chip sub-kategori, chip status pesanan, badge jumlah keranjang, filter status panel |
 | Lingkaran | Titik warna varian (12px di kartu, 32px dalam cincin 44px di detail), tombol favorit |
 
@@ -229,10 +233,10 @@ Tidak ada sudut besar untuk "panggung": toko ini kotak dan rapat.
 
 ## Interaksi dan gerak
 
-- **Umpan balik kontrol:** 120–200ms, berupa perubahan garis, isi, atau warna. Tidak ada efek memantul atau membesar.
+- **Umpan balik kontrol:** 150ms ease-out pada warna, isi, garis, outline, dan opasitas. Berlaku otomatis untuk semua `a`, `button`, `input`, `select`, dan `textarea`. Tidak ada efek memantul atau membesar.
 - **Satu gerak yang khas:** papan lorong berayun `rotate(-1.2deg)` selama 180ms saat disorot, berporos pada tali (`transform-origin: 50% -26px`).
 - **Tombol "+":** berubah hijau dengan "✓" selama 1,4 detik setelah barang masuk, dan diumumkan lewat `role="status"`.
-- **Cincin fokus:** `:focus-visible` 2px `brand-text` dengan offset 2px.
+- **Cincin fokus:** `:focus-visible` 2px `brand-text` dengan offset 2px. Kotak cari memakai cincin yang sama pada pembungkusnya (`focus-within`), karena inputnya tanpa outline.
 - **Tanpa gerak dekoratif:** tidak ada scroll-reveal, parallax, carousel, atau teks yang muncul huruf per huruf.
 - **`prefers-reduced-motion`:** semua durasi menjadi 0 dan papan tidak berayun.
 
@@ -265,6 +269,7 @@ Status buka/tutup dihitung di perangkat dalam WITA, supaya tidak basi walau hala
 - Footer.
 - Navigasi bawah HP.
 - Panel: masuk, atur sandi, pesanan masuk, daftar dan form barang, ubah harga (satu-satu & massal), kategori & merek, import/export, info toko, pegawai.
+- Dialog panel (konfirmasi & isian) memakai `<dialog>` asli: fokus terkunci dan Esc menutup. Pada aksi hapus atau batal, fokus awal ada di "Batal" dan tombol aksinya merah dengan label yang menyebut aksinya ("Hapus kategori", "Batalkan pesanan"). Pada aksi lain, tombol aksinya `ink`.
 
 **Komponen mikro yang sudah ada:**
 - Tombol utama (merah), tombol gelap (`ink`), tombol sekunder (bergaris), tombol WhatsApp (hijau).
@@ -282,7 +287,6 @@ Status buka/tutup dihitung di perangkat dalam WITA, supaya tidak basi walau hala
 
 **Belum ditetapkan sebagai komponen khas:**
 - Toast.
-- Dialog modal. Panel masih memakai `confirm()`/`prompt()` bawaan browser untuk hapus dan ganti nama, dan ini perlu diganti dengan dialog yang konsisten.
 - Skeleton loader.
 - Zoom/galeri foto.
 - Ilustrasi keadaan kosong.
@@ -300,6 +304,7 @@ Front matter YAML di atas mendefinisikan peran visual. Implementasinya ada di fi
 | Kartu barang | foto atau pengganti, tombol favorit, titik warna (maks. 5 + "+n"), nama (maks. 2 baris), "mulai" bila harga varian berbeda, label harga, satuan, status stok, aksi (tombol "+" untuk barang satu varian, "Pilih" untuk barang bervarian, tanpa aksi bila habis) |
 | Label harga | "Rp", angka, satuan ("/pcs", "/rim") |
 | Nota keranjang | baris barang (nama, varian, harga satuan, stepper, hapus, subtotal), perkiraan total, jumlah jenis barang, garis putus-putus, nama, cara terima (ambil/antar), jam ambil atau catatan, galat, tombol WhatsApp, petunjuk "tekan kirim di WhatsApp" |
+| Dialog panel | judul (pertanyaan berisi nama objek), pesan akibat, input (khusus isian), "Batal", tombol aksi berlabel kata kerja + objek |
 | Kartu pesanan panel | kode (mono), chip status, waktu WITA, nama, cara terima, catatan, daftar barang (jumlah + satuan tebal di depan), total, aksi berikutnya ("Mulai siapkan" → "Tandai siap" → "Tandai selesai"), batalkan |
 
 ## Prompt komponen
@@ -333,7 +338,7 @@ Front matter YAML di atas mendefinisikan peran visual. Implementasinya ada di fi
 
 ## Yang dilakukan dan yang dihindari
 
-* Lakukan: pakai merah hanya untuk satu aksi utama per layar dan angka keranjang. Biru untuk struktur dan fokus.
+* Lakukan: pakai merah hanya untuk satu aksi utama per layar, angka keranjang, dan tombol konfirmasi hapus/batal di dialog. Biru untuk struktur dan fokus.
 * Lakukan: tulis status (stok, buka/tutup, pesanan) dengan kata, bukan hanya warna.
 * Lakukan: biarkan harga menjadi elemen paling menonjol di kartu dan detail barang.
 * Lakukan: pakai foto asli toko atau barang, dan potong wajah pelanggan.
@@ -344,4 +349,6 @@ Front matter YAML di atas mendefinisikan peran visual. Implementasinya ada di fi
 * Hindari: menampilkan nomor atau layanan Printech.
 * Hindari: memakai huruf logo "AGUNG" sebagai font UI, atau hotlink font dari CDN.
 * Hindari: bayangan pada kartu, sudut besar, atau gerak sebagai satu-satunya penanda keadaan.
+* Hindari: `confirm()`, `prompt()`, atau `alert()` bawaan browser. Pakai `useDialog()`.
+* Hindari: kontrol di bawah 44×44px tanpa `.tap`.
 * Lakukan: jaga fondasi ini selaras dengan perilaku desktop, HP, mode gelap, aksesibilitas, dan komposisi yang sudah disetujui. Bila token di `globals.css` berubah, perbarui dokumen ini di commit yang sama.

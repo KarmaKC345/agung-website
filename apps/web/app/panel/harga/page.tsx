@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { formatRupiah, type Brand, type Category } from '@newagung/shared';
 import { btnPrimary, btnSecondary, inputCls, PageTitle, useMe } from '@/components/panel/PanelShell';
+import { useDialog } from '@/components/panel/Dialog';
 import { adminFetch } from '@/lib/admin';
 
 interface PriceRow {
@@ -63,7 +64,7 @@ function PriceInput({ row, onSaved }: { row: PriceRow; onSaved: (p: number) => v
           {state === 'idle' && (
             <button
               type="button"
-              className="text-muted underline underline-offset-2"
+              className="tap text-muted underline underline-offset-2"
               onClick={async () => setHistory(history ? null : await adminFetch(`/prices/history/${row.variantPriceId}`))}
             >
               riwayat
@@ -92,6 +93,7 @@ function BulkForm({ brands, cats, onDone }: { brands: Brand[]; cats: Category[];
   const [percent, setPercent] = useState('');
   const [roundTo, setRoundTo] = useState('100');
   const [msg, setMsg] = useState<string | null>(null);
+  const dialog = useDialog();
 
   return (
     <form
@@ -103,7 +105,12 @@ function BulkForm({ brands, cats, onDone }: { brands: Brand[]; cats: Category[];
           .filter(Boolean)
           .join(' + ');
         if (!target) return setMsg('Pilih merek atau kategori.');
-        if (!confirm(`Ubah semua harga ${target} sebesar ${pct > 0 ? '+' : ''}${pct}%?`)) return;
+        const ok = await dialog.confirm({
+          title: `Ubah semua harga ${target}?`,
+          message: `Semua harga ${pct > 0 ? 'naik' : 'turun'} ${Math.abs(pct)}% lalu dibulatkan ke Rp${Number(roundTo).toLocaleString('id-ID')}. Setiap perubahan tercatat di riwayat harga.`,
+          confirmLabel: `Ubah harga ${pct > 0 ? '+' : ''}${pct}%`,
+        });
+        if (!ok) return;
         try {
           const r = await adminFetch<{ updated: number }>('/prices/bulk', {
             method: 'POST',

@@ -5,7 +5,7 @@ export function Breadcrumbs({ items }: { items: { href?: string; label: string }
     <nav aria-label="Lokasi halaman" className="text-[13px] text-muted">
       <ol className="flex flex-wrap items-center gap-1.5">
         <li>
-          <Link href="/" className="hover:text-ink">
+          <Link href="/" className="tap hover:text-ink">
             Beranda
           </Link>
         </li>
@@ -13,7 +13,7 @@ export function Breadcrumbs({ items }: { items: { href?: string; label: string }
           <li key={it.label} className="flex items-center gap-1.5">
             <span aria-hidden>/</span>
             {it.href ? (
-              <Link href={it.href} className="hover:text-ink">
+              <Link href={it.href} className="tap hover:text-ink">
                 {it.label}
               </Link>
             ) : (

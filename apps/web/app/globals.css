@@ -72,6 +72,7 @@
   --font-mono: 'IBM Plex Mono', ui-monospace, monospace;
 
   --radius-tag: 4px;
+  --radius-sign: 2px;
 }
 
 @layer base {
@@ -90,6 +91,20 @@
   :focus-visible {
     outline: 2px solid var(--brand-text);
     outline-offset: 2px;
+  }
+  /* Umpan balik kontrol 120–200ms: garis, isi, atau warna — tanpa memantul/membesar */
+  a,
+  button,
+  input,
+  select,
+  textarea,
+  summary {
+    transition-property: color, background-color, border-color, outline-color, opacity;
+    transition-duration: 150ms;
+    transition-timing-function: ease-out;
+  }
+  dialog::backdrop {
+    background: rgb(15 17 34 / 0.45);
   }
   ::selection {
     background: var(--brand);
@@ -122,6 +137,23 @@
     line-height: 1.12;
   }
 
+  /*
+   * Target sentuh minimal 44×44px untuk kontrol yang tampil lebih kecil (tombol + di
+   * kartu, favorit, chip). Area sentuh diperluas tanpa mengubah ukuran visual.
+   */
+  .tap {
+    position: relative;
+  }
+  .tap::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: max(100%, 44px);
+    height: max(100%, 44px);
+    transform: translate(-50%, -50%);
+  }
+
   .condensed {
     font-stretch: 82%;
   }
@@ -137,14 +169,14 @@
     inset: 0 0 auto 0;
     height: 3px;
     background: var(--brand);
-    border-radius: 2px;
+    border-radius: var(--radius-sign);
   }
   .aisle-sign {
     position: relative;
     display: block;
     background: var(--surface);
     border: 1.5px solid var(--ink);
-    border-radius: 2px;
+    border-radius: var(--radius-sign);
     padding: 9px 12px 8px;
     transform-origin: 50% -26px;
     transition: transform 180ms ease-out, background-color 120ms;
