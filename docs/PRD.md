@@ -2,13 +2,13 @@
 
 | | |
 |---|---|
-| Status | Draft v2 — perencanaan |
+| Status | Draft v3 — perencanaan |
 | Tanggal | 7 Oktober 2026 |
 | Stack | Next.js (frontend) · Express (API) · Supabase/Postgres (database, storage, auth) |
 | Sumber | Peta fitur "Toko New Agung" (Fase 1–4) + profil Google Maps toko |
 
-> Data yang ditandai **[KONFIRMASI]** belum pasti dan perlu dicek ke pemilik toko
-> sebelum fase terkait dimulai.
+> Data toko di dokumen ini sudah dikonfirmasi pemilik (lihat §11), kecuali data barang
+> yang menyusul.
 
 ---
 
@@ -21,7 +21,9 @@
 | Alamat | Jl. DR. Ratulangi No.52, Kunjung Mae, Kec. Mariso, Kota Makassar, Sulawesi Selatan 90114 (area Mamajang) |
 | Telepon | (0411) 850555 |
 | WhatsApp pesanan | **0823-4848-5101** → `https://wa.me/6282348485101`. (Nomor 0859-2359-8052 di spanduk depan milik *Printech*, **bukan** nomor pesanan toko.) |
-| Jam buka | Tutup pukul 21.30 (hari yang tercatat). Jam buka & hari lain **[KONFIRMASI]** |
+| Jam buka | **Setiap hari 05.00–22.00 WITA, tanpa hari libur** (dari pemilik; data Google Maps "tutup 21.30" perlu diperbarui di profil Google) |
+| Domain | `newagung.com` (sementara) |
+| Logo | Segitiga biru bertingkat, tulisan "AGUNG" merah miring, "New" abu tua dengan sapuan merah |
 | Zona waktu | WITA (`Asia/Makassar`) |
 | Reputasi Google | 4,5 ★ dari ±10.466 ulasan |
 | Merek yang terlihat di rak | Casio, Pentel, Kenko, Artline, Snowman, Mirage, e-Print (tinta), dan lainnya |
@@ -58,7 +60,7 @@ dan barang bisa disiapkan sebelum pelanggan datang.
 | Cepat di HP murah & sinyal lemah | LCP < 2,5 dtk di 4G lambat, halaman katalog < 200 KB JS |
 
 **Bukan tujuan (out of scope v1):** pembayaran online, ongkir otomatis, akun pelanggan
-dengan password, integrasi kasir/POS, aplikasi mobile native, pemesanan layanan printing
+dengan password, integrasi kasir/POS, aplikasi mobile native, layanan printing/Printech
 (lihat 4.9).
 
 ## 4. Pengguna
@@ -104,7 +106,7 @@ ekspornya bisa langsung dipakai.
 #### 5.3 Kategori Barang
 | Sub fitur | Kebutuhan |
 |---|---|
-| Daftar kategori | Maksimal 2 tingkat. Kategori **mengikuti papan gantung lorong di toko**, supaya pelanggan yang biasa datang langsung mengenalinya. Dari foto: Buku · Album · Ekspedisi · Binder · Fancy · Map Seminar · Crayon · Tembak Harga (label harga) · Stempel · Numerator · Pensil Mekanik · Pentel · Hekter · Spidol · Stabilo · Cat Poster · Lem · Parcel · Kotak Pensil · Kertas · Kalkulator · Tinta. Pengelompokan ke 2 tingkat dan papan lorong yang belum terfoto **[KONFIRMASI dengan pemilik]**. |
+| Daftar kategori | Maksimal 2 tingkat. Kategori **mengikuti papan gantung lorong di toko**, supaya pelanggan yang biasa datang langsung mengenalinya. Dari foto: Buku · Album · Ekspedisi · Binder · Fancy · Map Seminar · Crayon · Tembak Harga (label harga) · Stempel · Numerator · Pensil Mekanik · Pentel · Hekter · Spidol · Stabilo · Cat Poster · Lem · Parcel · Kotak Pensil · Kertas · Kalkulator · Tinta. Daftar ini dari foto yang dikirim pemilik; pengelompokan ke 2 tingkat disusun saat import data. |
 | Pilih kategori | `/kategori/[slug]` dengan filter **merek**, rentang harga, dan urutan (termurah, terbaru, A–Z). |
 | Jumlah barang | Angka jumlah barang di samping nama kategori. |
 
@@ -142,7 +144,7 @@ akhir dan stok dikonfirmasi toko.
 | Sub fitur | Kebutuhan |
 |---|---|
 | Alamat & lokasi | Alamat (lihat §1) + peta (embed, dimuat saat discroll) + tombol "Rute" ke Google Maps. |
-| Jam buka | Tabel jam per hari + status langsung "Buka · tutup 21.30" dihitung dalam WITA. Pemilik bisa atur hari libur (Lebaran, Natal, dll). |
+| Jam buka | "Buka setiap hari, 05.00–22.00 WITA" + status langsung "Buka · tutup 22.00" / "Tutup · buka 05.00". Dihitung dalam WITA, jadi tetap benar untuk pengunjung dari zona waktu lain. Jam tetap bisa diubah pemilik di panel. |
 | Kontak toko | Telepon (0411) 850555 (tombol `tel:`), WhatsApp 0823-4848-5101, media sosial jika ada. |
 | Ulasan Google | Tampilkan "4,5 ★ · 10.000+ ulasan di Google" dengan link ke profil Google. Tidak menyalin atau menulis ulasan palsu di website. |
 | Data terstruktur | JSON-LD `Store`/`LocalBusiness` (alamat, telepon, jam, geo) + `Product`. |
@@ -192,12 +194,6 @@ Kelas 1", "Daftar SMP Negeri X"). Orang tua tinggal klik "Masukkan semua ke daft
 lalu menyesuaikan isinya. Ini fitur yang paling relevan untuk mengurangi antrean di musim
 sekolah.
 
-### 5.9 Layanan Printech (printing, copy)
-
-Spanduk di depan toko menunjukkan layanan printing/fotokopi bernama *Printech*.
-**[KONFIRMASI]** apakah ini bagian dari Toko New Agung. Jika ya, v1 cukup menampilkan
-halaman **Layanan** statis (jenis layanan, kisaran harga, tombol WA). Upload file untuk
-dicetak tidak termasuk v1.
 
 ## 6. Arah desain
 
@@ -243,14 +239,27 @@ sendiri.
 | `--ink-muted` | `#66676B` | Teks sekunder |
 | `--line` | `#DEDBD2` | Garis pemisah |
 | `--ruled` | `#C9D6E8` | Garis kertas bergaris (dekoratif tipis) |
-| `--accent` | `#D2232A` | Merah papan nama toko: tombol utama, label promo |
+| `--brand` | `#282C83` | Biru logo: header, papan kategori, link, fokus |
+| `--accent` | `#D11D20` | Merah logo: tombol utama, angka keranjang, label promo |
 | `--wa` | `#1F8A4C` | Khusus tombol WhatsApp |
 | `--ok` / `--warn` | `#2F6B3A` / `#A86A00` | Status "Ada" / "Sisa sedikit" |
 
-Mode gelap: `--paper #131416`, `--ink #ECEBE6`, `--line #2B2C2F`, `--accent #E5484D`.
+Mode gelap: `--paper #131416`, `--ink #ECEBE6`, `--line #2B2C2F`,
+`--brand #9AA0F2`, `--accent #EF5350`.
 
-> Merah aksen mendekati merah spanduk toko di foto. Nilai pastinya diambil dari file
-> logo asli **[KONFIRMASI — minta file logo]**.
+Warna `--brand` dan `--accent` diambil langsung dari logo. Pemakaiannya dijaga
+**hemat**: biru untuk struktur (header, papan kategori), merah hanya untuk satu aksi
+utama per layar. Halaman tetap didominasi warna kertas dan foto barang, bukan biru-merah
+penuh seperti spanduk.
+
+**Logo**
+
+- Logo yang ada masih berupa gambar beresolusi rendah. Di Fase 0, logo **digambar ulang
+  sebagai SVG** (segitiga + lengkung biru, "AGUNG", "New" + sapuan) supaya tajam di semua
+  ukuran dan bisa dipakai versi terang/gelap.
+- Turunan: favicon & ikon aplikasi (segitiga biru saja), gambar Open Graph untuk
+  link yang dibagikan di WA.
+- Huruf "AGUNG" di logo hanya dipakai sebagai logo, tidak jadi font UI.
 
 **Tipografi**
 
@@ -270,7 +279,7 @@ Angka harga: `font-variant-numeric: tabular-nums`.
   Harga berubah langsung saat varian/satuan dipilih.
 - **Header HP:** logo + kotak cari penuh + ikon daftar pesanan berangka.
 - **Bar bawah (HP):** Beranda · Kategori · Favorit · Daftar Pesanan.
-- **Status buka:** pil kecil "● Buka · tutup 21.30".
+- **Status buka:** pil kecil "● Buka · tutup 22.00".
 - **Daftar pesanan:** *bottom sheet* bergaya nota (garis putus-putus, total di bawah,
   tombol hijau WhatsApp).
 - **Beranda:** kotak cari besar → kategori sebagai deretan ikon garis sederhana →
@@ -294,7 +303,6 @@ scroll-reveal, parallax, atau teks yang muncul huruf per huruf. Hormati
 /pesanan               Daftar pesanan + kirim ke WA
 /favorit               Favorit & riwayat (Fase 4)
 /tentang               Info toko, jam, peta, kontak
-/layanan               Printing/copy (jika dikonfirmasi)
 /panel/...             Panel pemilik (Fase 3)
 ```
 
@@ -385,7 +393,8 @@ order_items (id, order_id → orders, variant_id → product_variants,
              name_snapshot, unit_snapshot, price_snapshot int, qty int)
 
 store_settings (id = 1, name, address, lat, lng, maps_url, phone, whatsapp,
-                opening_hours jsonb, holidays jsonb, timezone default 'Asia/Makassar')
+                opening_hours jsonb, timezone default 'Asia/Makassar')
+-- opening_hours awal: setiap hari {"open":"05:00","close":"22:00"}
 
 staff (user_id → auth.users pk, role check (in ('owner','staff')), active bool)
 
@@ -461,7 +470,7 @@ Monorepo dengan pnpm workspaces.
 
 | Fase | Isi | Perkiraan |
 |---|---|---|
-| 0 | Setup monorepo & Supabase, token desain, sesi foto toko, import data dari program kasir | 1 minggu |
+| 0 | Setup monorepo & Supabase, domain `newagung.com`, logo SVG & token desain, sesi foto toko, data contoh (data asli menyusul) | 1 minggu |
 | 1 | Katalog + varian, pencarian + sinonim, kategori & merek | 2,5 minggu |
 | 2 | Pesan via WA, info toko, SEO lokal | 1,5 minggu |
 | 3 | Login, kelola barang & varian, ubah harga massal, pesanan masuk, pegawai | 3 minggu |
@@ -478,11 +487,15 @@ Jika memungkinkan, Fase 1–2 sebaiknya live **sebelum Juni**, menjelang tahun a
 | Lonjakan pesanan musim sekolah | Status pesanan di panel; opsi jam ambil; pengingat batas waktu ambil |
 | Spam pesanan | Rate limit + honeypot |
 
-## 11. Yang perlu dikonfirmasi ke pemilik toko
+## 11. Status konfirmasi pemilik toko
 
-1. Apakah Printech (printing/copy) bagian dari toko dan ingin tampil di website.
-2. Jam buka lengkap per hari dan hari libur.
-3. Data barang: ekspor dari program kasir (Excel/CSV) atau daftar harga.
-4. Daftar lengkap papan lorong (untuk kategori) dan pengelompokannya.
-5. File logo (untuk warna aksen) dan izin memakai foto toko.
-6. Domain yang diinginkan (mis. `newagung.co.id` / `tokonewagung.com`).
+| Hal | Status |
+|---|---|
+| Nomor WhatsApp pesanan | Selesai: 0823-4848-5101 |
+| Printech di website | Selesai: tidak perlu |
+| Jam buka | Selesai: setiap hari 05.00–22.00, tanpa libur |
+| Papan lorong / kategori | Selesai: dari foto toko |
+| Logo | Selesai: diterima, digambar ulang ke SVG di Fase 0 |
+| Domain | Selesai: `newagung.com` (sementara) |
+| Data barang (ekspor kasir / daftar harga) | **Menyusul.** Dibutuhkan sebelum Fase 1 bisa diisi data asli; sampai saat itu pengembangan memakai data contoh. |
+| Izin memakai foto toko di website | **Belum dijawab** |
