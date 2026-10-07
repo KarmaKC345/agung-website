@@ -18,11 +18,12 @@ export type StoreImage = (file: { buffer: Buffer; mimetype: string }) => Promise
 
 /**
  * Simpan foto barang. Dengan Supabase: ke Storage (bucket publik) dan kembalikan URL publik.
- * Tanpa Supabase (lokal): ke folder ./uploads yang disajikan API di /uploads.
+ * Lokal (IMAGE_STORAGE=local): ke folder ./uploads yang disajikan API di /uploads.
+ * PUBLIC_API_URL kosong menghasilkan URL relatif (/uploads/...), dipakai di Docker.
  */
 export function createImageStore(env: Env): StoreImage {
   const supabase =
-    env.SUPABASE_URL && env.SUPABASE_SERVICE_ROLE_KEY
+    env.IMAGE_STORAGE === 'supabase' && env.SUPABASE_URL && env.SUPABASE_SERVICE_ROLE_KEY
       ? createClient(env.SUPABASE_URL, env.SUPABASE_SERVICE_ROLE_KEY, { auth: { persistSession: false } })
       : null;
 

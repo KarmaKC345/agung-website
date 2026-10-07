@@ -10,8 +10,12 @@ const schema = z.object({
   SUPABASE_SERVICE_ROLE_KEY: z.string().default(''),
   SUPABASE_JWT_SECRET: z.string().default(''),
   SUPABASE_STORAGE_BUCKET: z.string().default('products'),
+  /** 'local' = folder ./uploads (volume Docker), 'supabase' = Supabase Storage */
+  IMAGE_STORAGE: z.enum(['local', 'supabase']).default('local'),
   OWNER_EMAIL: z.string().default(''),
   WEB_URL: z.string().default(''),
+  /** URL website yang dibuka orang (link di email undangan). Default: WEB_URL */
+  SITE_URL: z.string().default(''),
   REVALIDATE_SECRET: z.string().default(''),
   DEV_AUTH_TOKEN: z.string().default(''),
 });

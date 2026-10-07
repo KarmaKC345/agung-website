@@ -1,11 +1,11 @@
 import 'server-only';
 import type { Brand, Category, Paginated, ProductDetail, ProductSummary, StoreInfo } from '@newagung/shared';
-import { API_URL } from './config';
+import { SERVER_API_URL } from './config';
 
 const REVALIDATE = 300;
 
 async function get<T>(path: string, tags: string[], revalidate = REVALIDATE): Promise<T | null> {
-  const res = await fetch(`${API_URL}/api${path}`, { next: { revalidate, tags } });
+  const res = await fetch(`${SERVER_API_URL}/api${path}`, { next: { revalidate, tags } });
   if (res.status === 404) return null;
   if (!res.ok) throw new Error(`API ${path} → ${res.status}`);
   return (await res.json()) as T;

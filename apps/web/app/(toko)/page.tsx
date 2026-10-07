@@ -10,7 +10,6 @@ import { getCategories, getProducts, getStore } from '@/lib/api';
 import lorong from '@/public/foto/lorong-kertas.webp';
 import papan from '@/public/foto/papan-lorong.webp';
 
-export const revalidate = 300;
 
 export default async function HomePage() {
   const [store, categories, latest, kertas] = await Promise.all([

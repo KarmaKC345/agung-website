@@ -5,7 +5,6 @@ import { Breadcrumbs } from '@/components/Breadcrumbs';
 import { getBrands, getCategories } from '@/lib/api';
 
 export const metadata: Metadata = { title: 'Semua kategori' };
-export const revalidate = 300;
 
 export default async function CategoriesPage() {
   const [tree, brands] = await Promise.all([getCategories(), getBrands()]);

@@ -365,7 +365,7 @@ export function adminRoutes(ctx: Ctx): Router {
     }
     const supabase = createClient(env.SUPABASE_URL, env.SUPABASE_SERVICE_ROLE_KEY, { auth: { persistSession: false } });
     const { data, error } = await supabase.auth.admin.inviteUserByEmail(input.email, {
-      redirectTo: env.WEB_URL ? `${env.WEB_URL.replace(/\/$/, '')}/panel/atur-sandi` : undefined,
+      redirectTo: (env.SITE_URL || env.WEB_URL) ? `${(env.SITE_URL || env.WEB_URL).replace(/\/$/, '')}/panel/atur-sandi` : undefined,
     });
     if (error || !data.user) throw new HttpError(502, `Gagal mengirim undangan: ${error?.message ?? 'tanpa user'}`);
     await db.query(

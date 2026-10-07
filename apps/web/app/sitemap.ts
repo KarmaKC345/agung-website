@@ -1,10 +1,11 @@
 import type { MetadataRoute } from 'next';
 import type { Category, Paginated, ProductSummary } from '@newagung/shared';
-import { API_URL, SITE_URL } from '@/lib/config';
-
-export const revalidate = 3600;
+import { connection } from 'next/server';
+import { SERVER_API_URL as API_URL, SITE_URL } from '@/lib/config';
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  // dibuat saat diminta (data tetap di-cache 1 jam), jadi build tidak butuh API menyala
+  await connection();
   const opts = { next: { revalidate: 3600, tags: ['products', 'categories'] } };
   const [cats, firstPage] = await Promise.all([
     fetch(`${API_URL}/api/categories`, opts).then((r) => r.json() as Promise<Category[]>),

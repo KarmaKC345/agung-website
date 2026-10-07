@@ -13,12 +13,6 @@ import { SITE_URL } from '@/lib/config';
 
 type Props = { params: Promise<{ slug: string }> };
 
-export const revalidate = 300;
-
-// halaman barang dibuat saat pertama dikunjungi lalu disimpan (ISR), tidak saat build
-export async function generateStaticParams() {
-  return [];
-}
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;

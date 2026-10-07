@@ -1,0 +1,4 @@
+# Skrip shell harus berakhir LF, termasuk saat repo di-clone di Windows,
+# supaya skrip inisialisasi database di container tidak gagal.
+*.sh text eol=lf
+docker/** text eol=lf

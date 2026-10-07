@@ -11,7 +11,6 @@ export const metadata: Metadata = {
   title: 'Alamat & jam buka',
   description: 'Toko New Agung, Jl. DR. Ratulangi No.52, Mariso, Makassar. Buka setiap hari 05.00–22.00 WITA.',
 };
-export const revalidate = 300;
 
 export default async function AboutPage() {
   const store = await getStore();

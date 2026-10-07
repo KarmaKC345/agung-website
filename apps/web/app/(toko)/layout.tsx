@@ -1,3 +1,4 @@
+import { connection } from 'next/server';
 import { BottomNav } from '@/components/BottomNav';
 import { SiteFooter } from '@/components/SiteFooter';
 import { SiteHeader } from '@/components/SiteHeader';
@@ -35,6 +36,10 @@ function storeJsonLd(store: StoreInfo) {
 }
 
 export default async function StoreLayout({ children }: { children: React.ReactNode }) {
+  // Halaman toko dirender saat dikunjungi, bukan saat build, sehingga image Docker bisa
+  // dibangun tanpa API. Data API tetap di-cache (fetch + tag) dan dibersihkan lewat
+  // /api/revalidate setiap kali barang/harga berubah.
+  await connection();
   const store = await getStore();
   return (
     <>
