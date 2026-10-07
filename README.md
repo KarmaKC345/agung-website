@@ -85,6 +85,9 @@ sehingga halaman terkait langsung diperbarui.
 
 ## Catatan desain
 
+Fondasi desain lengkap (token, tipografi, kontras terukur, kontrak komponen) ada di
+[`DESIGN.md`](DESIGN.md). Ringkasnya:
+
 - Warna dari logo: biru `#282C83`, merah `#D11D20`. Latar abu dingin seperti lantai keramik
   dan latar logo, bukan krem.
 - Ciri khas: **papan lorong gantung**. Kategori ditampilkan seperti papan putih bertali di

@@ -20,6 +20,7 @@
   --accent: #d11d20;
   --accent-ink: #ffffff;
   --wa: #1d7f46;
+  --wa-text: #17703d;
   --ok: #2b7342;
   --warn: #9a5f00;
   --danger: #b4161b;
@@ -38,8 +39,9 @@
     --brand: #3a3fa8;
     --brand-text: #aeb2ff;
     --brand-tint: #20244a;
-    --accent: #e8403f;
-    --wa: #2f9d5d;
+    --accent: #d7322f;
+    --wa: #238550;
+    --wa-text: #5cc27e;
     --ok: #5cc27e;
     --warn: #e0a640;
     --danger: #ff6b6b;
@@ -61,6 +63,7 @@
   --color-accent: var(--accent);
   --color-accent-ink: var(--accent-ink);
   --color-wa: var(--wa);
+  --color-wa-text: var(--wa-text);
   --color-ok: var(--ok);
   --color-warn: var(--warn);
   --color-danger: var(--danger);

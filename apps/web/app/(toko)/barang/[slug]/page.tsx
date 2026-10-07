@@ -112,7 +112,7 @@ export default async function ProductPage({ params }: Props) {
               href={waLink(store.whatsapp, `Halo New Agung, saya mau tanya tentang ${product.name}.`)}
               target="_blank"
               rel="noopener"
-              className="mt-2 inline-block font-semibold text-wa underline underline-offset-4"
+              className="mt-2 inline-block font-semibold text-wa-text underline underline-offset-4"
             >
               Tanya barang ini via WhatsApp
             </a>

@@ -139,7 +139,7 @@ export default async function HomePage() {
                 href={waLink(store.whatsapp)}
                 target="_blank"
                 rel="noopener"
-                className="inline-flex h-11 items-center rounded-tag border border-wa px-4 text-[15px] font-semibold text-wa"
+                className="inline-flex h-11 items-center rounded-tag border border-wa-text px-4 text-[15px] font-semibold text-wa-text"
               >
                 WhatsApp {formatPhone(store.whatsapp)}
               </a>

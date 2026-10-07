@@ -63,7 +63,7 @@ export default async function AboutPage() {
             <ul className="mt-2 space-y-2 text-[16px]">
               <li>
                 WhatsApp pesanan:{' '}
-                <a href={waLink(store.whatsapp)} target="_blank" rel="noopener" className="font-semibold text-wa underline underline-offset-4">
+                <a href={waLink(store.whatsapp)} target="_blank" rel="noopener" className="font-semibold text-wa-text underline underline-offset-4">
                   {formatPhone(store.whatsapp)}
                 </a>
               </li>
