@@ -21,7 +21,40 @@ function Sign({ c, active }: { c: Category; active?: string }) {
  * Kategori ditampilkan sebagai papan gantung lorong. HP: satu rel yang bisa digeser.
  * Layar lebar: beberapa rel, masing-masing 5 papan.
  */
-export function AisleSigns({ categories, active }: { categories: Category[]; active?: string }) {
+export function AisleSigns({
+  categories,
+  active,
+  compact = false,
+}: {
+  categories: Category[];
+  active?: string;
+  /** satu rel yang bisa digeser di semua ukuran layar (dipakai di beranda) */
+  compact?: boolean;
+}) {
+  if (compact) {
+    // 5 lorong dengan barang terbanyak, tetap dalam urutan lorong toko: satu rel di semua layar
+    const top = new Set(
+      [...categories]
+        .sort((a, b) => b.productCount - a.productCount)
+        .slice(0, 5)
+        .map((c) => c.id),
+    );
+    return (
+      <nav aria-label="Kategori (papan lorong)">
+        <div className="scrollbar-none -mx-4 overflow-x-auto px-4 md:mx-0 md:overflow-visible md:px-0">
+          <ul className="aisle-rail flex w-max gap-3 pb-1 md:grid md:w-full md:grid-cols-5 md:gap-4">
+            {categories
+              .filter((c) => top.has(c.id))
+              .map((c) => (
+                <li key={c.id} className="w-[140px] shrink-0 md:w-auto">
+                  <Sign c={c} active={active} />
+                </li>
+              ))}
+          </ul>
+        </div>
+      </nav>
+    );
+  }
   const rows: Category[][] = [];
   for (let i = 0; i < categories.length; i += 5) rows.push(categories.slice(i, i + 5));
 

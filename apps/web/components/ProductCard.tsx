@@ -71,6 +71,22 @@ export function ProductCard({ product, priority }: { product: ProductSummary; pr
   );
 }
 
+/**
+ * Satu baris rak: di HP digeser ke samping (kartu 160px), di layar lebar 5 kolom.
+ * Dipakai untuk cuplikan di beranda.
+ */
+export function ProductRow({ products }: { products: ProductSummary[] }) {
+  return (
+    <div className="scrollbar-none -mx-4 overflow-x-auto px-4 lg:mx-0 lg:overflow-visible lg:px-0">
+      <div className="grid w-max auto-cols-[160px] grid-flow-col border-t border-l border-line lg:w-full lg:auto-cols-auto lg:grid-flow-row lg:grid-cols-5">
+        {products.map((p) => (
+          <ProductCard key={p.id} product={p} />
+        ))}
+      </div>
+    </div>
+  );
+}
+
 /** Grid rapat seperti rak: garis pemisah, tanpa jarak lebar */
 export function ProductGrid({ products, priorityCount = 0 }: { products: ProductSummary[]; priorityCount?: number }) {
   return (

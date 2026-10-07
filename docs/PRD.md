@@ -299,7 +299,8 @@ scroll-reveal, parallax, atau teks yang muncul huruf per huruf. Hormati
 ### 6.5 Struktur halaman
 
 ```
-/                      Beranda
+/                      Beranda: tentang toko + cara belanja dari HP + cuplikan lorong & barang baru
+/barang                Katalog: semua barang
 /kategori/[slug]       Barang per kategori (filter merek, harga)
 /merek/[slug]          Barang per merek (Pentel, Kenko, Joyko, …)
 /cari?q=               Hasil pencarian

@@ -1,7 +1,7 @@
 ---
 name: Papan Lorong
 description: Fondasi desain Toko New Agung — rak ATK yang bisa dibuka dari HP, dengan papan lorong gantung sebagai navigasi dan label harga rak sebagai tokoh utama.
-version: 1.1.0
+version: 1.2.0
 source_of_truth: apps/web/app/globals.css
 colors:
   light:
@@ -199,9 +199,15 @@ Teks di SVG logo memakai Georgia/Brush Script bawaan sistem, sehingga tampilanny
 Kontainer maksimal 1152px dengan gutter 16px.
 
 **Beranda:**
-- Di layar ≥768px, bagian pembuka dibagi dua: tesis dan kotak cari besar di kiri, foto lorong kertas di kanan (tinggi minimal 420px).
-- Setelah itu: rel Papan Lorong, grid "Baru masuk rak", grid "Kertas per rim & box", lalu satu blok "Datang ke toko" (foto papan lorong, alamat, jam, ulasan, rute, WhatsApp).
-- Hindari dinding kartu yang seragam. Foto lorong adalah satu-satunya bidang besar; grid dan blok info tetap tenang.
+Beranda adalah halaman **tentang toko**. Katalog lengkap ada di `/barang` dan `/kategori`, sedangkan beranda hanya memberi cuplikan.
+
+1. **Pembuka.** Pill status buka, tesis "Toko alat tulis & kantor *di Jl. Ratulangi, Makassar.*", satu kalimat (swalayan ATK, jam buka, bisa pesan dari HP), dua aksi ("Lihat katalog" merah dan "Rute ke toko" bergaris), serta tautan ulasan Google. Di ≥768px: teks di kiri, foto lorong kertas di kanan (min. 420px).
+2. **Di dalam toko.** Paragraf tentang format swalayan dan lorongnya, daftar fakta (jam buka, alamat, WhatsApp, telepon), dan merek di rak sebagai teks. Foto papan lorong dan etalase kalkulator ada di kiri pada layar lebar, dan di bawah teks pada HP.
+3. **Belanja dari HP.** Penjelasan singkat (tanpa akun, tanpa pembayaran online) dan empat langkah bernomor dalam kartu bergaya nota (garis putus-putus). Nomor dipakai karena langkahnya memang berurutan.
+4. **Lorong paling ramai.** Lima Papan Lorong dengan barang terbanyak, dalam satu rel (`AisleSigns compact`).
+5. **Baru masuk rak.** Lima barang terbaru dalam satu baris rak (`ProductRow`): di HP digeser, di layar lebar 5 kolom.
+
+Hindari dinding kartu yang seragam. Foto lorong di pembuka adalah satu-satunya bidang besar; bagian lain tetap tenang dan cuplikan katalog sengaja kecil.
 
 **Grid barang:** 2 kolom di HP, 3 kolom di ≥640px, 5 kolom di ≥1024px. Kartu berbagi garis 1px (`border-t border-l` pada grid, `border-b border-r` pada kartu), seperti sekat rak.
 
@@ -256,9 +262,10 @@ Status buka/tutup dihitung di perangkat dalam WITA, supaya tidak basi walau hala
 
 **Permukaan utama yang sudah ada:**
 - Header yang menempel dengan logo, cari, status buka, favorit, dan keranjang.
-- Bagian pembuka dengan foto toko.
-- Rel Papan Lorong.
-- Grid rak.
+- Beranda tentang toko: pembuka, "Di dalam toko", "Belanja dari HP" (langkah bergaya nota), cuplikan lorong & barang.
+- Rel Papan Lorong (penuh dan ringkas).
+- Grid rak dan baris rak.
+- Katalog `/barang` (semua barang, urutan, saring per kategori).
 - Halaman kategori (sub-kategori, filter merek, urutan, paginasi).
 - Halaman merek.
 - Hasil cari dan cari kosong (tombol "Tanya stok via WhatsApp").

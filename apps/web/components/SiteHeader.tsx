@@ -22,9 +22,17 @@ export function SiteHeader({ store }: { store: StoreInfo }) {
           <Link href="/tentang" className="hidden text-muted hover:text-ink lg:block">
             <StatusPill hours={store.openingHours} timezone={store.timezone} />
           </Link>
-          <Link href="/favorit" className="hidden h-11 items-center px-1 text-[15px] font-medium text-muted hover:text-ink md:flex">
-            Favorit
-          </Link>
+          <nav aria-label="Menu" className="hidden items-center gap-4 md:flex">
+            <Link href="/barang" className="flex h-11 items-center px-1 text-[15px] font-medium text-muted hover:text-ink">
+              Katalog
+            </Link>
+            <Link href="/tentang" className="hidden h-11 items-center px-1 text-[15px] font-medium text-muted hover:text-ink xl:flex">
+              Tentang toko
+            </Link>
+            <Link href="/favorit" className="flex h-11 items-center px-1 text-[15px] font-medium text-muted hover:text-ink">
+              Favorit
+            </Link>
+          </nav>
           <CartLink />
         </div>
       </div>

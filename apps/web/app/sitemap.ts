@@ -23,6 +23,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   return [
     { url: SITE_URL, changeFrequency: 'daily', priority: 1 },
     { url: `${SITE_URL}/kategori`, changeFrequency: 'weekly' },
+    { url: `${SITE_URL}/barang`, changeFrequency: 'daily' },
     { url: `${SITE_URL}/tentang`, changeFrequency: 'monthly' },
     ...allCats.map((c) => ({ url: `${SITE_URL}/kategori/${c.slug}`, changeFrequency: 'weekly' as const })),
     ...products.map((p) => ({ url: `${SITE_URL}/barang/${p.slug}`, lastModified: p.updatedAt })),
