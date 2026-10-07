@@ -1,0 +1,17 @@
+{
+  "name": "newagung",
+  "private": true,
+  "packageManager": "pnpm@10.28.0",
+  "scripts": {
+    "dev": "pnpm --parallel --filter @newagung/api --filter @newagung/web dev",
+    "dev:api": "pnpm --filter @newagung/api dev",
+    "dev:web": "pnpm --filter @newagung/web dev",
+    "build": "pnpm --filter @newagung/api build && pnpm --filter @newagung/web build",
+    "typecheck": "pnpm -r typecheck",
+    "test": "pnpm -r test",
+    "db:local": "bash supabase/local/reset.sh"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}
