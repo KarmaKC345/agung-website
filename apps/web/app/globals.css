@@ -1,0 +1,196 @@
+@import 'tailwindcss';
+
+/*
+ * Toko New Agung — token desain
+ * Warna diambil dari logo (biru segitiga #282C83, merah "AGUNG" #D11D20) dan dari
+ * suasana toko: lantai keramik putih, lampu neon, rak putih. Latar sengaja dingin
+ * (abu kebiruan seperti latar logo), bukan krem.
+ */
+:root {
+  --paper: #eef0f4;
+  --surface: #ffffff;
+  --sunken: #e4e7ee;
+  --ink: #15172b;
+  --ink-muted: #5b5f73;
+  --line: #d6d9e2;
+  --line-strong: #b9bdcb;
+  --brand: #282c83;
+  --brand-text: #282c83;
+  --brand-tint: #e3e5f6;
+  --accent: #d11d20;
+  --accent-ink: #ffffff;
+  --wa: #1d7f46;
+  --ok: #2b7342;
+  --warn: #9a5f00;
+  --danger: #b4161b;
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --paper: #0f1122;
+    --surface: #171a31;
+    --sunken: #0b0d1b;
+    --ink: #e8e9f2;
+    --ink-muted: #9da1b8;
+    --line: #2a2e4a;
+    --line-strong: #3d4266;
+    --brand: #3a3fa8;
+    --brand-text: #aeb2ff;
+    --brand-tint: #20244a;
+    --accent: #e8403f;
+    --wa: #2f9d5d;
+    --ok: #5cc27e;
+    --warn: #e0a640;
+    --danger: #ff6b6b;
+    color-scheme: dark;
+  }
+}
+
+@theme inline {
+  --color-paper: var(--paper);
+  --color-surface: var(--surface);
+  --color-sunken: var(--sunken);
+  --color-ink: var(--ink);
+  --color-muted: var(--ink-muted);
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+  --color-brand: var(--brand);
+  --color-brand-text: var(--brand-text);
+  --color-brand-tint: var(--brand-tint);
+  --color-accent: var(--accent);
+  --color-accent-ink: var(--accent-ink);
+  --color-wa: var(--wa);
+  --color-ok: var(--ok);
+  --color-warn: var(--warn);
+  --color-danger: var(--danger);
+
+  --font-sans: 'Archivo Variable', system-ui, sans-serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, monospace;
+
+  --radius-tag: 4px;
+}
+
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+    -webkit-tap-highlight-color: transparent;
+  }
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--font-sans);
+    font-stretch: 100%;
+    font-feature-settings: 'ss01';
+    text-rendering: optimizeLegibility;
+  }
+  :focus-visible {
+    outline: 2px solid var(--brand-text);
+    outline-offset: 2px;
+  }
+  ::selection {
+    background: var(--brand);
+    color: #fff;
+  }
+}
+
+@layer components {
+  /* Angka harga: sempit, tebal, sejajar — seperti label harga di rak */
+  .price {
+    font-stretch: 78%;
+    font-weight: 750;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.01em;
+    line-height: 1;
+  }
+  .price-rp {
+    font-size: 0.62em;
+    font-weight: 650;
+    margin-right: 0.08em;
+    vertical-align: 0.42em;
+  }
+
+  /* Huruf papan lorong: kapital, agak sempit */
+  .signage {
+    font-stretch: 88%;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.035em;
+    line-height: 1.12;
+  }
+
+  .condensed {
+    font-stretch: 82%;
+  }
+
+  /* Papan lorong gantung (ciri khas situs) */
+  .aisle-rail {
+    position: relative;
+    padding-top: 26px;
+  }
+  .aisle-rail::before {
+    content: '';
+    position: absolute;
+    inset: 0 0 auto 0;
+    height: 3px;
+    background: var(--brand);
+    border-radius: 2px;
+  }
+  .aisle-sign {
+    position: relative;
+    display: block;
+    background: var(--surface);
+    border: 1.5px solid var(--ink);
+    border-radius: 2px;
+    padding: 9px 12px 8px;
+    transform-origin: 50% -26px;
+    transition: transform 180ms ease-out, background-color 120ms;
+  }
+  .aisle-sign::before,
+  .aisle-sign::after {
+    content: '';
+    position: absolute;
+    top: -25px;
+    width: 1px;
+    height: 24px;
+    background: var(--ink-muted);
+  }
+  .aisle-sign::before {
+    left: 22%;
+  }
+  .aisle-sign::after {
+    right: 22%;
+  }
+  .aisle-sign:hover {
+    transform: rotate(-1.2deg);
+  }
+  .aisle-sign[aria-current='page'] {
+    background: var(--ink);
+    color: var(--surface);
+  }
+
+  /* Garis putus-putus nota */
+  .receipt-rule {
+    border: 0;
+    border-top: 1.5px dashed var(--line-strong);
+  }
+
+  .scrollbar-none {
+    scrollbar-width: none;
+  }
+  .scrollbar-none::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0ms !important;
+    animation-duration: 0ms !important;
+  }
+  .aisle-sign:hover {
+    transform: none;
+  }
+}

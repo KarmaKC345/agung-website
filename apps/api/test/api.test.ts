@@ -278,3 +278,12 @@ describe('panel', () => {
     expect(updated.body.openingHours.sun).toBeNull();
   });
 });
+
+describe('keamanan env', () => {
+  it('mematikan token pengembangan bila Supabase diatur atau di produksi', () => {
+    const base = { DATABASE_URL: 'x', DEV_AUTH_TOKEN: 'dev-owner' };
+    expect(loadEnv({ ...base, NODE_ENV: 'development' } as NodeJS.ProcessEnv).DEV_AUTH_TOKEN).toBe('dev-owner');
+    expect(loadEnv({ ...base, NODE_ENV: 'production' } as NodeJS.ProcessEnv).DEV_AUTH_TOKEN).toBe('');
+    expect(loadEnv({ ...base, SUPABASE_URL: 'https://abc.supabase.co' } as NodeJS.ProcessEnv).DEV_AUTH_TOKEN).toBe('');
+  });
+});

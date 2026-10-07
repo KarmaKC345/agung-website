@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| Status | Draft v3 — perencanaan |
+| Status | v4 — sudah dibangun (lihat README.md) |
 | Tanggal | 7 Oktober 2026 |
 | Stack | Next.js (frontend) · Express (API) · Supabase/Postgres (database, storage, auth) |
 | Sumber | Peta fitur "Toko New Agung" (Fase 1–4) + profil Google Maps toko |
@@ -234,18 +234,22 @@ sendiri.
 
 | Token | Nilai | Pemakaian |
 |---|---|---|
-| `--paper` | `#F7F5EF` | Latar (kertas, hangat, bukan putih murni) |
-| `--ink` | `#1B1C1E` | Teks utama |
-| `--ink-muted` | `#66676B` | Teks sekunder |
-| `--line` | `#DEDBD2` | Garis pemisah |
-| `--ruled` | `#C9D6E8` | Garis kertas bergaris (dekoratif tipis) |
-| `--brand` | `#282C83` | Biru logo: header, papan kategori, link, fokus |
-| `--accent` | `#D11D20` | Merah logo: tombol utama, angka keranjang, label promo |
-| `--wa` | `#1F8A4C` | Khusus tombol WhatsApp |
-| `--ok` / `--warn` | `#2F6B3A` / `#A86A00` | Status "Ada" / "Sisa sedikit" |
+| `--paper` | `#EEF0F4` | Latar halaman: abu dingin seperti latar logo & lantai keramik toko |
+| `--surface` | `#FFFFFF` | Kartu barang, header, formulir (rak putih) |
+| `--ink` | `#15172B` | Teks utama (hitam kebiruan) |
+| `--ink-muted` | `#5B5F73` | Teks sekunder |
+| `--line` | `#D6D9E2` | Garis pemisah |
+| `--brand` | `#282C83` | Biru logo: rel papan lorong, link, fokus |
+| `--accent` | `#D11D20` | Merah logo: tombol utama, angka keranjang |
+| `--wa` | `#1D7F46` | Khusus tombol WhatsApp |
+| `--ok` / `--warn` | `#2B7342` / `#9A5F00` | Status "Ada" / "Sisa sedikit" |
 
-Mode gelap: `--paper #131416`, `--ink #ECEBE6`, `--line #2B2C2F`,
-`--brand #9AA0F2`, `--accent #EF5350`.
+Mode gelap: `--paper #0F1122`, `--surface #171A31`, `--ink #E8E9F2`, `--line #2A2E4A`,
+`--brand-text #AEB2FF`, `--accent #E8403F`. Logo diberi plat abu terang agar tetap kontras.
+
+> Revisi saat pembangunan: draf awal memakai latar krem hangat (`#F7F5EF`). Itu diganti
+> karena krem adalah pola paling umum di desain buatan AI, dan toko aslinya justru
+> bernuansa dingin: lantai keramik putih, lampu neon, rak putih, latar logo `#E3E4E6`.
 
 Warna `--brand` dan `--accent` diambil langsung dari logo. Pemakaiannya dijaga
 **hemat**: biru untuk struktur (header, papan kategori), merah hanya untuk satu aksi
@@ -300,7 +304,7 @@ scroll-reveal, parallax, atau teks yang muncul huruf per huruf. Hormati
 /merek/[slug]          Barang per merek (Pentel, Kenko, Joyko, …)
 /cari?q=               Hasil pencarian
 /barang/[slug]         Detail barang + varian
-/pesanan               Daftar pesanan + kirim ke WA
+/keranjang             Keranjang + kirim ke WA (istilah "keranjang" mengikuti keranjang merah di toko)
 /favorit               Favorit & riwayat (Fase 4)
 /tentang               Info toko, jam, peta, kontak
 /panel/...             Panel pemilik (Fase 3)

@@ -20,8 +20,9 @@ export type Env = z.infer<typeof schema>;
 
 export function loadEnv(source: NodeJS.ProcessEnv = process.env): Env {
   const env = schema.parse(source);
-  if (env.NODE_ENV === 'production') {
-    // token login pengembangan tidak boleh aktif di produksi
+  if (env.NODE_ENV === 'production' || env.SUPABASE_URL) {
+    // Token login pengembangan hanya untuk mode lokal tanpa Supabase. Begitu Supabase
+    // diatur (pasti di server sungguhan) atau NODE_ENV=production, token ini diabaikan.
     env.DEV_AUTH_TOKEN = '';
   }
   return env;
