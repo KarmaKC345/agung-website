@@ -20,11 +20,12 @@
 | Jenis | Toko alat tulis (ATK) & perlengkapan kantor |
 | Alamat | Jl. DR. Ratulangi No.52, Kunjung Mae, Kec. Mariso, Kota Makassar, Sulawesi Selatan 90114 (area Mamajang) |
 | Telepon | (0411) 850555 |
-| WhatsApp pesanan | **[KONFIRMASI]** — nomor 0859-2359-8052 di foto adalah spanduk *Printech* (printing/copy). Perlu dipastikan apakah Printech bagian dari toko dan apakah nomor itu juga untuk pesanan ATK. |
+| WhatsApp pesanan | **0823-4848-5101** → `https://wa.me/6282348485101`. (Nomor 0859-2359-8052 di spanduk depan milik *Printech*, **bukan** nomor pesanan toko.) |
 | Jam buka | Tutup pukul 21.30 (hari yang tercatat). Jam buka & hari lain **[KONFIRMASI]** |
 | Zona waktu | WITA (`Asia/Makassar`) |
 | Reputasi Google | 4,5 ★ dari ±10.466 ulasan |
-| Merek yang terlihat di rak | Pentel, Kenko, Casio (dan lainnya) |
+| Merek yang terlihat di rak | Casio, Pentel, Kenko, Artline, Snowman, Mirage, e-Print (tinta), dan lainnya |
+| Format toko | Swalayan ATK: pelanggan mengambil sendiri dengan keranjang/troli, lorong diberi papan nama gantung per jenis barang, barang kecil (pulpen, pensil mekanik, isi staples) dilayani di etalase kaca. Ada aturan di rak: *"membuka pembungkus/segel berarti membeli"*. |
 
 Angka 10 ribu ulasan menunjukkan toko ini sudah sangat dikenal di Makassar. Website
 tidak perlu "meyakinkan" orang dengan bahasa iklan. Cukup buat pelanggan lama lebih
@@ -103,7 +104,7 @@ ekspornya bisa langsung dipakai.
 #### 5.3 Kategori Barang
 | Sub fitur | Kebutuhan |
 |---|---|
-| Daftar kategori | Maksimal 2 tingkat. Usulan awal: Alat Tulis (pulpen, pensil, spidol, penghapus) · Buku & Kertas · Perlengkapan Kantor (map, ordner, stapler, lakban) · Perlengkapan Sekolah · Kalkulator & Elektronik · Tinta & Toner · Seni & Kerajinan. **[KONFIRMASI dengan pemilik]** |
+| Daftar kategori | Maksimal 2 tingkat. Kategori **mengikuti papan gantung lorong di toko**, supaya pelanggan yang biasa datang langsung mengenalinya. Dari foto: Buku · Album · Ekspedisi · Binder · Fancy · Map Seminar · Crayon · Tembak Harga (label harga) · Stempel · Numerator · Pensil Mekanik · Pentel · Hekter · Spidol · Stabilo · Cat Poster · Lem · Parcel · Kotak Pensil · Kertas · Kalkulator · Tinta. Pengelompokan ke 2 tingkat dan papan lorong yang belum terfoto **[KONFIRMASI dengan pemilik]**. |
 | Pilih kategori | `/kategori/[slug]` dengan filter **merek**, rentang harga, dan urutan (termurah, terbaru, A–Z). |
 | Jumlah barang | Angka jumlah barang di samping nama kategori. |
 
@@ -114,7 +115,7 @@ ekspornya bisa langsung dipakai.
 |---|---|
 | Tombol pesan | Di kartu & detail barang: "Tambah ke daftar" (setelah pilih varian & satuan). |
 | Daftar pesanan | Keranjang ringan tanpa login (`localStorage`): ubah jumlah/satuan, hapus, total perkiraan. |
-| Pesan terisi otomatis | Membuka `wa.me/<nomor>?text=...` dengan format di bawah. |
+| Pesan terisi otomatis | Membuka `https://wa.me/6282348485101?text=...` dengan format di bawah. Nomor disimpan di `store_settings`, tidak di-hardcode. |
 | Kode pesanan | Sebelum WA dibuka, pesanan disimpan ke database dengan kode `NA-261007-014`, supaya pegawai bisa menyiapkan barang dari panel. |
 | Ambil / antar | Pilihan "Siapkan, saya ambil di toko" atau "Minta diantar (ongkir dikonfirmasi)". |
 
@@ -142,7 +143,7 @@ akhir dan stok dikonfirmasi toko.
 |---|---|
 | Alamat & lokasi | Alamat (lihat §1) + peta (embed, dimuat saat discroll) + tombol "Rute" ke Google Maps. |
 | Jam buka | Tabel jam per hari + status langsung "Buka · tutup 21.30" dihitung dalam WITA. Pemilik bisa atur hari libur (Lebaran, Natal, dll). |
-| Kontak toko | Telepon (0411) 850555 (tombol `tel:`), WhatsApp **[KONFIRMASI]**, media sosial jika ada. |
+| Kontak toko | Telepon (0411) 850555 (tombol `tel:`), WhatsApp 0823-4848-5101, media sosial jika ada. |
 | Ulasan Google | Tampilkan "4,5 ★ · 10.000+ ulasan di Google" dengan link ke profil Google. Tidak menyalin atau menulis ulasan palsu di website. |
 | Data terstruktur | JSON-LD `Store`/`LocalBusiness` (alamat, telepon, jam, geo) + `Product`. |
 
@@ -206,9 +207,17 @@ Kebutuhan Anda", foto stok orang tersenyum. Semua itu **tidak dipakai**.
 
 ### 6.1 Konsep: "Rak ATK & Label Harga"
 
-Bahasa visual diambil dari benda yang memang ada di toko ATK: **label harga di rak,
-kertas bergaris, nota, dan rak pajangan yang penuh warna**. Hasilnya terasa seperti toko
-itu sendiri.
+Bahasa visual diambil dari benda yang memang ada di toko: **papan gantung lorong,
+label harga di rak, nota, dan rak yang penuh warna**. Hasilnya terasa seperti toko itu
+sendiri.
+
+- **Papan lorong jadi navigasi.** Di toko, tiap lorong punya papan putih bergantung
+  bertuliskan huruf kapital hitam ("SPIDOL/STABILO · CAT POSTER/LEM"). Di website,
+  kategori ditampilkan dengan gaya yang sama: kotak putih, garis tipis, teks kapital
+  rapat, dua baris. Pelanggan langsung merasa sedang "berjalan di lorong" toko yang
+  mereka kenal.
+- **Keranjang, bukan "cart".** Toko ini swalayan berkeranjang merah, jadi istilah dan
+  ikonnya "Keranjang".
 
 - **Warnanya datang dari barang, bukan dari UI.** Toko ATK sudah penuh warna (pulpen,
   spidol, map). UI dibuat tenang (kertas, tinta, satu warna aksen) supaya foto barang
@@ -218,8 +227,10 @@ itu sendiri.
 - **Grid rapat seperti rak**, bukan kartu besar berjarak lebar. Di HP: 2 kolom; desktop: 5–6.
 - **Garis, bukan bayangan.** Pemisah 1 px, sudut kecil (4–6 px). Latar halaman daftar
   pesanan memakai pola garis tipis kertas bergaris.
-- **Foto asli toko**: tampak depan Jl. Ratulangi, rak pulpen, etalase kalkulator. Satu
-  sesi foto dengan HP yang bagus sudah cukup.
+- **Foto asli toko**: tampak depan Jl. Ratulangi, lorong kertas warna, etalase
+  kalkulator Casio, meja layanan pulpen. Foto lorong yang penuh warna sudah menjelaskan
+  toko ini lebih baik dari kalimat apa pun. Pakai sebagai gambar utama beranda, dengan
+  izin dan tanpa wajah pelanggan yang jelas terlihat.
 - **Bahasa sehari-hari**: "Cari pulpen, kertas, map…", "Ada", "Stok habis",
   "Pesan lewat WA".
 
@@ -469,10 +480,9 @@ Jika memungkinkan, Fase 1–2 sebaiknya live **sebelum Juni**, menjelang tahun a
 
 ## 11. Yang perlu dikonfirmasi ke pemilik toko
 
-1. Nomor WhatsApp untuk pesanan ATK (apakah 0859-2359-8052 milik Printech atau toko).
-2. Apakah Printech (printing/copy) bagian dari toko dan ingin tampil di website.
-3. Jam buka lengkap per hari dan hari libur.
-4. Data barang: ekspor dari program kasir (Excel/CSV) atau daftar harga.
-5. Struktur kategori yang biasa dipakai di toko.
-6. File logo (untuk warna aksen) dan izin sesi foto toko.
-7. Domain yang diinginkan (mis. `newagung.co.id` / `tokonewagung.com`).
+1. Apakah Printech (printing/copy) bagian dari toko dan ingin tampil di website.
+2. Jam buka lengkap per hari dan hari libur.
+3. Data barang: ekspor dari program kasir (Excel/CSV) atau daftar harga.
+4. Daftar lengkap papan lorong (untuk kategori) dan pengelompokannya.
+5. File logo (untuk warna aksen) dan izin memakai foto toko.
+6. Domain yang diinginkan (mis. `newagung.co.id` / `tokonewagung.com`).
