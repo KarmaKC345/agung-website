@@ -170,15 +170,12 @@ sehingga halaman terkait langsung diperbarui.
 
 ## Catatan desain
 
-Fondasi desain lengkap (token, tipografi, kontras terukur, kontrak komponen) ada di
-[`DESIGN.md`](DESIGN.md). Ringkasnya:
+Fondasi desain lengkap (token, tipografi, kontras terukur, tata letak, kontrak komponen) ada di
+[`DESIGN.md`](DESIGN.md) v2. Ringkasnya:
 
-- Warna dari logo: biru `#282C83`, merah `#D11D20`. Latar abu dingin seperti lantai keramik
-  dan latar logo, bukan krem.
-- Ciri khas: **papan lorong gantung**. Kategori ditampilkan seperti papan putih bertali di
-  lorong toko (`.aisle-sign` di `apps/web/app/globals.css`).
-- Harga seperti label rak: Archivo sempit tebal dengan angka tabular.
-- Logo di `apps/web/components/Logo.tsx` digambar ulang dari foto logo. Ganti dengan file
-  vektor asli bila ada.
-- Foto toko di `apps/web/public/foto/` dipakai dengan izin pemilik, dan dipotong supaya
-  wajah pelanggan tidak terlihat jelas.
+- Satu aksen: biru logo `#282C83` untuk semua aksi utama. Merah logo hanya untuk angka keranjang
+  dan konfirmasi hapus, hijau hanya untuk WhatsApp. Latar abu dingin, mode gelap otomatis.
+- Font Plus Jakarta Sans (Tokotype, Indonesia, OFL) dan ikon Phosphor.
+- Ciri khas: **papan lorong gantung** sebagai navigasi kategori (`.aisle-sign` di `apps/web/app/globals.css`).
+- Logo di `apps/web/components/Logo.tsx` digambar ulang dari foto logo. Ganti dengan file vektor asli bila ada.
+- Foto toko di `apps/web/public/foto/` dipakai dengan izin pemilik, dipotong tanpa wajah pelanggan yang jelas.

@@ -40,7 +40,7 @@ describe('opening hours (WITA)', () => {
     expect(hoursToday(sunClosed, 'Asia/Makassar', new Date('2026-10-04T03:00:00Z'))).toBeNull();
   });
   it('summarizes uniform hours', () => {
-    expect(summarizeHours(hours)).toBe('Setiap hari, 05.00–22.00');
+    expect(summarizeHours(hours)).toBe('Setiap hari, 05.00-22.00');
   });
 });
 
@@ -61,8 +61,8 @@ describe('whatsapp', () => {
       [
         'Halo Toko New Agung, saya mau pesan:',
         '',
-        '1. Kertas HVS SiDU A4 70 gsm (A4) — 2 rim × Rp52.000',
-        '2. Buku Tulis SiDU (58 lembar) — 10 pcs × Rp5.500',
+        '1. Kertas HVS SiDU A4 70 gsm (A4): 2 rim × Rp52.000',
+        '2. Buku Tulis SiDU (58 lembar): 10 pcs × Rp5.500',
         '',
         'Perkiraan total: Rp159.000',
         'Kode pesanan: NA-261007-014',

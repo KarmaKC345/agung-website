@@ -31,13 +31,13 @@ function Favorites() {
   if (!items) return <div className="h-40" aria-busy />;
   if (!items.length) {
     return (
-      <p className="rounded-tag border border-dashed border-line-strong bg-surface p-8 text-center text-muted">
+      <p className="card rounded-[var(--radius-media)] p-10 text-center text-muted">
         Belum ada favorit. Tekan ikon penanda di foto barang untuk menyimpannya di sini.
       </p>
     );
   }
   return (
-    <div className="grid grid-cols-2 border-t border-l border-line sm:grid-cols-3 lg:grid-cols-5">
+    <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-5">
       {items.map((p) => (
         <ProductCard key={p.id} product={p} />
       ))}
@@ -94,7 +94,7 @@ function OrderCard({ order }: { order: PastOrder }) {
   }
 
   return (
-    <li className="rounded-tag border border-line bg-surface p-4">
+    <li className="card p-5">
       <div className="flex flex-wrap items-baseline justify-between gap-2">
         <span className="font-mono text-[15px] font-medium">{order.code}</span>
         <span className="text-[13px] text-muted">{dateFmt.format(new Date(order.createdAt))}</span>
@@ -121,14 +121,14 @@ function OrderCard({ order }: { order: PastOrder }) {
           type="button"
           onClick={reorder}
           disabled={busy}
-          className="h-11 rounded-tag bg-ink px-4 text-[14px] font-semibold text-surface disabled:opacity-60"
+          className="btn btn-primary"
         >
           {busy ? 'Memeriksa harga…' : 'Pesan lagi'}
         </button>
       </div>
       {error && <p className="mt-2 text-[14px] text-danger">{error}</p>}
       {note && (
-        <div role="status" className="mt-3 rounded-tag bg-sunken p-3 text-[14px]">
+        <div role="status" className="mt-3 rounded-[10px] bg-sunken p-3.5 text-[14px]">
           <p className="font-semibold">{note.added} barang masuk keranjang dengan harga terbaru.</p>
           {note.changed.length > 0 && (
             <ul className="mt-1 space-y-0.5">
@@ -153,7 +153,7 @@ function History() {
   const history = useShop((s) => s.history);
   if (!history.length) {
     return (
-      <p className="rounded-tag border border-dashed border-line-strong bg-surface p-8 text-center text-muted">
+      <p className="card rounded-[var(--radius-media)] p-10 text-center text-muted">
         Pesanan yang dikirim dari perangkat ini akan muncul di sini, supaya bisa dipesan ulang dengan sekali tekan.
       </p>
     );
@@ -179,7 +179,7 @@ export function SavedView() {
       role="tab"
       aria-selected={tab === id}
       onClick={() => router.replace(id === 'favorit' ? '/favorit' : '/favorit?tab=riwayat', { scroll: false })}
-      className="h-11 border-b-2 border-transparent px-1 text-[16px] font-semibold text-muted aria-selected:border-ink aria-selected:text-ink"
+      className="h-11 border-b-2 border-transparent px-1 text-[16px] font-semibold text-muted hover:text-ink aria-selected:border-brand-text aria-selected:text-ink"
     >
       {label}
     </button>

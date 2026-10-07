@@ -75,7 +75,7 @@ export function summarizeHours(hours: WeeklyHours): string | null {
   const values = DAY_ORDER.map((d) => hours[d]);
   const first = values[0];
   if (first && values.every((v) => v && v.open === first.open && v.close === first.close)) {
-    return `Setiap hari, ${formatTime(first.open)}–${formatTime(first.close)}`;
+    return `Setiap hari, ${formatTime(first.open)}-${formatTime(first.close)}`;
   }
   return null;
 }

@@ -1,5 +1,6 @@
 'use client';
 
+import { Check, Plus } from '@phosphor-icons/react';
 import { useState } from 'react';
 import type { ProductSummary } from '@newagung/shared';
 import { useShop } from '@/lib/cart';
@@ -30,11 +31,9 @@ export function QuickAdd({ product }: { product: ProductSummary }) {
         setTimeout(() => setAdded(false), 1400);
       }}
       aria-label={`Tambah ${product.name} ke keranjang`}
-      className={`tap grid size-9 shrink-0 place-items-center rounded-tag text-[22px] leading-none font-semibold transition-colors ${
-        added ? 'bg-ok text-white' : 'bg-ink text-surface hover:bg-accent'
-      }`}
+      className={`tap grid size-10 shrink-0 place-items-center rounded-[10px] text-white active:scale-95 ${added ? 'bg-ok' : 'bg-brand hover:bg-brand-hover'}`}
     >
-      <span aria-hidden>{added ? '✓' : '+'}</span>
+      {added ? <Check size={18} weight="bold" aria-hidden /> : <Plus size={18} weight="bold" aria-hidden />}
       <span className="sr-only" role="status">
         {added ? 'Ditambahkan' : ''}
       </span>

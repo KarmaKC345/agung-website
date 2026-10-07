@@ -1,3 +1,4 @@
+import { Basket, Clock, MagnifyingGlass, MapPin, Star, Storefront, WhatsappLogo } from '@phosphor-icons/react/ssr';
 import Image from 'next/image';
 import Link from 'next/link';
 import { formatPhone, summarizeHours, waLink } from '@newagung/shared';
@@ -9,12 +10,12 @@ import kalkulator from '@/public/foto/etalase-kalkulator.webp';
 import lorong from '@/public/foto/lorong-kertas.webp';
 import papan from '@/public/foto/papan-lorong.webp';
 
-/** Cara belanja dari HP — urutan nyata, jadi memakai nomor */
+/** Cara belanja dari HP: urutan nyata dari website sampai barang diterima */
 const STEPS = [
-  { title: 'Cari barang atau pilih lorong', body: 'Lihat harga, warna, dan satuan: pcs, lusin, rim, atau box.' },
-  { title: 'Masukkan keranjang', body: 'Campur sebanyak yang perlu, dari pulpen sampai kertas per box.' },
-  { title: 'Kirim lewat WhatsApp', body: 'Daftar belanja terkirim rapi ke toko, lengkap dengan kode pesanan.' },
-  { title: 'Ambil di toko atau minta diantar', body: 'Barang disiapkan dulu, jadi tidak perlu mencari di rak. Ongkir dibicarakan di WhatsApp.' },
+  { icon: MagnifyingGlass, title: 'Cari barang', body: 'Lihat harga, warna, dan satuan: pcs, lusin, rim, atau box.' },
+  { icon: Basket, title: 'Masukkan keranjang', body: 'Campur sebanyak yang perlu, dari pulpen sampai kertas per box.' },
+  { icon: WhatsappLogo, title: 'Kirim lewat WhatsApp', body: 'Daftar belanja terkirim rapi ke toko, lengkap dengan kode pesanan.' },
+  { icon: Storefront, title: 'Ambil atau diantar', body: 'Barang disiapkan dulu. Ongkir antar dibicarakan di WhatsApp.' },
 ];
 
 export default async function HomePage() {
@@ -25,196 +26,203 @@ export default async function HomePage() {
     getProducts({ sort: 'terbaru', pageSize: 5 }),
   ]);
   const hours = summarizeHours(store.openingHours);
+  const addr = store.address.split(',').map((s) => s.trim());
   const topBrands = brands
     .filter((b) => (b.productCount ?? 0) > 0)
     .sort((a, b) => (b.productCount ?? 0) - (a.productCount ?? 0))
     .slice(0, 10);
 
+  const facts = [
+    {
+      icon: Clock,
+      title: hours ? hours.split(',')[0]! : 'Jam buka',
+      detail: hours ? `${hours.split(',')[1]?.trim()} WITA` : 'Lihat jadwal lengkap',
+      href: '/tentang',
+      external: false,
+    },
+    { icon: Star, title: '4,5 di Google', detail: '10.000+ ulasan', href: store.mapsUrl, external: true },
+    { icon: MapPin, title: addr[0] ?? store.address, detail: addr.slice(2, 4).join(', ') || 'Makassar', href: store.mapsUrl, external: true },
+    { icon: WhatsappLogo, title: 'Pesan lewat WhatsApp', detail: formatPhone(store.whatsapp), href: waLink(store.whatsapp), external: true },
+  ];
+
   return (
     <>
-      {/* Pembuka: tentang toko, dengan foto lorong asli */}
-      <section className="border-b border-line bg-surface">
-        <div className="mx-auto grid max-w-6xl md:grid-cols-[1fr_1.1fr] md:gap-10 md:px-4 md:py-10">
-          <div className="relative aspect-[4/3] md:order-2 md:aspect-auto md:min-h-[420px]">
+      {/* 1. Pembuka: apa & di mana, dengan foto lorong asli */}
+      <section className="mx-auto grid max-w-6xl items-center gap-6 px-4 pt-6 pb-10 md:grid-cols-[1.15fr_1fr] md:gap-12 md:pt-12 md:pb-14">
+        <div className="md:order-2">
+          <div className="rise relative aspect-[4/3] overflow-hidden rounded-[var(--radius-media)] md:aspect-[5/6] lg:aspect-[4/4.3]" style={{ ['--i' as string]: 2 }}>
             <Image
               src={lorong}
               alt="Lorong kertas warna dan map di dalam Toko New Agung"
               fill
               priority
               placeholder="blur"
-              sizes="(min-width: 768px) 560px, 100vw"
-              className="object-cover md:rounded-tag"
+              sizes="(min-width: 768px) 540px, 100vw"
+              className="object-cover"
             />
           </div>
-          <div className="flex flex-col justify-center px-4 py-6 md:px-0 md:py-0">
-            <StatusPill hours={store.openingHours} timezone={store.timezone} className="text-muted" />
-            <h1 className="condensed mt-3 text-[36px] leading-[0.98] font-[800] tracking-[-0.015em] sm:text-[48px]">
-              Toko alat tulis & kantor
-              <br />
-              <span className="text-brand-text">di Jl. Ratulangi, Makassar.</span>
-            </h1>
-            <p className="mt-4 max-w-md text-[16px] leading-relaxed text-muted">
-              Swalayan ATK yang buka {hours ? hours.toLowerCase() : 'setiap hari'}. Belanja langsung di toko, atau pilih barang dari HP lalu
-              pesan lewat WhatsApp.
-            </p>
-            <div className="mt-6 flex flex-wrap gap-2">
-              <Link href="/barang" className="inline-flex h-12 items-center rounded-tag bg-accent px-5 text-[16px] font-semibold text-accent-ink hover:brightness-110">
-                Lihat katalog
-              </Link>
-              <a
-                href={store.mapsUrl}
-                target="_blank"
-                rel="noopener"
-                className="inline-flex h-12 items-center rounded-tag border border-line-strong bg-surface px-5 text-[16px] font-semibold hover:border-ink"
-              >
-                Rute ke toko
-              </a>
-            </div>
-            <p className="mt-4 text-[14px] text-muted">
-              <a href={store.mapsUrl} target="_blank" rel="noopener" className="tap underline underline-offset-4">
-                4,5 dari 10.000+ ulasan di Google
-              </a>
-            </p>
+        </div>
+        <div className="md:order-1">
+          <div className="rise" style={{ ['--i' as string]: 0 }}>
+            <StatusPill hours={store.openingHours} timezone={store.timezone} className="rounded-full bg-surface px-3 py-1.5 text-muted ring-1 ring-line" />
+          </div>
+          <h1
+            className="rise mt-5 text-[36px] leading-[1.06] font-extrabold tracking-[-0.035em] sm:text-[44px] lg:text-[50px]"
+            style={{ ['--i' as string]: 1 }}
+          >
+            <span className="block text-balance">Toko alat tulis & kantor</span>
+            <span className="block text-brand-text">di Makassar.</span>
+          </h1>
+          <p className="rise mt-5 max-w-[44ch] text-[17px] leading-relaxed text-muted" style={{ ['--i' as string]: 2 }}>
+            Swalayan ATK di Jl. DR. Ratulangi No.52, buka{' '}
+            {hours ? (
+              <>
+                {hours.split(',')[0]!.toLowerCase()} <span className="whitespace-nowrap">{hours.split(',')[1]?.trim()}</span>
+              </>
+            ) : (
+              'setiap hari'
+            )}
+            . Belanja di toko atau pesan dari HP.
+          </p>
+          <div className="rise mt-8 flex flex-wrap gap-3" style={{ ['--i' as string]: 3 }}>
+            <Link href="/barang" className="btn btn-primary btn-lg">
+              Lihat katalog
+            </Link>
+            <a href={store.mapsUrl} target="_blank" rel="noopener" className="btn btn-secondary btn-lg">
+              <MapPin size={20} weight="bold" aria-hidden />
+              Rute ke toko
+            </a>
           </div>
         </div>
       </section>
 
+      {/* 2. Fakta toko */}
+      <section aria-label="Info singkat toko" className="border-y border-line bg-surface">
+        <ul className="mx-auto grid max-w-6xl grid-cols-1 px-4 sm:grid-cols-2 lg:grid-cols-4 lg:divide-x lg:divide-line">
+          {facts.map(({ icon: Icon, title, detail, href, external }) => (
+            <li key={title}>
+              <a
+                href={href}
+                {...(external ? { target: '_blank', rel: 'noopener' } : {})}
+                className="group flex items-center gap-3.5 py-4 sm:py-5 lg:px-6 lg:first:pl-0"
+              >
+                <span className="grid size-11 shrink-0 place-items-center rounded-full bg-brand-tint text-brand-text">
+                  <Icon size={22} weight="bold" aria-hidden />
+                </span>
+                <span className="min-w-0">
+                  <span className="block truncate text-[15px] font-semibold group-hover:underline">{title}</span>
+                  <span className="block truncate text-[14px] text-muted">{detail}</span>
+                </span>
+              </a>
+            </li>
+          ))}
+        </ul>
+      </section>
+
       <div className="mx-auto max-w-6xl px-4">
-        {/* Tentang toko */}
-        <section className="mt-12 grid gap-8 md:grid-cols-[1.1fr_1fr] md:gap-10" aria-labelledby="dalam-toko">
-          <div className="order-2 grid grid-cols-2 gap-3 self-start md:order-1">
-            <div className="relative col-span-2 aspect-[5/2] overflow-hidden rounded-tag">
-              <Image
-                src={papan}
-                alt="Papan gantung lorong Spidol/Stabilo dan Cat Poster/Lem di Toko New Agung"
-                fill
-                placeholder="blur"
-                sizes="(min-width: 768px) 600px, 100vw"
-                className="object-cover"
-              />
+        {/* 3. Di dalam toko: bento 4 sel */}
+        <section aria-labelledby="dalam-toko" className="reveal mt-16 grid gap-3 md:mt-20 lg:grid-cols-3 lg:gap-4">
+          <div className="card flex flex-col justify-between gap-6 rounded-[var(--radius-media)] p-6 lg:p-8">
+            <div>
+              <h2 id="dalam-toko" className="text-[28px] leading-tight font-bold tracking-[-0.025em]">
+                Di dalam toko
+              </h2>
+              <p className="mt-3 text-[16px] leading-relaxed text-muted">
+                Ambil keranjang, lalu telusuri lorong sesuai papan gantungnya. Pulpen dan barang kecil lain dilayani di etalase kaca.
+              </p>
             </div>
-            <div className="relative col-span-2 aspect-[16/9] overflow-hidden rounded-tag sm:col-span-1 sm:aspect-[4/3]">
-              <Image
-                src={kalkulator}
-                alt="Etalase kalkulator Casio dan lorong tinta"
-                fill
-                placeholder="blur"
-                sizes="(min-width: 768px) 300px, 100vw"
-                className="object-cover"
-              />
-            </div>
-            <p className="col-span-2 text-[14px] leading-relaxed text-muted sm:col-span-1 sm:self-end">
-              Setiap lorong punya papan gantung sesuai jenis barangnya. Website ini memakai pembagian yang sama.
-            </p>
-          </div>
-
-          <div className="order-1 md:order-2">
-            <h2 id="dalam-toko" className="text-[24px] font-bold">
-              Di dalam toko
-            </h2>
-            <p className="mt-3 max-w-prose text-[16px] leading-relaxed">
-              New Agung adalah swalayan alat tulis dan perlengkapan kantor. Ambil keranjang, lalu telusuri lorongnya: pulpen dan pensil, kertas,
-              buku dan album, map seminar, stempel, cat poster, sampai kalkulator dan tinta printer. Pulpen dan barang kecil lainnya dilayani di
-              etalase kaca.
-            </p>
-
-            <dl className="mt-6 divide-y divide-line border-y border-line text-[15px]">
-              {hours && (
-                <div className="flex gap-4 py-2.5">
-                  <dt className="signage w-24 shrink-0 pt-0.5 text-[12px] text-muted">Jam buka</dt>
-                  <dd>{hours} WITA</dd>
-                </div>
-              )}
-              <div className="flex gap-4 py-2.5">
-                <dt className="signage w-24 shrink-0 pt-0.5 text-[12px] text-muted">Alamat</dt>
-                <dd>{store.address}</dd>
-              </div>
-              <div className="flex gap-4 py-2.5">
-                <dt className="signage w-24 shrink-0 pt-0.5 text-[12px] text-muted">WhatsApp</dt>
-                <dd>
-                  <a href={waLink(store.whatsapp)} target="_blank" rel="noopener" className="tap font-semibold text-wa-text underline underline-offset-4">
-                    {formatPhone(store.whatsapp)}
-                  </a>
-                </dd>
-              </div>
-              <div className="flex gap-4 py-2.5">
-                <dt className="signage w-24 shrink-0 pt-0.5 text-[12px] text-muted">Telepon</dt>
-                <dd>
-                  <a href={`tel:${store.phone}`} className="tap underline underline-offset-4">
-                    {formatPhone(store.phone)}
-                  </a>
-                </dd>
-              </div>
-            </dl>
-
-            {topBrands.length > 0 && (
-              <div className="mt-6">
-                <p className="signage text-[12px] text-muted">Merek di rak</p>
-                <ul className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-[15px]">
-                  {topBrands.map((b) => (
-                    <li key={b.id}>
-                      <Link href={`/merek/${b.slug}`} className="tap font-medium hover:underline">
-                        {b.name}
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
-
-            <Link href="/tentang" className="tap mt-6 inline-block text-[15px] font-semibold text-brand-text hover:underline">
-              Peta & jam buka lengkap
+            <Link href="/tentang" className="btn btn-secondary self-start">
+              Tentang toko
             </Link>
+          </div>
+          <div className="relative aspect-[16/10] overflow-hidden rounded-[var(--radius-media)] lg:col-span-2 lg:aspect-[2/1]">
+            <Image
+              src={papan}
+              alt="Papan gantung lorong Spidol/Stabilo dan Cat Poster/Lem di Toko New Agung"
+              fill
+              placeholder="blur"
+              sizes="(min-width: 1024px) 760px, 100vw"
+              className="object-cover"
+            />
+          </div>
+          <div className="relative aspect-[16/10] overflow-hidden rounded-[var(--radius-media)] lg:col-span-2 lg:aspect-[2/1]">
+            <Image
+              src={kalkulator}
+              alt="Etalase kalkulator Casio dan lorong tinta"
+              fill
+              placeholder="blur"
+              sizes="(min-width: 1024px) 760px, 100vw"
+              className="object-cover"
+            />
+          </div>
+          <div className="flex flex-col rounded-[var(--radius-media)] bg-brand-tint p-6 lg:p-8">
+            <h3 className="text-[16px] font-bold">Merek di rak</h3>
+            {topBrands.length > 0 ? (
+              <ul className="mt-3 flex flex-wrap gap-2">
+                {topBrands.map((b) => (
+                  <li key={b.id}>
+                    <Link href={`/merek/${b.slug}`} className="tap chip bg-surface hover:bg-surface hover:text-brand-text">
+                      {b.name}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="mt-2 text-[14px] text-muted">Daftar merek muncul setelah barang dimasukkan.</p>
+            )}
           </div>
         </section>
 
-        {/* Cara belanja dari HP, bergaya nota */}
-        <section className="mt-14 grid gap-6 md:grid-cols-[1fr_1.2fr] md:items-center md:gap-10" aria-labelledby="belanja">
-          <div>
-            <h2 id="belanja" className="text-[24px] font-bold">
-              Belanja dari HP
-            </h2>
-            <p className="mt-3 max-w-md text-[16px] leading-relaxed text-muted">
-              Tidak perlu daftar akun dan tidak ada pembayaran online. Pilih barangnya di sini; harga akhir dan cara bayar dikonfirmasi langsung
-              oleh toko lewat WhatsApp.
-            </p>
-            <Link href="/kategori" className="mt-5 inline-flex h-11 items-center rounded-tag bg-ink px-4 text-[15px] font-semibold text-surface">
-              Mulai dari lorong
-            </Link>
-          </div>
-          <ol className="rounded-tag border border-line bg-surface px-5 py-2">
-            {STEPS.map((s, i) => (
-              <li key={s.title} className="flex gap-4 border-b-[1.5px] border-dashed border-line-strong py-4 last:border-0">
-                <span className="font-mono text-[15px] font-medium text-brand-text tabular-nums">{i + 1}</span>
-                <span>
-                  <span className="block font-semibold">{s.title}</span>
-                  <span className="mt-0.5 block text-[14px] leading-relaxed text-muted">{s.body}</span>
+        {/* 4. Belanja dari HP: alur bertahap */}
+        <section aria-labelledby="belanja" className="reveal mt-16 md:mt-20">
+          <h2 id="belanja" className="text-[28px] leading-tight font-bold tracking-[-0.025em]">
+            Belanja dari HP
+          </h2>
+          <p className="mt-2 max-w-[60ch] text-[16px] leading-relaxed text-muted">
+            Tanpa akun dan tanpa bayar online. Harga akhir dan cara bayar dikonfirmasi toko lewat WhatsApp.
+          </p>
+          <ol className="mt-8 grid gap-0 lg:grid-cols-4 lg:gap-6">
+            {STEPS.map(({ icon: Icon, title, body }, i) => (
+              <li key={title} className="relative flex gap-4 pb-8 last:pb-0 lg:flex-col lg:pb-0">
+                {i < STEPS.length - 1 && (
+                  <span
+                    aria-hidden
+                    className="absolute top-12 bottom-0 left-6 w-px bg-line-strong lg:top-6 lg:right-0 lg:bottom-auto lg:left-14 lg:h-px lg:w-auto"
+                  />
+                )}
+                <span className="relative grid size-12 shrink-0 place-items-center rounded-full bg-brand text-white">
+                  <Icon size={22} weight="bold" aria-hidden />
+                </span>
+                <span className="pt-1 lg:pt-0">
+                  <span className="block text-[16px] font-semibold">{title}</span>
+                  <span className="mt-1 block text-[14px] leading-relaxed text-muted">{body}</span>
                 </span>
               </li>
             ))}
           </ol>
         </section>
 
-        {/* Cuplikan katalog: ringkas */}
-        <section className="mt-14" aria-labelledby="lorong">
-          <div className="mb-3 flex items-baseline justify-between gap-4">
-            <h2 id="lorong" className="text-[18px] font-bold">
-              Lorong paling ramai
+        {/* 5. Lorong */}
+        <section aria-labelledby="lorong" className="reveal mt-16 md:mt-20">
+          <div className="mb-4 flex items-baseline justify-between gap-4">
+            <h2 id="lorong" className="text-[22px] font-bold tracking-[-0.02em]">
+              Pilih lorong
             </h2>
-            <Link href="/kategori" className="tap text-[14px] font-semibold text-brand-text hover:underline">
+            <Link href="/kategori" className="tap text-[15px] font-semibold text-brand-text hover:underline">
               Semua kategori
             </Link>
           </div>
           <AisleSigns categories={categories} compact />
         </section>
 
-        <section className="mt-10" aria-labelledby="baru">
-          <div className="mb-3 flex items-baseline justify-between gap-4">
-            <h2 id="baru" className="text-[18px] font-bold">
+        {/* 6. Barang baru */}
+        <section aria-labelledby="baru" className="reveal mt-14">
+          <div className="mb-4 flex items-baseline justify-between gap-4">
+            <h2 id="baru" className="text-[22px] font-bold tracking-[-0.02em]">
               Baru masuk rak
             </h2>
-            <Link href="/barang" className="tap text-[14px] font-semibold text-brand-text hover:underline">
-              Lihat semua barang
+            <Link href="/barang" className="tap text-[15px] font-semibold text-brand-text hover:underline">
+              Lihat katalog
             </Link>
           </div>
           <ProductRow products={latest.items} />

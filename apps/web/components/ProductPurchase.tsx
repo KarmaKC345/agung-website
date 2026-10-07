@@ -1,5 +1,6 @@
 'use client';
 
+import { Basket, Minus, Plus } from '@phosphor-icons/react';
 import Link from 'next/link';
 import { useMemo, useState } from 'react';
 import { formatRupiah, STOCK_LABEL, type ProductDetail } from '@newagung/shared';
@@ -50,7 +51,7 @@ export function ProductPurchase({ product }: { product: ProductDetail }) {
                   aria-pressed={selected}
                   aria-label={`${v.label}${soldOut ? ' (stok habis)' : ''}`}
                   title={v.label}
-                  className={`relative grid size-11 place-items-center rounded-full ${selected ? 'ring-2 ring-ink ring-offset-2 ring-offset-surface' : 'ring-1 ring-line-strong'}`}
+                  className={`relative grid size-11 place-items-center rounded-full ${selected ? 'ring-2 ring-brand-text ring-offset-2 ring-offset-paper' : 'ring-1 ring-field hover:ring-ink'}`}
                 >
                   <span className="size-8 rounded-full ring-1 ring-black/15" style={{ background: v.colorHex! }} />
                   {soldOut && <span aria-hidden className="absolute h-[2px] w-9 rotate-45 bg-danger" />}
@@ -61,8 +62,8 @@ export function ProductPurchase({ product }: { product: ProductDetail }) {
                   type="button"
                   onClick={() => pickVariant(i)}
                   aria-pressed={selected}
-                  className={`h-11 rounded-tag border px-3.5 text-[14px] font-medium ${
-                    selected ? 'border-ink bg-ink text-surface' : 'border-line-strong bg-surface hover:border-ink'
+                  className={`h-11 rounded-tag border px-4 text-[14px] font-medium ${
+                    selected ? 'border-brand bg-brand text-white' : 'border-field bg-surface hover:border-ink'
                   } ${soldOut ? 'line-through opacity-60' : ''}`}
                 >
                   {v.label}
@@ -76,7 +77,7 @@ export function ProductPurchase({ product }: { product: ProductDetail }) {
       {variant.prices.length > 1 && (
         <fieldset className="mt-6">
           <legend className="text-[14px] font-semibold">Beli per</legend>
-          <div className="mt-2 inline-flex rounded-tag border border-line-strong bg-surface p-1">
+          <div className="mt-2 inline-flex gap-1 rounded-[14px] bg-sunken p-1">
             {variant.prices.map((p) => {
               const perPiece = p.qtyPerUnit > 1 ? Math.round(p.price / p.qtyPerUnit) : null;
               const saving = perPiece !== null && perPiece < base.price;
@@ -86,7 +87,7 @@ export function ProductPurchase({ product }: { product: ProductDetail }) {
                   type="button"
                   onClick={() => setUnit(p.unit)}
                   aria-pressed={p.unit === price.unit}
-                  className={`min-h-11 rounded-tag px-3.5 py-1.5 text-left ${p.unit === price.unit ? 'bg-ink text-surface' : 'hover:bg-sunken'}`}
+                  className={`min-h-11 rounded-[10px] px-4 py-1.5 text-left ${p.unit === price.unit ? 'bg-surface text-ink shadow-[0_1px_3px_rgb(var(--shadow-tint)/0.18)]' : 'text-muted hover:text-ink'}`}
                 >
                   <span className="block text-[14px] font-semibold capitalize">
                     {p.unit}
@@ -101,7 +102,7 @@ export function ProductPurchase({ product }: { product: ProductDetail }) {
       )}
 
       <div className="mt-6 flex items-baseline gap-2">
-        <Price value={price.price} className="text-[40px]" />
+        <Price value={price.price} className="text-[36px] sm:text-[40px]" />
         <span className="text-muted">/{price.unit}</span>
       </div>
       <p className={`mt-1 text-[14px] font-medium ${out ? 'text-danger' : variant.stockStatus === 'sedikit' ? 'text-warn' : 'text-ok'}`}>
@@ -110,9 +111,9 @@ export function ProductPurchase({ product }: { product: ProductDetail }) {
 
       {!out && (
         <div className="mt-5 flex flex-wrap items-stretch gap-3">
-          <div className="flex h-12 items-center rounded-tag border border-line-strong bg-surface">
-            <button type="button" className="h-full w-11 text-[20px]" onClick={() => setQty((q) => Math.max(1, q - 1))} aria-label="Kurangi jumlah">
-              −
+          <div className="flex h-[52px] items-center rounded-tag border border-field bg-surface">
+            <button type="button" className="grid h-full w-12 place-items-center rounded-l-tag hover:bg-sunken" onClick={() => setQty((q) => Math.max(1, q - 1))} aria-label="Kurangi jumlah">
+              <Minus size={18} weight="bold" aria-hidden />
             </button>
             <input
               type="number"
@@ -124,8 +125,8 @@ export function ProductPurchase({ product }: { product: ProductDetail }) {
               aria-label="Jumlah"
               className="price h-full w-14 bg-transparent text-center text-[20px] [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none"
             />
-            <button type="button" className="h-full w-11 text-[20px]" onClick={() => setQty((q) => Math.min(9999, q + 1))} aria-label="Tambah jumlah">
-              +
+            <button type="button" className="grid h-full w-12 place-items-center rounded-r-tag hover:bg-sunken" onClick={() => setQty((q) => Math.min(9999, q + 1))} aria-label="Tambah jumlah">
+              <Plus size={18} weight="bold" aria-hidden />
             </button>
           </div>
           <button
@@ -146,8 +147,9 @@ export function ProductPurchase({ product }: { product: ProductDetail }) {
               );
               setAdded(`${qty} ${price.unit}${variant.label ? ` ${variant.label}` : ''}`);
             }}
-            className="h-12 flex-1 rounded-tag bg-accent px-5 text-[16px] font-semibold text-accent-ink hover:brightness-110 sm:flex-none"
+            className="btn btn-primary btn-lg flex-1 sm:flex-none"
           >
+            <Basket size={20} weight="bold" aria-hidden />
             Masukkan keranjang
           </button>
         </div>

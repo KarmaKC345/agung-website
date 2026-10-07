@@ -6,37 +6,44 @@ import { Logo } from './Logo';
 import { SearchBox } from './SearchBox';
 import { StatusPill } from './StatusPill';
 
+const NAV = [
+  { href: '/barang', label: 'Katalog' },
+  { href: '/kategori', label: 'Kategori' },
+  { href: '/tentang', label: 'Tentang toko' },
+  { href: '/favorit', label: 'Favorit' },
+];
+
 export function SiteHeader({ store }: { store: StoreInfo }) {
   return (
-    <header className="sticky top-0 z-30 border-b border-line bg-surface/95 backdrop-blur supports-[backdrop-filter]:bg-surface/85">
-      <div className="mx-auto flex max-w-6xl items-center gap-3 px-4 pt-2.5 pb-2.5 md:gap-6 md:py-3">
-        <Link href="/" className="tap shrink-0 rounded-tag text-ink dark:bg-[#e3e4e6] dark:px-1.5 dark:py-0.5 dark:text-[#15172b]" aria-label="New Agung — beranda">
-          <Logo className="h-10 w-auto md:h-12" />
+    <header className="sticky top-0 z-30 border-b border-line bg-surface/90 backdrop-blur-md">
+      <div className="mx-auto flex h-16 max-w-6xl items-center gap-3 px-4 md:h-[72px] md:gap-6">
+        <Link
+          href="/"
+          className="tap shrink-0 rounded-[10px] text-ink dark:bg-[#e3e4e6] dark:px-1.5 dark:py-0.5 dark:text-[#15172b]"
+          aria-label="New Agung, beranda"
+        >
+          <Logo className="h-9 w-auto md:h-11" />
         </Link>
-        <div className="hidden flex-1 md:block">
+        <div className="hidden min-w-0 max-w-md flex-1 md:block">
           <Suspense>
             <SearchBox />
           </Suspense>
         </div>
-        <div className="ml-auto flex items-center gap-4">
-          <Link href="/tentang" className="hidden text-muted hover:text-ink lg:block">
+        <nav aria-label="Menu utama" className="ml-auto hidden items-center gap-1 lg:flex">
+          {NAV.map((n) => (
+            <Link key={n.href} href={n.href} className="rounded-[10px] px-3 py-2.5 text-[15px] font-medium text-muted hover:bg-sunken hover:text-ink">
+              {n.label}
+            </Link>
+          ))}
+        </nav>
+        <div className="ml-auto flex items-center gap-3 lg:ml-0">
+          <Link href="/tentang" className="hidden text-muted hover:text-ink xl:block" aria-label="Jam buka toko">
             <StatusPill hours={store.openingHours} timezone={store.timezone} />
           </Link>
-          <nav aria-label="Menu" className="hidden items-center gap-4 md:flex">
-            <Link href="/barang" className="flex h-11 items-center px-1 text-[15px] font-medium text-muted hover:text-ink">
-              Katalog
-            </Link>
-            <Link href="/tentang" className="hidden h-11 items-center px-1 text-[15px] font-medium text-muted hover:text-ink xl:flex">
-              Tentang toko
-            </Link>
-            <Link href="/favorit" className="flex h-11 items-center px-1 text-[15px] font-medium text-muted hover:text-ink">
-              Favorit
-            </Link>
-          </nav>
           <CartLink />
         </div>
       </div>
-      <div className="px-4 pb-2.5 md:hidden">
+      <div className="px-4 pb-3 md:hidden">
         <Suspense>
           <SearchBox />
         </Suspense>

@@ -1,11 +1,12 @@
 import type { Metadata } from 'next';
 import Image from 'next/image';
 import Link from 'next/link';
+import { Clock, Storefront, WhatsappLogo } from '@phosphor-icons/react/ssr';
 import { notFound } from 'next/navigation';
 import { waLink } from '@newagung/shared';
 import { Breadcrumbs } from '@/components/Breadcrumbs';
 import { FavoriteButton } from '@/components/FavoriteButton';
-import { ProductGrid } from '@/components/ProductCard';
+import { ProductRow } from '@/components/ProductCard';
 import { ProductImage } from '@/components/ProductImage';
 import { ProductPurchase } from '@/components/ProductPurchase';
 import { getProduct, getProducts, getStore } from '@/lib/api';
@@ -65,23 +66,23 @@ export default async function ProductPage({ params }: Props) {
     <div className="mx-auto max-w-6xl px-4 pt-5">
       <Breadcrumbs items={crumbs} />
 
-      <div className="mt-5 grid gap-6 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] md:gap-10">
-        <div>
-          <div className="relative overflow-hidden rounded-tag border border-line">
+      <div className="mt-5 grid gap-6 md:grid-cols-[minmax(0,1.05fr)_minmax(0,1fr)] md:gap-12">
+        <div className="md:sticky md:top-24 md:self-start">
+          <div className="card relative overflow-hidden rounded-[var(--radius-media)] p-3">
             {product.images[0] ? (
-              <div className="relative aspect-square bg-white">
-                <Image src={product.images[0]} alt={product.name} fill priority sizes="(min-width: 768px) 560px, 100vw" className="object-contain p-4" />
+              <div className="relative aspect-square overflow-hidden rounded-[14px] bg-white">
+                <Image src={product.images[0]} alt={product.name} fill priority sizes="(min-width: 768px) 560px, 100vw" className="object-contain p-6" />
               </div>
             ) : (
-              <ProductImage src={null} name={product.name} brand={product.brand?.name ?? null} sizes="560px" />
+              <ProductImage src={null} name={product.name} categorySlug={product.category?.slug} sizes="560px" className="rounded-[14px]" />
             )}
-            <FavoriteButton productId={product.id} name={product.name} className="absolute top-3 right-3" />
+            <FavoriteButton productId={product.id} name={product.name} className="absolute top-6 right-6" />
           </div>
           {product.images.length > 1 && (
             <ul className="mt-3 grid grid-cols-5 gap-2">
               {product.images.slice(1).map((src) => (
-                <li key={src} className="relative aspect-square overflow-hidden rounded-tag border border-line bg-white">
-                  <Image src={src} alt="" fill sizes="110px" className="object-contain p-1" />
+                <li key={src} className="card relative aspect-square overflow-hidden bg-white">
+                  <Image src={src} alt="" fill sizes="110px" className="object-contain p-1.5" />
                 </li>
               ))}
             </ul>
@@ -90,37 +91,45 @@ export default async function ProductPage({ params }: Props) {
 
         <div>
           {product.brand && (
-            <Link href={`/merek/${product.brand.slug}`} className="tap signage text-[13px] text-brand-text hover:underline">
+            <Link href={`/merek/${product.brand.slug}`} className="tap text-[14px] font-semibold text-brand-text hover:underline">
               {product.brand.name}
             </Link>
           )}
-          <h1 className="mt-1 text-[26px] leading-tight font-bold sm:text-[30px]">{product.name}</h1>
-          {product.description && <p className="mt-3 max-w-prose leading-relaxed text-muted">{product.description}</p>}
+          <h1 className="mt-1 text-[26px] leading-[1.15] font-bold tracking-[-0.02em] text-balance sm:text-[32px]">{product.name}</h1>
+          {product.description && <p className="mt-3 max-w-[60ch] text-[16px] leading-relaxed text-muted">{product.description}</p>}
 
           <ProductPurchase product={product} />
 
-          <div className="mt-6 border-t border-line pt-4 text-[14px] text-muted">
-            <p>
-              Harga diperbarui {updatedFmt.format(new Date(product.updatedAt))}. Harga akhir dan stok dikonfirmasi toko saat memesan.
-            </p>
-            <a
-              href={waLink(store.whatsapp, `Halo New Agung, saya mau tanya tentang ${product.name}.`)}
-              target="_blank"
-              rel="noopener"
-              className="tap mt-2 inline-block font-semibold text-wa-text underline underline-offset-4"
-            >
-              Tanya barang ini via WhatsApp
-            </a>
-          </div>
+          <ul className="mt-8 space-y-3 border-t border-line pt-5 text-[14px] text-muted">
+            <li className="flex gap-3">
+              <Storefront size={20} className="mt-0.5 shrink-0 text-ink" aria-hidden />
+              <span>Ambil di Jl. DR. Ratulangi No.52 atau minta diantar. Harga akhir dan stok dikonfirmasi toko saat memesan.</span>
+            </li>
+            <li className="flex gap-3">
+              <Clock size={20} className="mt-0.5 shrink-0 text-ink" aria-hidden />
+              <span>Harga diperbarui {updatedFmt.format(new Date(product.updatedAt))}.</span>
+            </li>
+            <li className="flex gap-3">
+              <WhatsappLogo size={20} className="mt-0.5 shrink-0 text-wa-text" aria-hidden />
+              <a
+                href={waLink(store.whatsapp, `Halo New Agung, saya mau tanya tentang ${product.name}.`)}
+                target="_blank"
+                rel="noopener"
+                className="tap font-semibold text-wa-text underline underline-offset-4"
+              >
+                Tanya barang ini lewat WhatsApp
+              </a>
+            </li>
+          </ul>
         </div>
       </div>
 
       {related.length > 0 && (
-        <section className="mt-14" aria-labelledby="serak">
-          <h2 id="serak" className="mb-4 text-[20px] font-bold">
+        <section className="mt-16" aria-labelledby="serak">
+          <h2 id="serak" className="mb-4 text-[20px] font-bold tracking-[-0.01em]">
             Satu rak dengan barang ini
           </h2>
-          <ProductGrid products={related} />
+          <ProductRow products={related} />
         </section>
       )}
 

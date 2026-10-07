@@ -6,7 +6,7 @@ const SORTS = [
   { value: '', label: 'Terbaru' },
   { value: 'termurah', label: 'Termurah' },
   { value: 'termahal', label: 'Termahal' },
-  { value: 'az', label: 'Nama A–Z' },
+  { value: 'az', label: 'Nama A-Z' },
 ];
 
 export function SortSelect({ withRelevance = false }: { withRelevance?: boolean }) {
@@ -27,7 +27,7 @@ export function SortSelect({ withRelevance = false }: { withRelevance?: boolean 
           next.delete('page');
           router.push(`${path}?${next.toString()}`, { scroll: false });
         }}
-        className="h-11 rounded-tag border border-line-strong bg-surface px-2 font-medium"
+        className="h-11 rounded-tag border border-field bg-surface px-2 font-medium"
       >
         {options.map((o) => (
           <option key={o.label} value={o.value}>

@@ -52,7 +52,7 @@ export function PanelShell({ children }: { children: React.ReactNode }) {
       <div className="mx-auto max-w-md p-8">
         <p className="font-semibold text-danger">{error}</p>
         <button
-          className="mt-4 h-11 rounded-tag border border-line-strong px-4 font-semibold"
+          className="mt-4 h-11 rounded-tag border border-field px-4 font-semibold"
           onClick={async () => {
             await signOut();
             router.replace('/panel/masuk');
@@ -87,7 +87,7 @@ export function PanelShell({ children }: { children: React.ReactNode }) {
                   <Link
                     href={n.href}
                     aria-current={isActive(n.href) ? 'page' : undefined}
-                    className="flex min-h-11 items-center rounded-tag px-3 text-[14px] font-medium whitespace-nowrap text-muted hover:bg-sunken hover:text-ink aria-[current=page]:bg-ink aria-[current=page]:text-surface"
+                    className="flex min-h-11 items-center rounded-tag px-3 text-[14px] font-medium whitespace-nowrap text-muted hover:bg-sunken hover:text-ink aria-[current=page]:bg-brand aria-[current=page]:text-white"
                   >
                     {n.label}
                   </Link>
@@ -130,7 +130,6 @@ export function PageTitle({ children, actions }: { children: React.ReactNode; ac
   );
 }
 
-export const inputCls = 'h-11 w-full rounded-tag border border-line-strong bg-surface px-3 text-[15px]';
-export const btnPrimary = 'inline-flex h-11 items-center justify-center rounded-tag bg-ink px-4 text-[14px] font-semibold text-surface disabled:opacity-50';
-export const btnSecondary =
-  'inline-flex h-11 items-center justify-center rounded-tag border border-line-strong bg-surface px-4 text-[14px] font-semibold hover:border-ink disabled:opacity-50';
+export const inputCls = 'h-11 w-full rounded-tag border border-field bg-surface px-3 text-[15px]';
+export const btnPrimary = 'btn btn-primary';
+export const btnSecondary = 'btn btn-secondary';

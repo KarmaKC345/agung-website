@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { WhatsappLogo } from '@phosphor-icons/react/ssr';
 import { Suspense } from 'react';
 import { waLink } from '@newagung/shared';
 import { SortSelect } from '@/components/ListControls';
@@ -50,7 +51,7 @@ export default async function SearchPage({ searchParams }: Props) {
           <Pagination page={page} pageSize={result.pageSize} total={result.total} makeHref={(p) => hrefWith('/cari', { q, sort: sp.sort, page: p })} />
         </>
       ) : (
-        <div className="mt-6 max-w-xl rounded-tag border border-line bg-surface p-6">
+        <div className="card mt-6 max-w-xl rounded-[var(--radius-media)] p-6 sm:p-8">
           <p className="text-[17px] font-semibold">“{q}” belum ada di website.</p>
           <p className="mt-2 text-muted">
             Belum semua barang di rak sudah dimasukkan ke website. Tanyakan langsung ke toko, biasanya dibalas di jam buka.
@@ -59,8 +60,9 @@ export default async function SearchPage({ searchParams }: Props) {
             href={waLink(store.whatsapp, `Halo New Agung, apakah ada ${q}?`)}
             target="_blank"
             rel="noopener"
-            className="mt-5 inline-flex h-11 items-center rounded-tag bg-wa px-4 text-[15px] font-semibold text-white"
+            className="btn btn-wa mt-6"
           >
+            <WhatsappLogo size={20} weight="bold" aria-hidden />
             Tanya stok “{q}” via WhatsApp
           </a>
         </div>

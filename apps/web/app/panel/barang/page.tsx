@@ -87,7 +87,7 @@ export default function ProductsAdminPage() {
                       {!p.image && ' · belum ada foto'}
                     </p>
                   </div>
-                  <span className="shrink-0 text-[14px] tabular-nums">{p.minPrice !== null ? formatRupiah(p.minPrice) : '–'}</span>
+                  <span className="shrink-0 text-[14px] tabular-nums">{p.minPrice !== null ? formatRupiah(p.minPrice) : '-'}</span>
                 </Link>
               </li>
             ))}

@@ -1,15 +1,16 @@
 'use client';
 
+import { Basket, BookmarkSimple, House, SquaresFour, type Icon } from '@phosphor-icons/react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useShop } from '@/lib/cart';
 import { useHydrated } from '@/lib/use-hydrated';
-import { BasketIcon } from './CartLink';
 
-const items = [
-  { href: '/', label: 'Beranda', icon: 'M3 10.5 12 3l9 7.5V21h-6v-6H9v6H3z' },
-  { href: '/kategori', label: 'Kategori', icon: 'M4 4h7v7H4zM13 4h7v7h-7zM4 13h7v7H4zM13 13h7v7h-7z' },
-  { href: '/favorit', label: 'Favorit', icon: 'M6 3h12v18l-6-4-6 4z' },
+const items: { href: string; label: string; icon: Icon }[] = [
+  { href: '/', label: 'Beranda', icon: House },
+  { href: '/kategori', label: 'Kategori', icon: SquaresFour },
+  { href: '/favorit', label: 'Favorit', icon: BookmarkSimple },
+  { href: '/keranjang', label: 'Keranjang', icon: Basket },
 ];
 
 /** Navigasi bawah khusus HP */
@@ -22,42 +23,29 @@ export function BottomNav() {
   return (
     <nav
       aria-label="Navigasi utama"
-      className="fixed inset-x-0 bottom-0 z-30 border-t border-line bg-surface pb-[env(safe-area-inset-bottom)] md:hidden"
+      className="fixed inset-x-0 bottom-0 z-30 border-t border-line bg-surface/95 pb-[env(safe-area-inset-bottom)] backdrop-blur-md md:hidden"
     >
       <ul className="grid grid-cols-4">
-        {items.map((it) => (
-          <li key={it.href}>
-            <Link
-              href={it.href}
-              aria-current={isActive(it.href) ? 'page' : undefined}
-              className={`flex h-14 flex-col items-center justify-center gap-0.5 text-[11px] font-medium ${
-                isActive(it.href) ? 'text-brand-text' : 'text-muted'
-              }`}
-            >
-              <svg viewBox="0 0 24 24" className="size-[22px]" aria-hidden fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round">
-                <path d={it.icon} />
-              </svg>
-              {it.label}
-            </Link>
-          </li>
-        ))}
-        <li>
-          <Link
-            href="/keranjang"
-            aria-current={isActive('/keranjang') ? 'page' : undefined}
-            className={`relative flex h-14 flex-col items-center justify-center gap-0.5 text-[11px] font-medium ${
-              isActive('/keranjang') ? 'text-brand-text' : 'text-muted'
-            }`}
-          >
-            <BasketIcon className="size-[22px]" />
-            Keranjang
-            {hydrated && count > 0 && (
-              <span className="price absolute top-1.5 left-1/2 ml-2 min-w-[18px] rounded-full bg-accent px-1 py-0.5 text-center text-[11px] text-accent-ink">
-                {count}
-              </span>
-            )}
-          </Link>
-        </li>
+        {items.map(({ href, label, icon: Icon }) => {
+          const active = isActive(href);
+          return (
+            <li key={href}>
+              <Link
+                href={href}
+                aria-current={active ? 'page' : undefined}
+                className={`relative flex h-16 flex-col items-center justify-center gap-1 text-[11px] font-semibold ${active ? 'text-brand-text' : 'text-muted'}`}
+              >
+                <Icon size={24} weight={active ? 'fill' : 'regular'} aria-hidden />
+                {label}
+                {href === '/keranjang' && hydrated && count > 0 && (
+                  <span className="price absolute top-2 left-1/2 ml-2 grid h-[18px] min-w-[18px] place-items-center rounded-full bg-signal px-1 text-[10px] text-white">
+                    {count}
+                  </span>
+                )}
+              </Link>
+            </li>
+          );
+        })}
       </ul>
     </nav>
   );

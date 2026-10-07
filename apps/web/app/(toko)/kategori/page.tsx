@@ -46,7 +46,7 @@ export default async function CategoriesPage() {
             <li key={b.id}>
               <Link
                 href={`/merek/${b.slug}`}
-                className="inline-flex h-11 items-center gap-2 rounded-tag border border-line-strong bg-surface px-3.5 text-[15px] font-semibold hover:border-ink"
+                className="tap chip h-11 px-4 text-[15px]"
               >
                 {b.name}
                 <span className="text-[12px] font-normal text-muted tabular-nums">{b.productCount}</span>

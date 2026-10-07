@@ -161,7 +161,7 @@ export function ProductForm({ product }: { product?: ProductDetail }) {
           <div>
             <label className="text-[14px] font-semibold" htmlFor="cat">Kategori</label>
             <select id="cat" value={categoryId} onChange={(e) => setCategoryId(e.target.value)} className={`mt-1 ${inputCls}`}>
-              <option value="">— Tanpa kategori —</option>
+              <option value="">Tanpa kategori</option>
               {cats.map((c) => (
                 <optgroup key={c.id} label={c.name}>
                   <option value={c.id}>{c.name}</option>
@@ -174,7 +174,7 @@ export function ProductForm({ product }: { product?: ProductDetail }) {
             <label className="text-[14px] font-semibold" htmlFor="brand">Merek</label>
             <div className="mt-1 flex gap-2">
               <select id="brand" value={brandId} onChange={(e) => setBrandId(e.target.value)} className={inputCls}>
-                <option value="">— Tanpa merek —</option>
+                <option value="">Tanpa merek</option>
                 {brands.map((b) => <option key={b.id} value={b.id}>{b.name}</option>)}
               </select>
               <button type="button" onClick={addBrand} className={btnSecondary}>Baru</button>
@@ -206,7 +206,7 @@ export function ProductForm({ product }: { product?: ProductDetail }) {
           ))}
           {images.length < 5 && (
             <li>
-              <label className="grid size-24 cursor-pointer place-items-center rounded-tag border border-dashed border-line-strong text-center text-[13px] text-muted hover:border-ink">
+              <label className="grid size-24 cursor-pointer place-items-center rounded-tag border border-dashed border-field text-center text-[13px] text-muted hover:border-ink">
                 {uploading ? 'Mengunggah…' : '+ Foto / kamera'}
                 <input type="file" accept="image/*" capture="environment" multiple className="sr-only" disabled={uploading} onChange={(e) => e.target.files && upload(e.target.files)} />
               </label>

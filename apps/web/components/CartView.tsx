@@ -1,5 +1,7 @@
 'use client';
 
+import { Basket, CheckCircle, Minus, Package, Plus, Trash, WhatsappLogo } from '@phosphor-icons/react';
+import Image from 'next/image';
 import Link from 'next/link';
 import { useMemo, useState } from 'react';
 import { formatRupiah, formatTime, hoursToday, summarizeHours, type Fulfilment, type WeeklyHours } from '@newagung/shared';
@@ -27,7 +29,7 @@ export function CartView({ hours, timezone }: { hours: WeeklyHours; timezone: st
   const hoursInfo = summary
     ? `${summary} WITA.`
     : today
-      ? `Hari ini buka ${formatTime(today.open)}–${formatTime(today.close)} WITA.`
+      ? `Hari ini buka ${formatTime(today.open)}-${formatTime(today.close)} WITA.`
       : 'Hari ini toko tutup.';
   const pickupTime = customer.pickupTime ?? '';
 
@@ -35,17 +37,19 @@ export function CartView({ hours, timezone }: { hours: WeeklyHours; timezone: st
 
   if (sent) {
     return (
-      <div className="mx-auto max-w-lg rounded-tag border border-line bg-surface p-6">
-        <p className="signage text-[12px] text-muted">Kode pesanan</p>
+      <div className="card mx-auto max-w-lg rounded-[var(--radius-media)] p-6 sm:p-8">
+        <CheckCircle size={40} weight="fill" className="text-ok" aria-hidden />
+        <p className="mt-4 text-[14px] font-medium text-muted">Kode pesanan</p>
         <p className="mt-1 font-mono text-[26px] font-medium tracking-tight">{sent.code}</p>
         <p className="mt-4 leading-relaxed">
           Pesanan tersimpan dan WhatsApp sudah dibuka dengan pesan terisi. Tekan <b>kirim</b> di WhatsApp supaya toko menerimanya.
         </p>
         <div className="mt-6 flex flex-wrap gap-2">
-          <a href={sent.waUrl} className="inline-flex h-11 items-center rounded-tag bg-wa px-4 font-semibold text-white">
+          <a href={sent.waUrl} className="btn btn-wa">
+            <WhatsappLogo size={20} weight="bold" aria-hidden />
             Buka WhatsApp lagi
           </a>
-          <Link href="/" className="inline-flex h-11 items-center rounded-tag border border-line-strong px-4 font-semibold">
+          <Link href="/" className="btn btn-secondary">
             Kembali belanja
           </Link>
         </div>
@@ -58,11 +62,14 @@ export function CartView({ hours, timezone }: { hours: WeeklyHours; timezone: st
 
   if (!lines.length) {
     return (
-      <div className="rounded-tag border border-dashed border-line-strong bg-surface p-8 text-center">
-        <p className="text-[17px] font-semibold">Keranjang masih kosong.</p>
+      <div className="card mx-auto flex max-w-lg flex-col items-center rounded-[var(--radius-media)] px-6 py-12 text-center">
+        <span className="grid size-16 place-items-center rounded-full bg-brand-tint text-brand-text">
+          <Basket size={30} weight="bold" aria-hidden />
+        </span>
+        <p className="mt-5 text-[18px] font-semibold">Keranjang masih kosong.</p>
         <p className="mt-1 text-muted">Cari barang atau pilih lorong, lalu tekan “Masukkan keranjang”.</p>
-        <Link href="/kategori" className="mt-5 inline-flex h-11 items-center rounded-tag bg-ink px-4 font-semibold text-surface">
-          Lihat semua lorong
+        <Link href="/barang" className="btn btn-primary mt-6">
+          Lihat katalog
         </Link>
       </div>
     );
@@ -120,28 +127,36 @@ export function CartView({ hours, timezone }: { hours: WeeklyHours; timezone: st
 
   return (
     <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_380px]">
-      <ul className="divide-y divide-line border-y border-line bg-surface">
+      <ul className="card h-fit divide-y divide-line overflow-hidden">
         {lines.map((l) => {
           const problem = problems.get(key(l));
           return (
-            <li key={key(l)} className={`flex gap-3 p-3 ${problem ? 'bg-danger/5' : ''}`}>
+            <li key={key(l)} className={`flex gap-3 p-3 sm:gap-4 sm:p-4 ${problem ? 'bg-danger/5' : ''}`}>
+              <Link href={`/barang/${l.slug}`} tabIndex={-1} aria-hidden className="relative grid size-16 shrink-0 place-items-center overflow-hidden rounded-[10px] bg-sunken sm:size-20">
+                {l.image ? <Image src={l.image} alt="" fill sizes="80px" className="object-contain p-1.5" /> : <Package size={26} weight="thin" className="text-muted" />}
+              </Link>
               <div className="min-w-0 flex-1">
-                <Link href={`/barang/${l.slug}`} className="font-medium hover:underline">
-                  {l.name}
-                </Link>
-                <p className="text-[13px] text-muted">
-                  {l.variantLabel && <>{l.variantLabel} · </>}
-                  {formatRupiah(l.price)}/{l.unit}
-                </p>
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <Link href={`/barang/${l.slug}`} className="font-medium hover:underline">
+                      {l.name}
+                    </Link>
+                    <p className="text-[13px] text-muted">
+                      {l.variantLabel && <>{l.variantLabel} · </>}
+                      {formatRupiah(l.price)}/{l.unit}
+                    </p>
+                  </div>
+                  <Price value={l.price * l.qty} className="shrink-0 pt-0.5 text-[18px]" />
+                </div>
                 {problem && (
                   <p className="mt-1 text-[13px] font-semibold text-danger">
                     {problem === 'habis' ? 'Stok habis' : 'Sudah tidak dijual dengan satuan ini'}
                   </p>
                 )}
                 <div className="mt-2 flex items-center gap-3">
-                  <div className="flex h-12 items-center rounded-tag border border-line-strong">
-                    <button type="button" className="h-full w-11" onClick={() => setQty(l.variantId, l.unit, l.qty - 1)} aria-label={`Kurangi ${l.name}`}>
-                      −
+                  <div className="flex h-12 items-center rounded-tag border border-field">
+                    <button type="button" className="grid h-full w-11 place-items-center rounded-l-tag hover:bg-sunken" onClick={() => setQty(l.variantId, l.unit, l.qty - 1)} aria-label={`Kurangi ${l.name}`}>
+                      <Minus size={16} weight="bold" aria-hidden />
                     </button>
                     <input
                       type="number"
@@ -152,24 +167,28 @@ export function CartView({ hours, timezone }: { hours: WeeklyHours; timezone: st
                       aria-label={`Jumlah ${l.name}`}
                       className="price h-full w-12 bg-transparent text-center text-[17px] [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none"
                     />
-                    <button type="button" className="h-full w-11" onClick={() => setQty(l.variantId, l.unit, l.qty + 1)} aria-label={`Tambah ${l.name}`}>
-                      +
+                    <button type="button" className="grid h-full w-11 place-items-center rounded-r-tag hover:bg-sunken" onClick={() => setQty(l.variantId, l.unit, l.qty + 1)} aria-label={`Tambah ${l.name}`}>
+                      <Plus size={16} weight="bold" aria-hidden />
                     </button>
                   </div>
                   <span className="text-[13px] text-muted">{l.unit}</span>
-                  <button type="button" onClick={() => remove(l.variantId, l.unit)} className="tap ml-auto text-[13px] font-medium text-muted underline underline-offset-4 hover:text-danger">
-                    Hapus
+                  <button
+                    type="button"
+                    onClick={() => remove(l.variantId, l.unit)}
+                    aria-label={`Hapus ${l.name} dari keranjang`}
+                    className="tap ml-auto -mr-2 grid size-10 place-items-center rounded-[10px] text-muted hover:bg-sunken hover:text-danger"
+                  >
+                    <Trash size={20} aria-hidden />
                   </button>
                 </div>
               </div>
-              <Price value={l.price * l.qty} className="shrink-0 pt-0.5 text-[19px]" />
             </li>
           );
         })}
       </ul>
 
       {/* Nota & formulir */}
-      <form onSubmit={submit} className="h-fit rounded-tag border border-line bg-surface p-5 lg:sticky lg:top-24">
+      <form onSubmit={submit} className="card h-fit rounded-[var(--radius-media)] p-5 sm:p-6 lg:sticky lg:top-24">
         <div className="flex items-baseline justify-between">
           <span className="text-muted">Perkiraan total</span>
           <Price value={total} className="text-[30px]" />
@@ -187,7 +206,7 @@ export function CartView({ hours, timezone }: { hours: WeeklyHours; timezone: st
           autoComplete="name"
           value={customer.name}
           onChange={(e) => setCustomer({ name: e.target.value })}
-          className="mt-1 h-11 w-full rounded-tag border border-line-strong bg-surface px-3"
+          className="mt-1 h-11 w-full rounded-tag border border-field bg-surface px-3"
         />
 
         <fieldset className="mt-4">
@@ -201,7 +220,7 @@ export function CartView({ hours, timezone }: { hours: WeeklyHours; timezone: st
             ).map(([v, label]) => (
               <label
                 key={v}
-                className="flex h-11 cursor-pointer items-center justify-center rounded-tag border border-line-strong text-[14px] font-medium has-[:checked]:border-ink has-[:checked]:bg-ink has-[:checked]:text-surface"
+                className="flex h-11 cursor-pointer items-center justify-center rounded-tag border border-field text-[14px] font-medium has-[:checked]:border-brand has-[:checked]:bg-brand has-[:checked]:text-white has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-brand-text"
               >
                 <input type="radio" name="fulfilment" value={v} checked={customer.fulfilment === v} onChange={() => setCustomer({ fulfilment: v })} className="sr-only" />
                 {label}
@@ -226,7 +245,7 @@ export function CartView({ hours, timezone }: { hours: WeeklyHours; timezone: st
                 value={pickupTime}
                 onChange={(e) => setCustomer({ pickupTime: e.target.value })}
                 aria-describedby="jam-ambil-info"
-                className="h-11 min-w-0 flex-1 rounded-tag border border-line-strong bg-surface px-3 tabular-nums"
+                className="h-11 min-w-0 flex-1 rounded-tag border border-field bg-surface px-3 tabular-nums"
               />
               {pickupTime && (
                 <button
@@ -253,7 +272,7 @@ export function CartView({ hours, timezone }: { hours: WeeklyHours; timezone: st
               placeholder="mis. kantor di Jl. Sudirman"
               value={customer.pickupNote}
               onChange={(e) => setCustomer({ pickupNote: e.target.value })}
-              className="mt-1 h-11 w-full rounded-tag border border-line-strong bg-surface px-3"
+              className="mt-1 h-11 w-full rounded-tag border border-field bg-surface px-3"
             />
           </>
         )}
@@ -275,11 +294,9 @@ export function CartView({ hours, timezone }: { hours: WeeklyHours; timezone: st
         <button
           type="submit"
           disabled={busy}
-          className="mt-5 flex h-12 w-full items-center justify-center gap-2 rounded-tag bg-wa px-4 text-[16px] font-semibold text-white disabled:opacity-60"
+          className="btn btn-wa btn-lg mt-6 w-full"
         >
-          <svg viewBox="0 0 24 24" className="size-5" aria-hidden fill="currentColor">
-            <path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2Zm0 18.2a8.2 8.2 0 0 1-4.2-1.2l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2Zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8s-.4-.1-.6.1-.7.8-.8 1-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.3-.4.3-.4.7-1.3a.5.5 0 0 0 0-.4l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3 3 3 0 0 0-.9 2.2 5.2 5.2 0 0 0 1.1 2.7 11.8 11.8 0 0 0 4.5 4c1.7.7 2.3.8 3.2.6a2.7 2.7 0 0 0 1.8-1.3 2.2 2.2 0 0 0 .1-1.3c0-.1-.2-.2-.5-.3Z" />
-          </svg>
+          <WhatsappLogo size={22} weight="bold" aria-hidden />
           {busy ? 'Menyimpan pesanan…' : 'Kirim pesanan lewat WhatsApp'}
         </button>
         <p className="mt-2 text-center text-[12px] text-muted">WhatsApp terbuka dengan daftar ini. Tekan kirim di sana.</p>

@@ -4,7 +4,7 @@ import type { StoreInfo } from '@newagung/shared';
 export function MapEmbed({ store, className = '' }: { store: StoreInfo; className?: string }) {
   const query = store.lat && store.lng ? `${store.lat},${store.lng}` : `${store.name}, ${store.address}`;
   return (
-    <div className={`relative overflow-hidden rounded-tag border border-line bg-sunken ${className}`}>
+    <div className={`relative overflow-hidden border border-line bg-sunken ${className}`}>
       <iframe
         title={`Peta lokasi ${store.name}`}
         src={`https://www.google.com/maps?q=${encodeURIComponent(query)}&output=embed`}

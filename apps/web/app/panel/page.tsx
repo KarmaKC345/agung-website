@@ -13,7 +13,7 @@ const NEXT_LABEL: Partial<Record<OrderStatus, string>> = {
   siap: 'Tandai selesai',
 };
 const STATUS_STYLE: Record<OrderStatus, string> = {
-  baru: 'bg-accent text-accent-ink',
+  baru: 'bg-signal text-white',
   disiapkan: 'bg-warn text-white',
   siap: 'bg-brand text-white',
   selesai: 'bg-sunken text-muted',
@@ -70,7 +70,7 @@ export default function OrdersPage() {
               setPage(1);
             }}
             aria-pressed={status === s}
-            className="tap h-9 rounded-full border border-line-strong bg-surface px-3.5 text-[14px] font-medium aria-pressed:border-ink aria-pressed:bg-ink aria-pressed:text-surface"
+            className="tap chip"
           >
             {s ? ORDER_STATUS_LABEL[s] : 'Semua'}
             {s && counts[s] ? <span className="ml-1.5 tabular-nums opacity-70">{counts[s]}</span> : null}
@@ -92,7 +92,7 @@ export default function OrdersPage() {
       {!data ? (
         <p className="mt-6 text-muted">Memuat…</p>
       ) : data.items.length === 0 ? (
-        <p className="mt-6 rounded-tag border border-dashed border-line-strong bg-surface p-6 text-center text-muted">
+        <p className="mt-6 rounded-tag border border-dashed border-field bg-surface p-6 text-center text-muted">
           Belum ada pesanan{status ? ` berstatus “${ORDER_STATUS_LABEL[status]}”` : ''}. Pesanan dari tombol WhatsApp di website muncul di sini.
         </p>
       ) : (

@@ -1,5 +1,6 @@
 'use client';
 
+import { MagnifyingGlass } from '@phosphor-icons/react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useId, useRef, useState } from 'react';
 import { API_URL } from '@/lib/config';
@@ -83,14 +84,11 @@ export function SearchBox({ large = false }: { large?: boolean }) {
         Cari barang
       </label>
       <div
-        className={`flex items-center gap-2 rounded-tag border border-line-strong bg-surface focus-within:border-brand-text focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-brand-text ${
-          large ? 'h-14 px-4 text-[17px]' : 'h-12 px-3 text-[15px]'
+        className={`flex items-center gap-2.5 rounded-tag border border-field bg-surface focus-within:border-brand-text focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-brand-text ${
+          large ? 'h-14 px-4 text-[17px]' : 'h-12 px-3.5 text-[15px]'
         }`}
       >
-        <svg viewBox="0 0 20 20" className="size-[18px] shrink-0 text-muted" aria-hidden>
-          <circle cx="8.5" cy="8.5" r="6" fill="none" stroke="currentColor" strokeWidth="2" />
-          <path d="M13 13l5 5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-        </svg>
+        <MagnifyingGlass size={18} weight="bold" className="shrink-0 text-muted" aria-hidden />
         <input
           id={`${listId}-input`}
           type="search"
@@ -122,7 +120,7 @@ export function SearchBox({ large = false }: { large?: boolean }) {
           }}
         />
         {large && (
-          <button type="submit" className="tap hidden h-10 shrink-0 rounded-tag bg-ink px-4 text-sm font-semibold text-surface sm:block">
+          <button type="submit" className="btn btn-primary hidden h-10 min-h-0 shrink-0 px-4 text-sm sm:inline-flex">
             Cari
           </button>
         )}
@@ -131,7 +129,7 @@ export function SearchBox({ large = false }: { large?: boolean }) {
         <ul
           id={listId}
           role="listbox"
-          className="absolute inset-x-0 top-full z-40 mt-1 overflow-hidden rounded-tag border border-line-strong bg-surface shadow-[0_8px_24px_-12px_rgb(0_0_0/0.25)]"
+          className="absolute inset-x-0 top-full z-40 mt-1 overflow-hidden rounded-tag border border-line bg-surface shadow-[0_12px_32px_-16px_rgb(var(--shadow-tint)/0.35)]"
         >
           {items.map((s, i) => (
             <li key={`${s.type}-${s.slug}`} id={`${listId}-${i}`} role="option" aria-selected={i === active}>

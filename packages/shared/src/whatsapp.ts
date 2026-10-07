@@ -24,7 +24,7 @@ export function orderTotal(lines: Pick<WaLine, 'qty' | 'price'>[]): number {
 export function buildOrderMessage(order: WaOrder): string {
   const shortName = order.storeName.replace(/\s+Alat Tulis.*$/i, '');
   const items = order.lines
-    .map((l, i) => `${i + 1}. ${l.name} — ${l.qty} ${l.unit} × ${formatRupiah(l.price)}`)
+    .map((l, i) => `${i + 1}. ${l.name}: ${l.qty} ${l.unit} × ${formatRupiah(l.price)}`)
     .join('\n');
   const how = order.fulfilment === 'ambil' ? 'Ambil di toko' : 'Minta diantar (ongkir dikonfirmasi toko)';
   const note = order.pickupNote?.trim() ? `, ${order.pickupNote.trim()}` : '';

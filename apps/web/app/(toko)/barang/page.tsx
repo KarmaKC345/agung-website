@@ -38,7 +38,7 @@ export default async function CatalogPage({ searchParams }: Props) {
             <li key={c.id}>
               <Link
                 href={`/kategori/${c.slug}`}
-                className="tap inline-flex h-9 items-center gap-1.5 rounded-full border border-line-strong bg-surface px-3.5 text-[14px] font-medium hover:border-ink"
+                className="tap chip"
               >
                 {c.name}
                 <span className="text-[12px] opacity-60 tabular-nums">{c.productCount}</span>

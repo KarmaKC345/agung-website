@@ -126,14 +126,14 @@ function BulkForm({ brands, cats, onDone }: { brands: Brand[]; cats: Category[];
       <label className="text-[13px]">
         Merek
         <select value={brandId} onChange={(e) => setBrandId(e.target.value)} className={`mt-1 ${inputCls}`}>
-          <option value="">—</option>
+          <option value="">Semua</option>
           {brands.map((b) => <option key={b.id} value={b.id}>{b.name}</option>)}
         </select>
       </label>
       <label className="text-[13px]">
         Kategori
         <select value={categoryId} onChange={(e) => setCategoryId(e.target.value)} className={`mt-1 ${inputCls}`}>
-          <option value="">—</option>
+          <option value="">Semua</option>
           {cats.map((c) => (
             <optgroup key={c.id} label={c.name}>
               <option value={c.id}>{c.name} (semua)</option>

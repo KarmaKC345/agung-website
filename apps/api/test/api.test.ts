@@ -124,7 +124,7 @@ describe('pesanan', () => {
     expect(res.body.total).toBe(2 * 52000 + 10 * 5500);
     expect(res.body.waUrl).toMatch(/^https:\/\/wa\.me\/6282348485101\?text=/);
     const text = decodeURIComponent(res.body.waUrl.split('?text=')[1]);
-    expect(text).toContain('Buku Tulis SiDU (58 lembar) — 10 pcs × Rp5.500');
+    expect(text).toContain('Buku Tulis SiDU (58 lembar): 10 pcs × Rp5.500');
     expect(text).toContain(`Kode pesanan: ${res.body.code}`);
     const { rows } = await db.query('select count(*)::int as n from order_items i join orders o on o.id = i.order_id where o.code = $1', [res.body.code]);
     expect(rows[0].n).toBe(2);

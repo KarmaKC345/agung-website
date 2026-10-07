@@ -9,7 +9,7 @@ import papan from '@/public/foto/papan-lorong.webp';
 
 export const metadata: Metadata = {
   title: 'Alamat & jam buka',
-  description: 'Toko New Agung, Jl. DR. Ratulangi No.52, Mariso, Makassar. Buka setiap hari 05.00–22.00 WITA.',
+  description: 'Toko New Agung, Jl. DR. Ratulangi No.52, Mariso, Makassar. Buka setiap hari 05.00-22.00 WITA.',
 };
 
 export default async function AboutPage() {
@@ -24,7 +24,7 @@ export default async function AboutPage() {
       <div className="mt-8 grid gap-8 md:grid-cols-2">
         <div className="space-y-8">
           <section aria-labelledby="alamat">
-            <h2 id="alamat" className="signage text-[13px] text-muted">
+            <h2 id="alamat" className="text-[18px] font-bold tracking-[-0.01em]">
               Alamat
             </h2>
             <p className="mt-2 text-[17px] leading-relaxed">{store.address}</p>
@@ -34,7 +34,7 @@ export default async function AboutPage() {
           </section>
 
           <section aria-labelledby="jam">
-            <h2 id="jam" className="signage text-[13px] text-muted">
+            <h2 id="jam" className="text-[18px] font-bold tracking-[-0.01em]">
               Jam buka (WITA)
             </h2>
             <table className="mt-2 w-full max-w-sm text-[15px]">
@@ -46,7 +46,7 @@ export default async function AboutPage() {
                       <th scope="row" className="py-2 text-left font-normal">
                         {DAY_LABEL[d]}
                       </th>
-                      <td className="py-2 text-right tabular-nums">{h ? `${formatTime(h.open)}–${formatTime(h.close)}` : 'Tutup'}</td>
+                      <td className="py-2 text-right tabular-nums">{h ? `${formatTime(h.open)}-${formatTime(h.close)}` : 'Tutup'}</td>
                     </tr>
                   );
                 })}
@@ -55,7 +55,7 @@ export default async function AboutPage() {
           </section>
 
           <section aria-labelledby="kontak">
-            <h2 id="kontak" className="signage text-[13px] text-muted">
+            <h2 id="kontak" className="text-[18px] font-bold tracking-[-0.01em]">
               Kontak
             </h2>
             <ul className="mt-2 space-y-2 text-[16px]">

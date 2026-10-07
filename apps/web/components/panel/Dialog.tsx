@@ -96,7 +96,7 @@ export function DialogProvider({ children }: { children: React.ReactNode }) {
                   maxLength={160}
                   value={value}
                   onChange={(e) => setValue(e.target.value)}
-                  className="mt-1 h-11 w-full rounded-tag border border-line-strong bg-surface px-3 text-[15px] font-normal"
+                  className="mt-1 h-11 w-full rounded-tag border border-field bg-surface px-3 text-[15px] font-normal"
                 />
               </label>
             )}
@@ -105,7 +105,7 @@ export function DialogProvider({ children }: { children: React.ReactNode }) {
                 type="button"
                 autoFocus={req.kind === 'confirm' && req.danger}
                 onClick={() => close(false)}
-                className="inline-flex h-11 items-center rounded-tag border border-line-strong bg-surface px-4 text-[14px] font-semibold hover:border-ink"
+                className="inline-flex h-11 items-center rounded-tag border border-field bg-surface px-4 text-[14px] font-semibold hover:border-ink"
               >
                 Batal
               </button>
@@ -113,7 +113,7 @@ export function DialogProvider({ children }: { children: React.ReactNode }) {
                 type="submit"
                 autoFocus={req.kind === 'confirm' && !req.danger}
                 className={`inline-flex h-11 items-center rounded-tag px-4 text-[14px] font-semibold ${
-                  req.kind === 'confirm' && req.danger ? 'bg-accent text-accent-ink' : 'bg-ink text-surface'
+                  req.kind === 'confirm' && req.danger ? 'bg-signal text-white' : 'bg-brand text-white'
                 }`}
               >
                 {req.confirmLabel}

@@ -1,3 +1,4 @@
+import { CaretLeft, CaretRight } from '@phosphor-icons/react/ssr';
 import Link from 'next/link';
 
 export function Pagination({
@@ -13,20 +14,21 @@ export function Pagination({
 }) {
   const pages = Math.ceil(total / pageSize);
   if (pages <= 1) return null;
-  const btn = 'inline-flex h-11 items-center rounded-tag border border-line-strong bg-surface px-4 font-semibold hover:border-ink';
   return (
-    <nav aria-label="Halaman" className="mt-8 flex items-center justify-center gap-3 text-[15px]">
+    <nav aria-label="Halaman" className="mt-10 flex items-center justify-center gap-3 text-[15px]">
       {page > 1 ? (
-        <Link href={makeHref(page - 1)} className={btn} rel="prev">
-          ← Sebelumnya
+        <Link href={makeHref(page - 1)} className="btn btn-secondary" rel="prev">
+          <CaretLeft size={16} weight="bold" aria-hidden />
+          Sebelumnya
         </Link>
       ) : null}
-      <span className="text-muted tabular-nums">
-        {page} / {pages}
+      <span className="px-2 text-muted tabular-nums">
+        {page} dari {pages}
       </span>
       {page < pages ? (
-        <Link href={makeHref(page + 1)} className={btn} rel="next">
-          Berikutnya →
+        <Link href={makeHref(page + 1)} className="btn btn-secondary" rel="next">
+          Berikutnya
+          <CaretRight size={16} weight="bold" aria-hidden />
         </Link>
       ) : null}
     </nav>

@@ -83,7 +83,7 @@ export default function StoreSettingsPage() {
                   <td className="py-1">
                     {h ? (
                       <span className="flex items-center gap-2">
-                        <input type="time" value={h.open} onChange={(e) => setDay({ ...h, open: e.target.value })} className={`${inputCls} w-28`} aria-label={`${DAY_LABEL[d]} buka`} />–
+                        <input type="time" value={h.open} onChange={(e) => setDay({ ...h, open: e.target.value })} className={`${inputCls} w-28`} aria-label={`${DAY_LABEL[d]} buka`} />-
                         <input type="time" value={h.close} onChange={(e) => setDay({ ...h, close: e.target.value })} className={`${inputCls} w-28`} aria-label={`${DAY_LABEL[d]} tutup`} />
                       </span>
                     ) : (

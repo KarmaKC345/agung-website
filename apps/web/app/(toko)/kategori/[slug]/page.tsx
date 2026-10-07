@@ -59,7 +59,7 @@ export default async function CategoryPage({ params, searchParams }: Props) {
               <Link
                 href={`/kategori/${parent?.slug ?? category.slug}`}
                 aria-current={!parent ? 'page' : undefined}
-                className="tap inline-flex h-9 items-center rounded-full border border-line-strong bg-surface px-3.5 text-[14px] font-medium aria-[current=page]:border-ink aria-[current=page]:bg-ink aria-[current=page]:text-surface"
+                className="tap chip"
               >
                 Semua
               </Link>
@@ -69,7 +69,7 @@ export default async function CategoryPage({ params, searchParams }: Props) {
                 <Link
                   href={`/kategori/${c.slug}`}
                   aria-current={c.slug === slug ? 'page' : undefined}
-                  className="tap inline-flex h-9 items-center gap-1.5 rounded-full border border-line-strong bg-surface px-3.5 text-[14px] font-medium aria-[current=page]:border-ink aria-[current=page]:bg-ink aria-[current=page]:text-surface"
+                  className="tap chip"
                 >
                   {c.name}
                   <span className="text-[12px] opacity-60 tabular-nums">{c.productCount}</span>
@@ -89,7 +89,7 @@ export default async function CategoryPage({ params, searchParams }: Props) {
             id="merek"
             name="merek"
             defaultValue={sp.merek ?? ''}
-            className="h-11 rounded-tag border border-line-strong bg-surface px-2 font-medium"
+            className="h-11 rounded-tag border border-field bg-surface px-2 font-medium"
           >
             <option value="">Semua merek</option>
             {brandsHere.map((b) => (
@@ -99,7 +99,7 @@ export default async function CategoryPage({ params, searchParams }: Props) {
             ))}
           </select>
           {sp.sort && <input type="hidden" name="sort" value={sp.sort} />}
-          <button className="h-11 rounded-tag border border-line-strong bg-surface px-3 font-semibold hover:border-ink">Terapkan</button>
+          <button className="btn btn-secondary">Terapkan</button>
         </form>
         <Suspense>
           <SortSelect />
@@ -110,7 +110,7 @@ export default async function CategoryPage({ params, searchParams }: Props) {
         {result.items.length ? (
           <ProductGrid products={result.items} priorityCount={2} />
         ) : (
-          <p className="rounded-tag border border-dashed border-line-strong bg-surface p-6 text-center text-muted">
+          <p className="card rounded-[var(--radius-media)] p-8 text-center text-muted">
             Belum ada barang di lorong ini{sp.merek ? ' untuk merek tersebut' : ''}.
           </p>
         )}

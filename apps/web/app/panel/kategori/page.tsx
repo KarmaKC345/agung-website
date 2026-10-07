@@ -105,7 +105,7 @@ export default function CategoriesAdminPage() {
           </ul>
           {isOwner && (
             <form
-              className="mt-4 flex flex-wrap gap-2 rounded-tag border border-dashed border-line-strong p-3"
+              className="mt-4 flex flex-wrap gap-2 rounded-tag border border-dashed border-field p-3"
               onSubmit={(e) => {
                 e.preventDefault();
                 if (!newName.trim()) return;

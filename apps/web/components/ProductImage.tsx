@@ -1,20 +1,21 @@
 import Image from 'next/image';
+import { CategoryIcon } from './CategoryIcon';
 
 /**
- * Foto barang, atau pengganti yang rapi bila foto belum ada: nama merek dan jenis barang
- * ditulis seperti label di dus — bukan ilustrasi stok.
+ * Foto barang, atau pengganti yang tenang bila foto belum ada: ikon jenis barang di atas
+ * bidang lembut, tanpa ilustrasi stok atau teks besar.
  */
 export function ProductImage({
   src,
   name,
-  brand,
+  categorySlug,
   sizes,
   priority,
   className = '',
 }: {
   src: string | null;
   name: string;
-  brand: string | null;
+  categorySlug?: string | null;
   sizes: string;
   priority?: boolean;
   className?: string;
@@ -22,24 +23,13 @@ export function ProductImage({
   if (src) {
     return (
       <div className={`relative aspect-square overflow-hidden bg-white ${className}`}>
-        <Image src={src} alt={name} fill sizes={sizes} priority={priority} className="object-contain p-2" />
+        <Image src={src} alt={name} fill sizes={sizes} priority={priority} className="object-contain p-3" />
       </div>
     );
   }
-  const escaped = brand?.replace(/[.*+?^$()|[\]\\{}]/g, '\\$&');
-  const brandPrefix = escaped ? new RegExp('^' + escaped + '\\s+', 'i') : null;
-  const words = (brandPrefix ? name.replace(brandPrefix, '') : name).split(/\s+/);
-  const kind = words.slice(0, 2).join(' ');
   return (
-    <div
-      className={`relative flex aspect-square flex-col justify-between overflow-hidden bg-sunken p-3 ${className}`}
-      role="img"
-      aria-label={`${name} (foto belum tersedia)`}
-    >
-      <span className="signage text-[11px] text-muted">{brand ?? 'New Agung'}</span>
-      <span className="condensed line-clamp-3 text-[22px] leading-[1.05] font-[750] break-words text-ink/25 sm:text-[26px]">
-        {kind}
-      </span>
+    <div className={`grid aspect-square place-items-center bg-sunken ${className}`} role="img" aria-label={`${name} (foto belum tersedia)`}>
+      <CategoryIcon slug={categorySlug} size="34%" weight="thin" className="text-muted opacity-60" aria-hidden />
     </div>
   );
 }
