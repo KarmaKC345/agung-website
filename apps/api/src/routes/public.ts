@@ -18,7 +18,8 @@ export function publicRoutes({ db, env }: Ctx): Router {
 
   r.get('/health', async (_req, res) => {
     await db.query('select 1');
-    res.json({ ok: true });
+    // devLogin: apakah panel menerima DEV_AUTH_TOKEN (hanya mode lokal tanpa Supabase)
+    res.json({ ok: true, devLogin: Boolean(env.DEV_AUTH_TOKEN) });
   });
 
   r.get('/store', async (_req, res) => {

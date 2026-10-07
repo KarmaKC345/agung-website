@@ -57,7 +57,10 @@ berjalan di Docker, sedangkan login panel memakai Supabase Auth (gratis).
 3. **Authentication → URL Configuration**:
    - Site URL: `http://localhost:3000`
    - Redirect URLs: tambahkan `http://localhost:3000/panel/atur-sandi`
-4. **Authentication → Users → Add user**: buat akun pemilik (email + kata sandi).
+4. **Authentication → Users → Add user → Create new user**: isi email **dan kata sandi**
+   pemilik, lalu centang *Auto Confirm User*. Kata sandi ini yang dipakai masuk ke `/panel`.
+   (Kalau akun sudah dibuat tanpa kata sandi, tekan "Kirim link buat kata sandi ke email"
+   di halaman login panel.)
 5. **Project Settings → API**: salin *Project URL*, *anon public key*, dan bila ingin memakai
    fitur "Undang pegawai", *service_role key*.
 
