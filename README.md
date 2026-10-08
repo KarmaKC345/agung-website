@@ -118,6 +118,31 @@ dan hanya migrasi barunya yang dijalankan. Contoh promo dan "Pilihan toko" di `s
 masuk ke database baru. Untuk melihatnya di database lama, isi sendiri lewat panel, atau ulang
 dari nol dengan `docker compose down -v` (**menghapus semua data & foto**).
 
+### Tunjukkan ke client (staging)
+
+Untuk meminta masukan client sebelum website online, buka website di komputer ini lewat
+link sementara Cloudflare. Gratis, tanpa akun, tanpa domain, dan tanpa membuka port router.
+
+```bash
+docker compose --profile staging up -d --build
+docker compose logs tunnel
+```
+
+Cari baris berisi `https://....trycloudflare.com`, lalu kirim link itu ke client. Di Windows
+(PowerShell/CMD) bisa langsung disaring:
+
+```bash
+docker compose logs tunnel | findstr trycloudflare
+```
+
+- Link hanya aktif selama komputer ini menyala dan Docker berjalan.
+- Link **berganti** setiap kali tunnel dijalankan ulang (mis. setelah komputer restart).
+  Jalankan `docker compose logs tunnel` lagi untuk melihat link yang baru.
+- Menghentikan link saja (website lokal tetap jalan): `docker compose stop tunnel`.
+- Pesanan percobaan dari client masuk ke WhatsApp toko dan ke panel seperti pesanan biasa.
+  Batalkan dari panel setelah dicoba.
+- Panel tetap bisa dibuka client di `<link>/panel` bila Anda memberinya akun.
+
 ### Cara kerjanya
 
 ```
