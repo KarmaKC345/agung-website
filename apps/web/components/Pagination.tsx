@@ -34,10 +34,3 @@ export function Pagination({
     </nav>
   );
 }
-
-export function hrefWith(base: string, params: Record<string, string | number | undefined>): string {
-  const sp = new URLSearchParams();
-  for (const [k, v] of Object.entries(params)) if (v !== undefined && v !== '' && !(k === 'page' && v === 1)) sp.set(k, String(v));
-  const s = sp.toString();
-  return s ? `${base}?${s}` : base;
-}

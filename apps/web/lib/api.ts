@@ -1,5 +1,5 @@
 import 'server-only';
-import type { Brand, Category, Paginated, ProductDetail, ProductSummary, StoreInfo } from '@newagung/shared';
+import type { Brand, Category, Paginated, ProductDetail, ProductSummary, PromoBanner, StoreInfo } from '@newagung/shared';
 import { SERVER_API_URL } from './config';
 
 const REVALIDATE = 300;
@@ -21,6 +21,8 @@ function qs(params: Record<string, string | number | undefined>): string {
 export const getStore = async () => (await get<StoreInfo>('/store', ['store']))!;
 export const getCategories = async () => (await get<Category[]>('/categories', ['categories'])) ?? [];
 export const getBrands = async () => (await get<Brand[]>('/brands', ['brands'])) ?? [];
+// jadwal banner dicek per menit, jadi banner terjadwal muncul/hilang tanpa perlu disimpan ulang
+export const getBanners = async () => (await get<PromoBanner[]>('/banners', ['banners'], 60)) ?? [];
 
 export interface ListParams {
   category?: string;
@@ -29,13 +31,19 @@ export interface ListParams {
   sort?: string;
   minPrice?: number;
   maxPrice?: number;
+  /** hanya barang yang punya harga coret */
+  promo?: boolean;
+  /** hanya "Pilihan toko" */
+  featured?: boolean;
   page?: number;
   pageSize?: number;
 }
 
 export async function getProducts(params: ListParams): Promise<Paginated<ProductSummary>> {
   const path = params.q ? '/search' : '/products';
-  return (await get<Paginated<ProductSummary>>(`${path}${qs({ ...params })}`, ['products'], params.q ? 60 : REVALIDATE))!;
+  const { promo, featured, ...rest } = params;
+  const query = qs({ ...rest, promo: promo ? 1 : undefined, featured: featured ? 1 : undefined });
+  return (await get<Paginated<ProductSummary>>(`${path}${query}`, ['products'], params.q ? 60 : REVALIDATE))!;
 }
 
 export const getProduct = (slug: string) =>

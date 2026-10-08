@@ -21,6 +21,7 @@ const NAV: { href: string; label: string; owner?: boolean }[] = [
   { href: '/panel', label: 'Pesanan masuk' },
   { href: '/panel/barang', label: 'Barang' },
   { href: '/panel/harga', label: 'Ubah harga' },
+  { href: '/panel/banner', label: 'Banner beranda' },
   { href: '/panel/kategori', label: 'Kategori & merek' },
   { href: '/panel/import', label: 'Import / export' },
   { href: '/panel/toko', label: 'Info toko', owner: true },

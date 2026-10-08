@@ -1,5 +1,6 @@
 import type {
   Brand,
+  PromoBanner,
   Category,
   Paginated,
   ProductDetail,
@@ -107,6 +108,12 @@ interface SummaryRow {
   min_price: number | null;
   max_price: number | null;
   colors: { label: string; hex: string }[] | null;
+  promo_variant_id: string | null;
+  promo_price: number | null;
+  promo_original: number | null;
+  promo_unit: string | null;
+  sold: number;
+  is_featured: boolean;
   updated_at: Date;
   total: number;
 }
@@ -115,7 +122,9 @@ const SUMMARY_SELECT = `
   p.id, p.slug, p.name, b.name as brand, c.slug as category_slug, p.updated_at,
   (select i.path from product_images i where i.product_id = p.id order by i.sort_order limit 1) as image,
   dv.price, dv.unit, dv.variant_id as default_variant_id, dv.label as default_label, dv.stock_status as default_stock,
-  va.variant_count, va.all_out, va.min_price, va.max_price, va.colors`;
+  va.variant_count, va.all_out, va.min_price, va.max_price, va.colors,
+  pr.variant_id as promo_variant_id, pr.price as promo_price, pr.original_price as promo_original, pr.unit as promo_unit,
+  coalesce(ps.orders, 0) as sold, p.is_featured`;
 
 const SUMMARY_JOINS = `
   left join brands b on b.id = p.brand_id
@@ -140,13 +149,28 @@ const SUMMARY_JOINS = `
         select price from variant_prices where variant_id = v.id order by qty_per_unit, price limit 1
       ) bp on true
      where v.product_id = p.id
-  ) va on true`;
+  ) va on true
+  left join lateral (
+    -- promo terbaik (diskon persen terbesar) dari varian yang masih ada stok
+    select v.id as variant_id, vp.price, vp.original_price, vp.unit
+      from product_variants v
+      join variant_prices vp on vp.variant_id = v.id
+     where v.product_id = p.id and vp.original_price > vp.price and v.stock_status <> 'habis'
+     order by (vp.original_price - vp.price)::numeric / vp.original_price desc, vp.qty_per_unit
+     limit 1
+  ) pr on true
+  left join product_sales ps on ps.product_id = p.id`;
 
 function toSummary(r: SummaryRow): ProductSummary {
   const stockStatus: StockStatus = r.all_out ? 'habis' : (r.default_stock ?? 'habis');
+  // bila ada promo, kartu menampilkan harga promo (harga coret + persen diskon)
+  const promo = r.promo_price !== null && r.promo_original !== null;
+  const price = promo ? r.promo_price! : (r.price ?? 0);
+  const unit = promo ? r.promo_unit! : (r.unit ?? 'pcs');
+  const variantId = promo ? r.promo_variant_id : r.default_variant_id;
   const quickAdd =
-    r.variant_count === 1 && r.default_variant_id && r.unit && r.price !== null && stockStatus !== 'habis'
-      ? { variantId: r.default_variant_id, unit: r.unit, price: r.price, label: r.default_label ?? '' }
+    r.variant_count === 1 && variantId && stockStatus !== 'habis' && (promo || r.price !== null)
+      ? { variantId, unit, price, label: r.default_label ?? '' }
       : null;
   return {
     id: r.id,
@@ -155,9 +179,13 @@ function toSummary(r: SummaryRow): ProductSummary {
     brand: r.brand,
     categorySlug: r.category_slug,
     image: r.image,
-    price: r.price ?? 0,
-    unit: r.unit ?? 'pcs',
-    priceVaries: r.min_price !== r.max_price,
+    price,
+    unit,
+    originalPrice: promo ? r.promo_original : null,
+    discountPercent: promo ? Math.round((1 - r.promo_price! / r.promo_original!) * 100) : null,
+    sold: r.sold,
+    featured: r.is_featured,
+    priceVaries: !promo && r.min_price !== r.max_price,
     stockStatus,
     colors: r.colors ?? [],
     variantCount: r.variant_count,
@@ -186,6 +214,8 @@ export async function listProducts(
   if (query.brand) where.push(`b.slug = ${add(query.brand)}`);
   if (query.minPrice !== undefined) where.push(`dv.price >= ${add(query.minPrice)}`);
   if (query.maxPrice !== undefined) where.push(`dv.price <= ${add(query.maxPrice)}`);
+  if (query.promo) where.push('pr.variant_id is not null');
+  if (query.featured) where.push('p.is_featured');
 
   let rank = '0';
   if (query.q) {
@@ -203,6 +233,8 @@ export async function listProducts(
     terbaru: 'p.created_at desc, p.name',
     termurah: 'dv.price asc nulls last, p.name',
     termahal: 'dv.price desc nulls last, p.name',
+    terlaris: 'coalesce(ps.orders, 0) desc, p.created_at desc, p.name',
+    diskon: '(pr.original_price - pr.price)::numeric / nullif(pr.original_price, 0) desc nulls last, p.name',
     az: 'p.name',
   }[sort];
 
@@ -299,6 +331,8 @@ interface DetailRow {
   name: string;
   description: string;
   is_active: boolean;
+  is_featured: boolean;
+  sold: number;
   updated_at: Date;
   brand: Brand | null;
   category: ProductDetail['category'];
@@ -313,7 +347,8 @@ export async function getProduct(
 ): Promise<ProductDetail | null> {
   const [col, value] = 'slug' in by ? ['p.slug', by.slug] : ['p.id', by.id];
   const { rows } = await db.query<DetailRow>(
-    `select p.id, p.slug, p.name, p.description, p.is_active, p.updated_at,
+    `select p.id, p.slug, p.name, p.description, p.is_active, p.is_featured, p.updated_at,
+       coalesce((select ps.orders from product_sales ps where ps.product_id = p.id), 0) as sold,
        case when b.id is null then null
             else json_build_object('id', b.id, 'name', b.name, 'slug', b.slug) end as brand,
        case when c.id is null then null
@@ -326,7 +361,7 @@ export async function getProduct(
                   'id', v.id, 'label', v.label, 'colorHex', v.color_hex, 'sku', v.sku,
                   'stockStatus', v.stock_status,
                   'prices', coalesce((
-                    select json_agg(json_build_object('id', vp.id, 'unit', vp.unit, 'qtyPerUnit', vp.qty_per_unit, 'price', vp.price)
+                    select json_agg(json_build_object('id', vp.id, 'unit', vp.unit, 'qtyPerUnit', vp.qty_per_unit, 'price', vp.price, 'originalPrice', vp.original_price)
                                     order by vp.qty_per_unit, vp.price)
                       from variant_prices vp where vp.variant_id = v.id), '[]'))
                 order by v.sort_order)
@@ -350,6 +385,8 @@ export async function getProduct(
     images: r.images,
     variants: r.variants,
     isActive: r.is_active,
+    isFeatured: r.is_featured,
+    sold: r.sold,
     updatedAt: r.updated_at.toISOString(),
   };
 }
@@ -398,4 +435,23 @@ export async function listBrands(db: Queryable): Promise<Brand[]> {
        from brands b order by b.name`,
   );
   return rows;
+}
+
+// ---------------------------------------------------------------------------
+// Banner promo
+// ---------------------------------------------------------------------------
+
+export async function listBanners(db: Queryable, opts: { activeOnly: boolean }): Promise<PromoBanner[]> {
+  const { rows } = await db.query<PromoBanner>(
+    `select id, title, subtitle, image_url as "imageUrl", link_url as "linkUrl", theme, sort_order as "sortOrder",
+            is_active as "isActive", starts_at as "startsAt", ends_at as "endsAt"
+       from promo_banners
+      ${opts.activeOnly ? 'where is_active and (starts_at is null or starts_at <= now()) and (ends_at is null or ends_at > now())' : ''}
+      order by sort_order, created_at`,
+  );
+  return rows.map((b) => ({
+    ...b,
+    startsAt: b.startsAt ? new Date(b.startsAt).toISOString() : null,
+    endsAt: b.endsAt ? new Date(b.endsAt).toISOString() : null,
+  }));
 }

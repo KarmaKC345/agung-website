@@ -2,7 +2,7 @@ import { connection } from 'next/server';
 import { BottomNav } from '@/components/BottomNav';
 import { SiteFooter } from '@/components/SiteFooter';
 import { SiteHeader } from '@/components/SiteHeader';
-import { getStore } from '@/lib/api';
+import { getCategories, getStore } from '@/lib/api';
 import { SITE_URL } from '@/lib/config';
 import { DAY_ORDER, type StoreInfo } from '@newagung/shared';
 
@@ -40,13 +40,13 @@ export default async function StoreLayout({ children }: { children: React.ReactN
   // dibangun tanpa API. Data API tetap di-cache (fetch + tag) dan dibersihkan lewat
   // /api/revalidate setiap kali barang/harga berubah.
   await connection();
-  const store = await getStore();
+  const [store, categories] = await Promise.all([getStore(), getCategories()]);
   return (
     <>
       <a href="#isi" className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-50 focus:bg-surface focus:p-2">
         Langsung ke isi
       </a>
-      <SiteHeader store={store} />
+      <SiteHeader store={store} categories={categories} />
       <main id="isi" className="pb-16 md:pb-0">
         {children}
       </main>

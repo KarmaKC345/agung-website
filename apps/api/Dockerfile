@@ -15,11 +15,14 @@ RUN pnpm --filter @newagung/api build \
  && pnpm --filter @newagung/api deploy --prod --legacy /out
 
 FROM node:22-alpine AS runtime
-ENV NODE_ENV=production PORT=4000
+ENV NODE_ENV=production PORT=4000 SUPABASE_DIR=/app/supabase
 WORKDIR /app
 COPY --from=build /out/package.json ./
 COPY --from=build /out/node_modules ./node_modules
 COPY --from=build /repo/apps/api/dist ./dist
+# migrasi & data awal, dijalankan otomatis oleh API saat menyala
+COPY supabase/migrations ./supabase/migrations
+COPY supabase/seed.sql ./supabase/seed.sql
 # folder foto (dipasang sebagai volume oleh docker compose)
 RUN mkdir -p uploads && chown node:node uploads
 USER node

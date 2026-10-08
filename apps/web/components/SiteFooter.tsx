@@ -8,7 +8,7 @@ export function SiteFooter({ store }: { store: StoreInfo }) {
   const summary = summarizeHours(store.openingHours);
   return (
     <footer className="mt-20 border-t border-line bg-surface pb-24 md:pb-0">
-      <div className="mx-auto grid max-w-6xl gap-10 px-4 py-12 text-[15px] lg:grid-cols-[1fr_1.15fr]">
+      <div className="mx-auto grid max-w-7xl gap-10 px-4 py-12 text-[15px] lg:grid-cols-[1fr_1.15fr]">
         <div>
           <div className="flex items-center gap-3">
             <LogoMark className="h-9 w-9" />
@@ -70,7 +70,7 @@ export function SiteFooter({ store }: { store: StoreInfo }) {
         <MapEmbed store={store} className="aspect-[4/3] w-full rounded-[var(--radius-media)] sm:aspect-[16/10] lg:aspect-auto lg:min-h-[320px]" />
       </div>
       <div className="border-t border-line">
-        <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-x-6 gap-y-2 px-4 py-5 text-[13px] text-muted">
+        <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-x-6 gap-y-2 px-4 py-5 text-[13px] text-muted">
           <span>Harga di website adalah perkiraan dan dikonfirmasi toko saat memesan.</span>
           <Link href="/panel" className="tap hover:text-ink">
             Panel toko

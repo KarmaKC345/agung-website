@@ -187,7 +187,24 @@ bahwa data hilang jika browser dibersihkan.
 | Riwayat pesanan | Pesanan yang pernah dikirim dari perangkat ini (kode, tanggal, isi). |
 | Pesan ulang sekali klik | Penting untuk pembeli kantor yang belanja rutin. Isi ulang keranjang dengan **harga terbaru**, tandai barang yang harganya berubah atau habis, lalu kirim ke WA. |
 
-### 5.8 Usulan tambahan (setelah Fase 4, perlu persetujuan)
+### 5.8 Etalase gaya marketplace (permintaan klien, Oktober 2026)
+
+Klien meminta beranda yang berisi promo, barang baru, dan barang yang sering dibeli, dengan
+tampilan barang seperti Tokopedia, Shopee, Lazada, dan HnD Computer.
+
+| Sub fitur | Kebutuhan |
+|---|---|
+| Banner promo | Carousel di atas beranda, dikelola di Panel → Banner beranda: foto, judul, keterangan, halaman tujuan (harus halaman di situs ini), warna, jadwal mulai/selesai (WITA), tampil/sembunyi. Bila kosong, tampil satu banner foto toko. |
+| Harga coret (promo) | Per satuan harga (`original_price`). Harus lebih besar dari harga jual (dicek di database). Dilepas otomatis bila harga dinaikkan melewatinya (ubah harga, ubah massal, import). Kolom import `harga_coret`. |
+| Kartu barang | Foto penuh, badge persen diskon, nama 2 baris, harga, harga coret + persen, "Dibeli Nx", tombol `+` untuk barang satu varian. |
+| Paling sering dibeli | Jumlah pesanan per barang dalam 180 hari terakhir yang **sudah diproses toko** (disiapkan/siap/selesai). Bagian ini disembunyikan selama angkanya belum ada. Urutan katalog `terlaris`. |
+| Baru masuk | Urutan `terbaru`. |
+| Pilihan toko | Centang "Pilihan toko" di form barang (`products.is_featured`). |
+| Katalog | Kolom filter: kategori, penawaran (promo, pilihan toko), merek, rentang harga; tab urutan: terbaru, terlaris, diskon terbesar, harga terendah/tertinggi (+ paling sesuai di pencarian); chip filter aktif. Di HP: lembar "Filter". |
+| Detail barang | Tiga kolom: foto, info, kotak "Atur jumlah" (subtotal, + Keranjang, Beli langsung). Di HP: bilah beli di bawah layar. |
+| Kejujuran | Tidak ada hitung mundur, stok "tinggal sedikit" buatan, atau angka terjual karangan. |
+
+### 5.9 Usulan tambahan (setelah Fase 4, perlu persetujuan)
 
 **Paket daftar sekolah.** Pemilik menyusun paket per jenjang/sekolah ("Paket SD
 Kelas 1", "Daftar SMP Negeri X"). Orang tua tinggal klik "Masukkan semua ke daftar",
@@ -286,9 +303,8 @@ Angka harga: `font-variant-numeric: tabular-nums`.
 - **Status buka:** pil kecil "● Buka · tutup 22.00".
 - **Daftar pesanan:** *bottom sheet* bergaya nota (garis putus-putus, total di bawah,
   tombol hijau WhatsApp).
-- **Beranda:** kotak cari besar → kategori sebagai deretan ikon garis sederhana →
-  "Sering dicari" → "Baru masuk" → blok info toko (jam, alamat, rute, 4,5 ★ Google).
-  Tanpa carousel banner raksasa.
+- **Beranda (v3, lihat 5.8 dan `DESIGN.md`):** banner promo → ikon kategori → "Lagi promo" →
+  "Paling sering dibeli" → "Baru masuk rak" → "Pilihan toko" → merek → info toko ringkas.
 
 ### 6.4 Gerak
 
@@ -299,8 +315,8 @@ scroll-reveal, parallax, atau teks yang muncul huruf per huruf. Hormati
 ### 6.5 Struktur halaman
 
 ```
-/                      Beranda: tentang toko + cara belanja dari HP + cuplikan lorong & barang baru
-/barang                Katalog: semua barang
+/                      Beranda: banner promo, kategori, rak promo/terlaris/baru/pilihan toko, info toko
+/barang                Katalog: semua barang (?promo=1, ?pilihan=1, ?sort=terlaris, ?merek=, ?min=&max=)
 /kategori/[slug]       Barang per kategori (filter merek, harga)
 /merek/[slug]          Barang per merek (Pentel, Kenko, Joyko, …)
 /cari?q=               Hasil pencarian
@@ -366,7 +382,8 @@ brands (id uuid pk, name, slug unique)
 products (
   id uuid pk, category_id → categories, brand_id → brands null,
   name, slug unique, description, attributes jsonb default '{}',
-  is_active bool default true, search tsvector generated, created_at, updated_at
+  is_active bool default true, is_featured bool default false,   -- "Pilihan toko"
+  search tsvector generated, created_at, updated_at
 )
 
 product_variants (
@@ -382,8 +399,16 @@ variant_prices (              -- harga bertingkat per satuan
   id uuid pk, variant_id → product_variants,
   unit text,                  -- 'pcs' | 'lusin' | 'pak' | 'rim' | 'box'
   qty_per_unit int,           -- 1, 12, 10, 500, ...
-  price integer               -- rupiah, tanpa desimal
+  price integer,              -- rupiah, tanpa desimal
+  original_price integer null -- harga coret (promo), harus > price
 )
+
+promo_banners (id, title, subtitle, image_url, link_url, theme, sort_order,
+               is_active, starts_at, ends_at)
+
+product_sales (view: product_id, orders)  -- pesanan diproses, 180 hari terakhir
+
+schema_migrations (name pk, applied_at)    -- dicatat oleh migrasi otomatis API
 
 product_images (id, product_id → products, variant_id null, path, sort_order)
 
@@ -416,7 +441,8 @@ Publik:
 ```
 GET  /api/categories                    daftar + jumlah barang
 GET  /api/brands
-GET  /api/products?category=&brand=&sort=&page=
+GET  /api/products?category=&brand=&sort=&promo=&featured=&minPrice=&maxPrice=&page=
+GET  /api/banners                       banner aktif sesuai jadwal
 GET  /api/products/:slug                termasuk varian & harga bertingkat
 GET  /api/search?q=
 GET  /api/search/suggest?q=             maks 6
@@ -434,6 +460,7 @@ POST              /api/admin/import            (CSV/XLSX)
 GET               /api/admin/export
 POST/PATCH/DELETE /api/admin/categories[/:id], /api/admin/brands[/:id]
 GET/PATCH         /api/admin/orders[/:id]
+GET/POST/PUT/DELETE /api/admin/banners[/:id]
 PATCH             /api/admin/store
 GET/POST/PATCH    /api/admin/staff
 ```

@@ -1,68 +1,93 @@
 import Link from 'next/link';
-import { STOCK_LABEL, type ProductSummary } from '@newagung/shared';
+import { formatRupiah, STOCK_LABEL, type ProductSummary } from '@newagung/shared';
 import { FavoriteButton } from './FavoriteButton';
 import { Price } from './Price';
 import { ProductImage } from './ProductImage';
 import { QuickAdd } from './QuickAdd';
 
+/** "Dibeli 1rb+x" gaya marketplace: angka dibulatkan agar tidak terkesan menghitung detail */
+export function soldLabel(n: number): string {
+  if (n >= 1000) return `Dibeli ${Math.floor(n / 1000)}rb+`;
+  if (n >= 100) return `Dibeli ${Math.floor(n / 100) * 100}+`;
+  return `Dibeli ${n}x`;
+}
+
+/** Badge diskon merah di pojok foto */
+export function DiscountBadge({ percent, className = '' }: { percent: number; className?: string }) {
+  return (
+    <span className={`price inline-grid place-items-center rounded-[6px] bg-signal px-1.5 py-1 text-[12px] text-white ${className}`}>
+      <span className="sr-only">Diskon </span>
+      {percent}%
+    </span>
+  );
+}
+
+/**
+ * Kartu barang gaya marketplace: foto penuh, badge diskon, nama 2 baris, harga tebal,
+ * harga coret + persen, lalu jumlah dibeli. Tombol + hanya untuk barang tanpa pilihan.
+ */
 export function ProductCard({ product, priority }: { product: ProductSummary; priority?: boolean }) {
   const href = `/barang/${product.slug}`;
   const out = product.stockStatus === 'habis';
-  const extraColors = product.colors.length - 5;
+  const promo = product.originalPrice !== null && product.discountPercent !== null && !out;
 
   return (
     <article className="card card-hover group relative flex h-full flex-col overflow-hidden">
-      <div className="relative p-2 pb-0">
+      <div className="relative">
         <ProductImage
           src={product.image}
           name={product.name}
           categorySlug={product.categorySlug}
-          sizes="(min-width: 1024px) 220px, (min-width: 640px) 33vw, 50vw"
+          sizes="(min-width: 1280px) 210px, (min-width: 1024px) 18vw, (min-width: 640px) 30vw, 50vw"
           priority={priority}
-          className={`rounded-[10px] ${out ? 'opacity-50' : ''}`}
+          className={`rounded-none ${out ? 'opacity-45' : ''}`}
         />
-        <FavoriteButton productId={product.id} name={product.name} className="absolute top-4 right-4 z-10" />
+        {promo && <DiscountBadge percent={product.discountPercent!} className="absolute top-2 left-2" />}
+        {out && (
+          <span className="absolute inset-x-0 top-1/2 mx-auto w-fit -translate-y-1/2 rounded-full bg-ink/80 px-3 py-1 text-[12px] font-semibold text-white">
+            {STOCK_LABEL.habis}
+          </span>
+        )}
+        <FavoriteButton productId={product.id} name={product.name} className="absolute top-2 right-2 z-10" />
       </div>
 
-      <div className="flex flex-1 flex-col gap-1 p-3 pt-2.5">
-        {product.brand && <p className="text-[12px] font-medium text-muted">{product.brand}</p>}
-        <h3 className="text-[14px] leading-snug font-medium">
-          <Link href={href} className="line-clamp-2 after:absolute after:inset-0 after:content-['']">
+      <div className="flex flex-1 flex-col p-2.5 pb-3 sm:p-3">
+        <h3 className="text-[13px] leading-[1.35] sm:text-[14px]">
+          <Link href={href} className="line-clamp-2 min-h-[2.7em] after:absolute after:inset-0 after:content-[''] group-hover:text-brand-text">
             {product.name}
           </Link>
         </h3>
-        {product.colors.length > 0 && (
-          <ul className="mt-0.5 flex items-center gap-1" aria-label={`Warna: ${product.colors.map((c) => c.label).join(', ')}`}>
-            {product.colors.slice(0, 5).map((c) => (
-              <li key={c.label} className="size-3 rounded-full ring-1 ring-black/10" style={{ background: c.hex }} title={c.label} />
-            ))}
-            {extraColors > 0 && <li className="text-[11px] text-muted">+{extraColors}</li>}
-          </ul>
+
+        <p className="mt-1.5 flex flex-wrap items-baseline gap-x-1">
+          {product.priceVaries && <span className="text-[11px] text-muted">mulai</span>}
+          <Price value={product.price} className="text-[16px] sm:text-[17px]" />
+          <span className="text-[11px] text-muted">/{product.unit}</span>
+        </p>
+        {promo && (
+          <p className="mt-0.5 flex items-center gap-1.5 text-[12px] leading-none">
+            <s className="text-muted tabular-nums">
+              <span className="sr-only">Harga normal </span>
+              {formatRupiah(product.originalPrice!)}
+            </s>
+            <span className="font-bold text-signal-text">{product.discountPercent}%</span>
+          </p>
         )}
+
         <div className="mt-auto flex items-end justify-between gap-2 pt-2">
-          <div className="min-w-0">
-            {out ? (
-              <p className="text-[13px] font-semibold text-danger">{STOCK_LABEL.habis}</p>
+          <p className="min-w-0 truncate text-[12px] text-muted">
+            {product.stockStatus === 'sedikit' ? (
+              <span className="font-semibold text-warn">{STOCK_LABEL.sedikit}</span>
+            ) : product.sold > 0 ? (
+              soldLabel(product.sold)
             ) : (
-              <>
-                {product.priceVaries && <span className="block text-[11px] leading-none text-muted">mulai</span>}
-                <p className="flex flex-wrap items-baseline gap-x-1">
-                  <Price value={product.price} className="text-[17px] sm:text-[19px]" />
-                  <span className="text-[12px] text-muted">/{product.unit}</span>
-                </p>
-                {product.stockStatus === 'sedikit' && <p className="mt-0.5 text-[12px] font-medium text-warn">{STOCK_LABEL.sedikit}</p>}
-              </>
+              product.brand ?? ''
             )}
-          </div>
-          <div className="relative z-10">
-            {product.quickAdd ? (
+          </p>
+          {product.quickAdd && !out && (
+            <div className="relative z-10 -mb-0.5">
               <QuickAdd product={product} />
-            ) : !out ? (
-              <Link href={href} className="tap grid h-10 place-items-center rounded-[10px] bg-sunken px-3 text-[13px] font-semibold hover:bg-brand-tint">
-                Pilih
-              </Link>
-            ) : null}
-          </div>
+            </div>
+          )}
         </div>
       </div>
     </article>
@@ -70,29 +95,31 @@ export function ProductCard({ product, priority }: { product: ProductSummary; pr
 }
 
 /**
- * Satu baris barang: di HP digeser ke samping (kartu 168px), di layar lebar 5 kolom.
+ * Satu baris barang: di HP digeser ke samping (kartu 152px), di layar lebar 6 kolom.
  */
-export function ProductRow({ products }: { products: ProductSummary[] }) {
+export function ProductRow({ products, priorityCount = 0 }: { products: ProductSummary[]; priorityCount?: number }) {
   return (
     <div className="scrollbar-none -mx-4 snap-x scroll-px-4 overflow-x-auto px-4 lg:mx-0 lg:overflow-visible lg:px-0">
-      <div className="grid w-max auto-cols-[168px] grid-flow-col gap-3 lg:w-full lg:auto-cols-auto lg:grid-flow-row lg:grid-cols-5 lg:gap-4">
-        {products.map((p) => (
-          <div key={p.id} className="h-full snap-start">
-            <ProductCard product={p} />
-          </div>
+      <ul className="grid w-max auto-cols-[152px] grid-flow-col gap-2.5 sm:auto-cols-[176px] lg:w-full lg:auto-cols-auto lg:grid-flow-row lg:grid-cols-6 lg:gap-3">
+        {products.map((p, i) => (
+          <li key={p.id} className="h-full snap-start">
+            <ProductCard product={p} priority={i < priorityCount} />
+          </li>
         ))}
-      </div>
+      </ul>
     </div>
   );
 }
 
-/** Grid barang */
-export function ProductGrid({ products, priorityCount = 0 }: { products: ProductSummary[]; priorityCount?: number }) {
+/** Grid barang. `wide` = halaman tanpa kolom filter (6 kolom di layar lebar) */
+export function ProductGrid({ products, priorityCount = 0, wide = false }: { products: ProductSummary[]; priorityCount?: number; wide?: boolean }) {
   return (
-    <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-5">
+    <ul className={`grid grid-cols-2 gap-2.5 sm:grid-cols-3 sm:gap-3 md:grid-cols-4 ${wide ? 'lg:grid-cols-5 xl:grid-cols-6' : 'xl:grid-cols-5'}`}>
       {products.map((p, i) => (
-        <ProductCard key={p.id} product={p} priority={i < priorityCount} />
+        <li key={p.id}>
+          <ProductCard product={p} priority={i < priorityCount} />
+        </li>
       ))}
-    </div>
+    </ul>
   );
 }

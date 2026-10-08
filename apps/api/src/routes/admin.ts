@@ -2,6 +2,7 @@ import { Router } from 'express';
 import multer from 'multer';
 import { z } from 'zod';
 import {
+  bannerInputSchema,
   brandInputSchema,
   bulkPriceSchema,
   categoryInputSchema,
@@ -18,7 +19,7 @@ import type { Ctx } from '../app';
 import { createAuth, ownerOnly } from '../auth';
 import { withTx } from '../db';
 import { HttpError, notFound } from '../errors';
-import { getProduct, listBrands, listCategories } from '../lib/catalog';
+import { getProduct, listBanners, listBrands, listCategories } from '../lib/catalog';
 import { exportRows, importRows, parseSheet, templateCsv } from '../lib/importer';
 import { listOrders, setOrderStatus } from '../lib/orders';
 import { listPriceRows, saveProduct, uniqueSlug } from '../lib/products-admin';
@@ -147,7 +148,8 @@ export function adminRoutes(ctx: Ctx): Router {
       db,
       async (c) => {
         const { rows } = await c.query<{ slug: string }>(
-          `update variant_prices vp set price = $2
+          `update variant_prices vp set price = $2,
+                  original_price = case when vp.original_price > $2 then vp.original_price else null end
              from product_variants v join products p on p.id = v.product_id
             where vp.id = $1 and v.id = vp.variant_id
             returning p.slug`,
@@ -170,7 +172,14 @@ export function adminRoutes(ctx: Ctx): Router {
       async (c) => {
         const { rowCount } = await c.query(
           `update variant_prices vp
-              set price = greatest(0, round(vp.price * (1 + $1::numeric / 100) / $2) * $2)
+              set price = greatest(0, round(vp.price * (1 + $1::numeric / 100) / $2) * $2),
+                  -- harga coret ikut naik/turun dengan persentase yang sama
+                  original_price = case
+                    when vp.original_price is not null
+                     and round(vp.original_price * (1 + $1::numeric / 100) / $2) * $2
+                       > greatest(0, round(vp.price * (1 + $1::numeric / 100) / $2) * $2)
+                    then round(vp.original_price * (1 + $1::numeric / 100) / $2) * $2
+                    else null end
              from product_variants v join products p on p.id = v.product_id
             where v.id = vp.variant_id
               and ($3::uuid is null or p.brand_id = $3)
@@ -277,6 +286,43 @@ export function adminRoutes(ctx: Ctx): Router {
     const { rowCount } = await db.query('delete from brands where id = $1', [id]);
     if (!rowCount) throw notFound('Merek');
     revalidate(['brands', 'products']);
+    res.status(204).end();
+  });
+
+  // ---------------------------------------------------------------- banner promo
+  r.get('/banners', async (_req, res) => {
+    res.json(await listBanners(db, { activeOnly: false }));
+  });
+
+  r.post('/banners', async (req, res) => {
+    const b = bannerInputSchema.parse(req.body);
+    const { rows } = await db.query<{ id: string }>(
+      `insert into promo_banners (title, subtitle, image_url, link_url, theme, sort_order, is_active, starts_at, ends_at)
+       values ($1, $2, $3, $4, $5, $6, $7, $8, $9) returning id`,
+      [b.title, b.subtitle, b.imageUrl, b.linkUrl, b.theme, b.sortOrder, b.isActive, b.startsAt, b.endsAt],
+    );
+    revalidate(['banners']);
+    res.status(201).json(rows[0]);
+  });
+
+  r.put('/banners/:id', async (req, res) => {
+    const { id } = idParam.parse(req.params);
+    const b = bannerInputSchema.parse(req.body);
+    const { rowCount } = await db.query(
+      `update promo_banners set title = $2, subtitle = $3, image_url = $4, link_url = $5, theme = $6, sort_order = $7,
+              is_active = $8, starts_at = $9, ends_at = $10 where id = $1`,
+      [id, b.title, b.subtitle, b.imageUrl, b.linkUrl, b.theme, b.sortOrder, b.isActive, b.startsAt, b.endsAt],
+    );
+    if (!rowCount) throw notFound('Banner');
+    revalidate(['banners']);
+    res.json({ id });
+  });
+
+  r.delete('/banners/:id', async (req, res) => {
+    const { id } = idParam.parse(req.params);
+    const { rowCount } = await db.query('delete from promo_banners where id = $1', [id]);
+    if (!rowCount) throw notFound('Banner');
+    revalidate(['banners']);
     res.status(204).end();
   });
 

@@ -4,7 +4,7 @@ import { z } from 'zod';
 import { currentPricesInputSchema, getOpenStatus, orderInputSchema, productListQuerySchema } from '@newagung/shared';
 import type { Ctx } from '../app';
 import { notFound, HttpError } from '../errors';
-import { getProduct, listBrands, listCategories, listProducts, productSummariesByIds, recordSearchMiss, suggest } from '../lib/catalog';
+import { getProduct, listBanners, listBrands, listCategories, listProducts, productSummariesByIds, recordSearchMiss, suggest } from '../lib/catalog';
 import { createOrder, currentPrices } from '../lib/orders';
 import { getStore } from '../lib/store';
 
@@ -29,6 +29,10 @@ export function publicRoutes({ db, env }: Ctx): Router {
 
   r.get('/categories', async (_req, res) => {
     res.json(await listCategories(db));
+  });
+
+  r.get('/banners', async (_req, res) => {
+    res.json(await listBanners(db, { activeOnly: true }));
   });
 
   r.get('/brands', async (_req, res) => {

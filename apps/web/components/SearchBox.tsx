@@ -85,7 +85,7 @@ export function SearchBox({ large = false }: { large?: boolean }) {
       </label>
       <div
         className={`flex items-center gap-2.5 rounded-tag border border-field bg-surface focus-within:border-brand-text focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-brand-text ${
-          large ? 'h-14 px-4 text-[17px]' : 'h-12 px-3.5 text-[15px]'
+          large ? 'h-12 pr-1.5 pl-4 text-[15px]' : 'h-12 px-3.5 text-[15px]'
         }`}
       >
         <MagnifyingGlass size={18} weight="bold" className="shrink-0 text-muted" aria-hidden />
@@ -120,7 +120,7 @@ export function SearchBox({ large = false }: { large?: boolean }) {
           }}
         />
         {large && (
-          <button type="submit" className="btn btn-primary hidden h-10 min-h-0 shrink-0 px-4 text-sm sm:inline-flex">
+          <button type="submit" className="btn btn-primary hidden h-9 min-h-0 shrink-0 px-5 text-sm sm:inline-flex">
             Cari
           </button>
         )}

@@ -19,6 +19,8 @@ export function BottomNav() {
   const hydrated = useHydrated();
   const count = useShop((s) => s.lines.length);
   const isActive = (href: string) => (href === '/' ? path === '/' : path.startsWith(href));
+  // halaman barang punya bilah beli sendiri di bawah layar
+  if (/^\/barang\/[^/]+$/.test(path)) return null;
 
   return (
     <nav

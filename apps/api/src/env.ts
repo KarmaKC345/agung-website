@@ -18,6 +18,18 @@ const schema = z.object({
   SITE_URL: z.string().default(''),
   REVALIDATE_SECRET: z.string().default(''),
   DEV_AUTH_TOKEN: z.string().default(''),
+  /** Folder berisi migrations/ dan seed.sql */
+  SUPABASE_DIR: z.string().default(''),
+  /** Jalankan migrasi yang belum jalan saat API menyala (default: ya) */
+  AUTO_MIGRATE: z
+    .enum(['true', 'false'])
+    .default('true')
+    .transform((v) => v === 'true'),
+  /** Isi data awal (seed.sql) bila database masih kosong (default: ya) */
+  AUTO_SEED: z
+    .enum(['true', 'false'])
+    .default('true')
+    .transform((v) => v === 'true'),
 });
 
 export type Env = z.infer<typeof schema>;

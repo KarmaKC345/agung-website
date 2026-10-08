@@ -12,8 +12,6 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?isi POSTGRES_PASSWORD di .env}
     volumes:
       - db-data:/var/lib/postgresql/data
-      - ./supabase:/supabase:ro
-      - ./docker/db/init.sh:/docker-entrypoint-initdb.d/10-init.sh:ro
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U newagung -d newagung"]
       interval: 5s

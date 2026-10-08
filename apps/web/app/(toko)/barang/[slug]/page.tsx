@@ -1,19 +1,18 @@
 import type { Metadata } from 'next';
 import Image from 'next/image';
 import Link from 'next/link';
-import { Clock, Storefront, WhatsappLogo } from '@phosphor-icons/react/ssr';
+import { Clock, Storefront, ThumbsUp } from '@phosphor-icons/react/ssr';
 import { notFound } from 'next/navigation';
 import { waLink } from '@newagung/shared';
 import { Breadcrumbs } from '@/components/Breadcrumbs';
 import { FavoriteButton } from '@/components/FavoriteButton';
-import { ProductRow } from '@/components/ProductCard';
+import { ProductRow, soldLabel } from '@/components/ProductCard';
 import { ProductImage } from '@/components/ProductImage';
 import { ProductPurchase } from '@/components/ProductPurchase';
 import { getProduct, getProducts, getStore } from '@/lib/api';
 import { SITE_URL } from '@/lib/config';
 
 type Props = { params: Promise<{ slug: string }> };
-
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
@@ -36,7 +35,7 @@ export default async function ProductPage({ params }: Props) {
   if (!product) notFound();
 
   const related = product.category
-    ? (await getProducts({ category: product.category.slug, pageSize: 6 })).items.filter((p) => p.id !== product.id).slice(0, 5)
+    ? (await getProducts({ category: product.category.slug, pageSize: 7 })).items.filter((p) => p.id !== product.id).slice(0, 6)
     : [];
   const crumbs = [
     ...(product.category?.parent ? [{ href: `/kategori/${product.category.parent.slug}`, label: product.category.parent.name }] : []),
@@ -62,72 +61,98 @@ export default async function ProductPage({ params }: Props) {
     },
   };
 
+  const waHref = waLink(store.whatsapp, `Halo New Agung, saya mau tanya tentang ${product.name}.`);
+  const anyStock = product.variants.some((v) => v.stockStatus !== 'habis');
+
   return (
-    <div className="mx-auto max-w-6xl px-4 pt-5">
+    <div className="mx-auto max-w-7xl px-4 pt-4 pb-20 lg:pb-0">
       <Breadcrumbs items={crumbs} />
 
-      <div className="mt-5 grid gap-6 md:grid-cols-[minmax(0,1.05fr)_minmax(0,1fr)] md:gap-12">
-        <div className="md:sticky md:top-24 md:self-start">
-          <div className="card relative overflow-hidden rounded-[var(--radius-media)] p-3">
+      <div className="mt-4 grid gap-6 lg:grid-cols-[340px_minmax(0,1fr)] lg:gap-8 xl:grid-cols-[400px_minmax(0,1fr)]">
+        <div className="lg:sticky lg:top-[148px] lg:self-start">
+          <div className="card relative overflow-hidden">
             {product.images[0] ? (
-              <div className="relative aspect-square overflow-hidden rounded-[14px] bg-white">
-                <Image src={product.images[0]} alt={product.name} fill priority sizes="(min-width: 768px) 560px, 100vw" className="object-contain p-6" />
+              <div className="relative aspect-square bg-white">
+                <Image src={product.images[0]} alt={product.name} fill priority sizes="(min-width: 1280px) 400px, (min-width: 1024px) 340px, 100vw" className="object-contain p-6" />
               </div>
             ) : (
-              <ProductImage src={null} name={product.name} categorySlug={product.category?.slug} sizes="560px" className="rounded-[14px]" />
+              <ProductImage src={null} name={product.name} categorySlug={product.category?.slug} sizes="400px" />
             )}
-            <FavoriteButton productId={product.id} name={product.name} className="absolute top-6 right-6" />
+            <FavoriteButton productId={product.id} name={product.name} className="absolute top-3 right-3" />
           </div>
           {product.images.length > 1 && (
-            <ul className="mt-3 grid grid-cols-5 gap-2">
+            <ul className="mt-2 grid grid-cols-5 gap-2">
               {product.images.slice(1).map((src) => (
                 <li key={src} className="card relative aspect-square overflow-hidden bg-white">
-                  <Image src={src} alt="" fill sizes="110px" className="object-contain p-1.5" />
+                  <Image src={src} alt="" fill sizes="80px" className="object-contain p-1.5" />
                 </li>
               ))}
             </ul>
           )}
         </div>
 
-        <div>
-          {product.brand && (
-            <Link href={`/merek/${product.brand.slug}`} className="tap text-[14px] font-semibold text-brand-text hover:underline">
-              {product.brand.name}
-            </Link>
+        <ProductPurchase
+          product={product}
+          waHref={waHref}
+          head={
+            <>
+              <h1 className="text-[20px] leading-[1.25] font-bold tracking-[-0.015em] text-balance sm:text-[24px]">{product.name}</h1>
+              <p className="mt-2 flex flex-wrap items-center gap-x-2 gap-y-1 text-[14px] text-muted">
+                {product.brand && (
+                  <>
+                    <span>
+                      Merek{' '}
+                      <Link href={`/merek/${product.brand.slug}`} className="font-semibold text-brand-text hover:underline">
+                        {product.brand.name}
+                      </Link>
+                    </span>
+                    <span aria-hidden>·</span>
+                  </>
+                )}
+                {product.sold > 0 && (
+                  <>
+                    <span>{soldLabel(product.sold)}</span>
+                    <span aria-hidden>·</span>
+                  </>
+                )}
+                <span className={anyStock ? 'text-ok' : 'text-danger'}>{anyStock ? 'Stok ada' : 'Stok habis'}</span>
+                {product.isFeatured && (
+                  <span className="ml-1 inline-flex items-center gap-1 rounded-full bg-brand-tint px-2 py-0.5 text-[12px] font-semibold text-brand-text">
+                    <ThumbsUp size={12} weight="fill" aria-hidden />
+                    Pilihan toko
+                  </span>
+                )}
+              </p>
+            </>
+          }
+        >
+          {product.description && (
+            <section aria-labelledby="ket">
+              <h2 id="ket" className="text-[16px] font-bold">
+                Keterangan
+              </h2>
+              <p className="mt-2 max-w-[65ch] text-[15px] leading-relaxed whitespace-pre-line text-muted">{product.description}</p>
+            </section>
           )}
-          <h1 className="mt-1 text-[26px] leading-[1.15] font-bold tracking-[-0.02em] text-balance sm:text-[32px]">{product.name}</h1>
-          {product.description && <p className="mt-3 max-w-[60ch] text-[16px] leading-relaxed text-muted">{product.description}</p>}
-
-          <ProductPurchase product={product} />
-
-          <ul className="mt-8 space-y-3 border-t border-line pt-5 text-[14px] text-muted">
+          <ul className="mt-6 space-y-3 rounded-tag bg-sunken/70 p-4 text-[14px] text-muted">
             <li className="flex gap-3">
               <Storefront size={20} className="mt-0.5 shrink-0 text-ink" aria-hidden />
-              <span>Ambil di Jl. DR. Ratulangi No.52 atau minta diantar. Harga akhir dan stok dikonfirmasi toko saat memesan.</span>
+              <span>
+                <span className="font-semibold text-ink">Ambil di toko</span> Jl. DR. Ratulangi No.52, atau minta diantar. Harga akhir dan stok dikonfirmasi toko saat memesan.
+              </span>
             </li>
             <li className="flex gap-3">
               <Clock size={20} className="mt-0.5 shrink-0 text-ink" aria-hidden />
               <span>Harga diperbarui {updatedFmt.format(new Date(product.updatedAt))}.</span>
             </li>
-            <li className="flex gap-3">
-              <WhatsappLogo size={20} className="mt-0.5 shrink-0 text-wa-text" aria-hidden />
-              <a
-                href={waLink(store.whatsapp, `Halo New Agung, saya mau tanya tentang ${product.name}.`)}
-                target="_blank"
-                rel="noopener"
-                className="tap font-semibold text-wa-text underline underline-offset-4"
-              >
-                Tanya barang ini lewat WhatsApp
-              </a>
-            </li>
           </ul>
-        </div>
+        </ProductPurchase>
       </div>
 
       {related.length > 0 && (
-        <section className="mt-16" aria-labelledby="serak">
-          <h2 id="serak" className="mb-4 text-[20px] font-bold tracking-[-0.01em]">
-            Satu rak dengan barang ini
+        <section className="mt-12" aria-labelledby="serak">
+          <h2 id="serak" className="mb-3 text-[18px] font-bold tracking-[-0.015em] sm:text-[20px]">
+            Barang serupa
           </h2>
           <ProductRow products={related} />
         </section>

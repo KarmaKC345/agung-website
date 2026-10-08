@@ -1,43 +1,46 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import { Suspense } from 'react';
 import { Breadcrumbs } from '@/components/Breadcrumbs';
-import { SortSelect } from '@/components/ListControls';
-import { hrefWith, Pagination } from '@/components/Pagination';
-import { ProductGrid } from '@/components/ProductCard';
-import { getBrands, getProducts } from '@/lib/api';
+import { Catalog } from '@/components/Catalog';
+import { getBrands, getCategories, getProducts } from '@/lib/api';
+import { currentQuery, toListParams, type CatalogSearch } from '@/lib/catalog-params';
 
-type Props = { params: Promise<{ slug: string }>; searchParams: Promise<{ sort?: string; page?: string }> };
+type Props = { params: Promise<{ slug: string }>; searchParams: Promise<CatalogSearch> };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const brand = (await getBrands()).find((b) => b.slug === slug);
-  return brand ? { title: `${brand.name}`, description: `Produk ${brand.name} di Toko New Agung Makassar.` } : {};
+  return brand ? { title: `${brand.name}`, description: `Produk ${brand.name} di Toko New Agung Makassar.`, alternates: { canonical: `/merek/${slug}` } } : {};
 }
 
 export default async function BrandPage({ params, searchParams }: Props) {
   const { slug } = await params;
   const sp = await searchParams;
-  const brand = (await getBrands()).find((b) => b.slug === slug);
+  const [brands, categories] = await Promise.all([getBrands(), getCategories()]);
+  const brand = brands.find((b) => b.slug === slug);
   if (!brand) notFound();
-  const page = Math.max(1, Number(sp.page) || 1);
-  const result = await getProducts({ brand: slug, sort: sp.sort, page, pageSize: 30 });
+  const list = { ...toListParams(sp), brand: slug };
+  const result = await getProducts({ ...list, pageSize: 30 });
+  const { merek: _drop, ...query } = currentQuery(sp, list);
 
   return (
-    <div className="mx-auto max-w-6xl px-4 pt-5">
+    <div className="mx-auto max-w-7xl px-4 pt-4">
       <Breadcrumbs items={[{ href: '/kategori', label: 'Merek' }, { label: brand.name }]} />
-      <div className="mt-4 flex flex-wrap items-end justify-between gap-3">
-        <h1 className="text-[28px] font-bold">
-          {brand.name} <span className="text-[16px] font-normal text-muted tabular-nums">{result.total} barang</span>
-        </h1>
-        <Suspense>
-          <SortSelect />
-        </Suspense>
-      </div>
-      <div className="mt-4">
-        <ProductGrid products={result.items} priorityCount={2} />
-      </div>
-      <Pagination page={page} pageSize={result.pageSize} total={result.total} makeHref={(p) => hrefWith(`/merek/${slug}`, { sort: sp.sort, page: p })} />
+      <Catalog
+        base={`/merek/${slug}`}
+        query={query}
+        categories={categories}
+        brands={brands}
+        hideBrand
+        result={result}
+        page={list.page}
+        header={
+          <h1 className="text-[22px] font-bold tracking-[-0.015em] sm:text-[26px]">
+            {brand.name} <span className="text-[15px] font-normal text-muted tabular-nums">{result.total} barang</span>
+          </h1>
+        }
+        empty={<p className="card rounded-[var(--radius-media)] p-8 text-center text-muted">Tidak ada barang {brand.name} yang cocok dengan filter ini.</p>}
+      />
     </div>
   );
 }

@@ -16,7 +16,7 @@ export default async function AboutPage() {
   const store = await getStore();
 
   return (
-    <div className="mx-auto max-w-6xl px-4 pt-5">
+    <div className="mx-auto max-w-7xl px-4 pt-5">
       <Breadcrumbs items={[{ label: 'Alamat & jam buka' }]} />
       <h1 className="mt-4 text-[28px] leading-tight font-bold sm:text-[34px]">{store.name}</h1>
       <StatusPill hours={store.openingHours} timezone={store.timezone} className="mt-2 text-muted" />

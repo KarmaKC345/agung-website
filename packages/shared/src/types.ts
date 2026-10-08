@@ -27,6 +27,8 @@ export interface VariantPrice {
   unit: string;
   qtyPerUnit: number;
   price: number;
+  /** harga coret (sebelum diskon), null bila tidak promo */
+  originalPrice: number | null;
 }
 
 export interface Variant {
@@ -49,6 +51,12 @@ export interface ProductSummary {
   /** harga satuan terkecil dari varian pertama yang tersedia */
   price: number;
   unit: string;
+  /** harga coret bila sedang promo */
+  originalPrice: number | null;
+  discountPercent: number | null;
+  /** jumlah pesanan yang sudah diproses toko (180 hari) */
+  sold: number;
+  featured: boolean;
   /** true jika varian punya harga berbeda-beda */
   priceVaries: boolean;
   stockStatus: StockStatus;
@@ -69,6 +77,8 @@ export interface ProductDetail {
   images: string[];
   variants: Variant[];
   isActive: boolean;
+  isFeatured: boolean;
+  sold: number;
   updatedAt: string;
 }
 
@@ -131,4 +141,17 @@ export interface StaffMember {
   email: string;
   role: StaffRole;
   active: boolean;
+}
+
+export interface PromoBanner {
+  id: string;
+  title: string;
+  subtitle: string;
+  imageUrl: string | null;
+  linkUrl: string;
+  theme: 'brand' | 'signal' | 'ink';
+  sortOrder: number;
+  isActive: boolean;
+  startsAt: string | null;
+  endsAt: string | null;
 }

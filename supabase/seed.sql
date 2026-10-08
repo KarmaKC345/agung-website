@@ -272,3 +272,24 @@ select pg_temp.seed_product('tinta', 'e-print', 'Tinta e-Print untuk Epson 100 m
     {"label":"Cyan","color":"#00A3D9","prices":[{"unit":"botol","qty":1,"price":25000}]},
     {"label":"Magenta","color":"#D81B7A","prices":[{"unit":"botol","qty":1,"price":25000}]},
     {"label":"Kuning","color":"#F5D90A","prices":[{"unit":"botol","qty":1,"price":25000}]}]');
+
+-- ---------------------------------------------------------------------------
+-- PROMO & PILIHAN TOKO CONTOH (butuh migrasi 20261008000000_marketplace)
+-- ---------------------------------------------------------------------------
+
+-- harga coret = harga sekarang dinaikkan sekian persen, dibulatkan ke Rp500
+update variant_prices vp set original_price = ceil(vp.price * x.factor / 500) * 500
+  from (values
+    ('stabilo-boss-original', 'pcs', 1.18),
+    ('buku-tulis-sidu', 'pak', 1.15),
+    ('kertas-sidu-a4-70', 'rim', 1.12),
+    ('snowman-board-marker', 'lusin', 1.15),
+    ('crayon-titi-12', 'kotak', 1.2),
+    ('casio-fx-991id-plus', 'pcs', 1.1)
+  ) as x(slug, unit, factor)
+  join products p on p.slug = x.slug
+  join product_variants v on v.product_id = p.id
+ where vp.variant_id = v.id and vp.unit = x.unit;
+
+update products set is_featured = true
+ where slug in ('pentel-energel-bln105', 'kertas-paperone-a4-80', 'bantex-ring-binder-a4', 'map-seminar-resleting', 'tinta-eprint-epson', 'faber-castell-pensil-2b');

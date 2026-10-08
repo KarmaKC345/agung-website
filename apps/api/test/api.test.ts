@@ -212,6 +212,15 @@ describe('panel', () => {
 
     const { rows } = await db.query('select old_price, new_price from price_history h join variant_prices vp on vp.id = h.variant_price_id where vp.variant_id = $1', [detail.variants[0].id]);
     expect(rows).toEqual([{ old_price: 9000, new_price: 9500 }]);
+
+    // ganti nama tidak mengubah alamat halaman (tautan lama & hasil Google tetap jalan)
+    const renamed = await request(app)
+      .put(`/api/admin/products/${productId}`)
+      .set(auth)
+      .send({ name: 'Lem UHU Serbaguna', categoryId: lem.id, brandId: null, variants: after.variants.map((v: { id: string; label: string; prices: unknown }) => ({ id: v.id, label: v.label, prices: v.prices })) })
+      .expect(200);
+    expect(renamed.body.slug).toBe('lem-kertas-uhu-21-ml');
+    expect((await request(app).get('/api/products/lem-kertas-uhu-21-ml').expect(200)).body.name).toBe('Lem UHU Serbaguna');
   });
 
   it('mengubah harga cepat dan massal per merek', async () => {
@@ -285,5 +294,116 @@ describe('keamanan env', () => {
     expect(loadEnv({ ...base, NODE_ENV: 'development' } as NodeJS.ProcessEnv).DEV_AUTH_TOKEN).toBe('dev-owner');
     expect(loadEnv({ ...base, NODE_ENV: 'production' } as NodeJS.ProcessEnv).DEV_AUTH_TOKEN).toBe('');
     expect(loadEnv({ ...base, SUPABASE_URL: 'https://abc.supabase.co' } as NodeJS.ProcessEnv).DEV_AUTH_TOKEN).toBe('');
+  });
+});
+
+describe('marketplace: promo, terlaris, pilihan toko, banner', () => {
+  it('menampilkan harga coret dan persen diskon di daftar promo', async () => {
+    const res = await request(app).get('/api/products?promo=1&sort=diskon&pageSize=30').expect(200);
+    expect(res.body.total).toBeGreaterThan(0);
+    for (const p of res.body.items) {
+      expect(p.originalPrice).toBeGreaterThan(p.price);
+      expect(p.discountPercent).toBe(Math.round((1 - p.price / p.originalPrice) * 100));
+    }
+    const pcts = res.body.items.map((p: { discountPercent: number }) => p.discountPercent);
+    expect(pcts).toEqual([...pcts].sort((a, b) => b - a));
+    const detail = (await request(app).get('/api/products/crayon-titi-12')).body;
+    expect(detail.variants[0].prices[0]).toMatchObject({ unit: 'kotak', price: 15000, originalPrice: 18000 });
+  });
+
+  it('memfilter pilihan toko', async () => {
+    const res = await request(app).get('/api/products?featured=1').expect(200);
+    expect(res.body.total).toBeGreaterThan(0);
+    expect(res.body.items.every((p: { featured: boolean }) => p.featured)).toBe(true);
+  });
+
+  it('menghitung dibeli hanya dari pesanan yang sudah diproses toko', async () => {
+    const casio = (await request(app).get('/api/products/casio-mx-12b')).body;
+    const make = async () =>
+      (
+        await request(app)
+          .post('/api/orders')
+          .send({ customerName: 'Uji', fulfilment: 'ambil', items: [{ variantId: casio.variants[0].id, unit: 'pcs', qty: 1 }] })
+          .expect(201)
+      ).body.code as string;
+    const done = await make();
+    await make(); // tetap 'baru' -> tidak dihitung
+    const { rows } = await db.query<{ id: string }>('select id from orders where code = $1', [done]);
+    await request(app).patch(`/api/admin/orders/${rows[0]!.id}`).set(auth).send({ status: 'selesai' }).expect(200);
+
+    const p = (await request(app).get('/api/products/casio-mx-12b')).body;
+    expect(p.sold).toBe(1);
+    const items = (await request(app).get('/api/products?sort=terlaris&pageSize=48')).body.items as { slug: string; sold: number }[];
+    const sold = items.map((i) => i.sold);
+    expect(sold).toEqual([...sold].sort((a, b) => b - a));
+    expect(items.find((i) => i.slug === 'casio-mx-12b')?.sold).toBe(1);
+  });
+
+  it('melepas harga coret otomatis bila harga dinaikkan melewatinya', async () => {
+    const rows = (await request(app).get('/api/admin/prices?q=crayon').set(auth)).body.items;
+    const row = rows.find((r: { unit: string; variantLabel: string }) => r.unit === 'kotak' && r.variantLabel === '12 warna');
+    await request(app).patch(`/api/admin/prices/${row.variantPriceId}`).set(auth).send({ price: 16000 }).expect(200);
+    let p = (await request(app).get('/api/products/crayon-titi-12')).body;
+    expect(p.variants[0].prices[0]).toMatchObject({ price: 16000, originalPrice: 18000 });
+    await request(app).patch(`/api/admin/prices/${row.variantPriceId}`).set(auth).send({ price: 19000 }).expect(200);
+    p = (await request(app).get('/api/products/crayon-titi-12')).body;
+    expect(p.variants[0].prices[0]).toMatchObject({ price: 19000, originalPrice: null });
+  });
+
+  it('menyimpan harga coret dan pilihan toko dari form, dan menolak harga coret yang lebih kecil', async () => {
+    const created = await request(app)
+      .post('/api/admin/products')
+      .set(auth)
+      .send({
+        name: 'Map Plastik Kancing F4',
+        categoryId: null,
+        brandId: null,
+        isFeatured: true,
+        variants: [{ label: '', prices: [{ unit: 'pcs', qtyPerUnit: 1, price: 2000, originalPrice: 2500 }] }],
+      })
+      .expect(201);
+    const p = (await request(app).get(`/api/products/${created.body.slug}`)).body;
+    expect(p.isFeatured).toBe(true);
+    expect(p.variants[0].prices[0].originalPrice).toBe(2500);
+    await request(app)
+      .post('/api/admin/products')
+      .set(auth)
+      .send({ name: 'Salah', categoryId: null, brandId: null, variants: [{ prices: [{ unit: 'pcs', qtyPerUnit: 1, price: 2000, originalPrice: 1500 }] }] })
+      .expect(400);
+  });
+
+  it('import: kolom harga_coret mengisi atau melepas promo', async () => {
+    const csv = [
+      'nama,varian,satuan,isi,harga,harga_coret',
+      'Lem Fox PVAc,150 g,pcs,1,11000,13500',
+      'Lem Fox PVAc,1 kg,pcs,1,42000,',
+    ].join('\n');
+    await request(app).post('/api/admin/import').set(auth).attach('file', Buffer.from(csv), 'promo.csv').expect(200);
+    const fox = (await request(app).get('/api/products/lem-fox')).body;
+    const byLabel = Object.fromEntries(fox.variants.map((v: { label: string; prices: { originalPrice: number | null }[] }) => [v.label, v.prices[0]!.originalPrice]));
+    expect(byLabel).toMatchObject({ '150 g': 13500, '1 kg': null });
+  });
+
+  it('banner: hanya yang aktif dan dalam jadwal tampil di publik', async () => {
+    const pub = (await request(app).get('/api/banners').expect(200)).body;
+    expect(pub.length).toBeGreaterThanOrEqual(3);
+    const past = new Date(Date.now() - 86400_000).toISOString();
+    await request(app)
+      .post('/api/admin/banners')
+      .set(auth)
+      .send({ title: 'Promo kemarin', linkUrl: '/barang?promo=1', endsAt: past })
+      .expect(201);
+    const hidden = await request(app)
+      .post('/api/admin/banners')
+      .set(auth)
+      .send({ title: 'Promo nonaktif', linkUrl: '/barang', isActive: false })
+      .expect(201);
+    const pub2 = (await request(app).get('/api/banners')).body.map((b: { title: string }) => b.title);
+    expect(pub2).not.toContain('Promo kemarin');
+    expect(pub2).not.toContain('Promo nonaktif');
+    const all = (await request(app).get('/api/admin/banners').set(auth)).body;
+    expect(all.length).toBe(pub.length + 2);
+    await request(app).post('/api/admin/banners').set(auth).send({ title: 'x', linkUrl: 'https://evil.test' }).expect(400);
+    await request(app).delete(`/api/admin/banners/${hidden.body.id}`).set(auth).expect(204);
   });
 });

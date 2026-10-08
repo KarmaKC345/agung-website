@@ -4,7 +4,8 @@
  * Toko New Agung - token desain (DESIGN.md v2)
  *
  * Satu aksen: biru logo (#282C83) untuk semua aksi utama, tautan, dan fokus.
- * Merah logo hanya untuk angka di keranjang (sinyal), hijau hanya untuk aksi WhatsApp.
+ * Merah logo = arti "promo/diskon" (badge diskon, persen, bagian Lagi promo) dan angka
+ * di keranjang; tidak pernah untuk tombol aksi. Hijau hanya untuk aksi WhatsApp.
  * Latar abu dingin seperti lantai keramik & latar logo, bukan krem; tidak ada #000/#fff murni.
  */
 :root {
@@ -22,6 +23,8 @@
   --brand-text: #282c83;
   --brand-tint: #ecedf9;
   --signal: #d11d20;
+  --signal-text: #c0181b;
+  --signal-tint: #fcecec;
   --wa: #1d7f46;
   --wa-text: #17703d;
   --ok: #2b7342;
@@ -46,6 +49,8 @@
     --brand-text: #b4b8ff;
     --brand-tint: #1f2350;
     --signal: #d7322f;
+    --signal-text: #ff8a85;
+    --signal-tint: #2c1520;
     --wa: #238550;
     --wa-text: #5cc27e;
     --ok: #5cc27e;
@@ -70,6 +75,8 @@
   --color-brand-text: var(--brand-text);
   --color-brand-tint: var(--brand-tint);
   --color-signal: var(--signal);
+  --color-signal-text: var(--signal-text);
+  --color-signal-tint: var(--signal-tint);
   --color-wa: var(--wa);
   --color-wa-text: var(--wa-text);
   --color-ok: var(--ok);
@@ -82,7 +89,7 @@
   --font-sans: 'Plus Jakarta Sans Variable', system-ui, sans-serif;
   --font-mono: 'IBM Plex Mono', ui-monospace, monospace;
 
-  /* Sistem radius: kontrol & kartu 12px, media besar 20px, chip/badge pill */
+  /* Sistem radius: kontrol & kartu 12px, media besar 20px, badge diskon 6px, chip pill */
   --radius-tag: 12px;
   --radius-media: 20px;
   --radius-sign: 6px;
@@ -252,52 +259,6 @@
     transform: translate(-50%, -50%);
   }
 
-  /* Papan lorong gantung (ciri khas situs) */
-  .aisle-rail {
-    position: relative;
-    padding-top: 22px;
-  }
-  .aisle-rail::before {
-    content: '';
-    position: absolute;
-    inset: 0 0 auto 0;
-    height: 3px;
-    background: var(--brand);
-    border-radius: 9999px;
-  }
-  .aisle-sign {
-    position: relative;
-    display: block;
-    background: var(--surface);
-    border: 1.5px solid var(--ink);
-    border-radius: var(--radius-sign);
-    padding: 10px 12px 9px;
-    transform-origin: 50% -22px;
-    transition: transform 220ms cubic-bezier(0.16, 1, 0.3, 1), background-color 150ms;
-  }
-  .aisle-sign::before,
-  .aisle-sign::after {
-    content: '';
-    position: absolute;
-    top: -21px;
-    width: 1px;
-    height: 20px;
-    background: var(--ink-muted);
-  }
-  .aisle-sign::before {
-    left: 22%;
-  }
-  .aisle-sign::after {
-    right: 22%;
-  }
-  .aisle-sign:hover {
-    transform: rotate(-1.2deg);
-  }
-  .aisle-sign[aria-current='page'] {
-    background: var(--ink);
-    color: var(--surface);
-  }
-
   /* Garis putus-putus nota */
   .receipt-rule {
     border: 0;
@@ -312,35 +273,6 @@
   }
 }
 
-/*
- * Gerak (MOTION 4): masuknya pembuka berurutan (hierarki), dan bagian beranda muncul
- * saat masuk layar (CSS scroll-driven, tanpa listener JS). Mati total untuk
- * prefers-reduced-motion; browser tanpa dukungan langsung menampilkan isi.
- */
-@keyframes rise {
-  from {
-    opacity: 0;
-    transform: translateY(14px);
-  }
-  to {
-    opacity: 1;
-    transform: none;
-  }
-}
-@media (prefers-reduced-motion: no-preference) {
-  .rise {
-    animation: rise 640ms cubic-bezier(0.16, 1, 0.3, 1) both;
-    animation-delay: calc(var(--i, 0) * 70ms);
-  }
-  @supports (animation-timeline: view()) {
-    .reveal {
-      animation: rise linear both;
-      animation-timeline: view();
-      animation-range: entry 0% entry 40%;
-    }
-  }
-}
-
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
@@ -348,7 +280,6 @@
     transition-duration: 0ms !important;
     animation-duration: 0ms !important;
   }
-  .aisle-sign:hover,
   .btn:active {
     transform: none;
   }

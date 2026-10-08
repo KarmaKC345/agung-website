@@ -7,13 +7,14 @@ import { uniqueSlug, upsertVariantPrices } from './products-admin';
 
 /**
  * Format import/export (satu baris = satu harga satuan):
- * kategori, merek, nama, varian, warna, sku, satuan, isi, harga, stok, deskripsi
+ * kategori, merek, nama, varian, warna, sku, satuan, isi, harga, harga_coret, stok, deskripsi
+ * (harga_coret opsional: diisi = promo, dikosongkan = promo dilepas, kolom tidak ada = promo lama dibiarkan)
  *
  * - Baris dengan "nama" sama → satu barang.
  * - Baris dengan "nama" + "varian" sama → satu varian, tiap baris satu satuan harga.
  * - Import bersifat menambah/memperbarui; varian yang tidak ada di file tidak dihapus.
  */
-export const COLUMNS = ['kategori', 'merek', 'nama', 'varian', 'warna', 'sku', 'satuan', 'isi', 'harga', 'stok', 'deskripsi'] as const;
+export const COLUMNS = ['kategori', 'merek', 'nama', 'varian', 'warna', 'sku', 'satuan', 'isi', 'harga', 'harga_coret', 'stok', 'deskripsi'] as const;
 type Column = (typeof COLUMNS)[number];
 type RawRow = Partial<Record<Column, string>>;
 
@@ -90,6 +91,7 @@ async function findOrCreate(c: DbClient, table: 'categories' | 'brands', name: s
 }
 
 export async function importRows(db: Db, rows: RawRow[], userId: string): Promise<ImportResult> {
+  const hasCoret = rows.some((r) => 'harga_coret' in r);
   const result: ImportResult = { products: 0, created: 0, updated: 0, prices: 0, errors: [] };
   if (rows.length > 20_000) throw new HttpError(413, 'Maksimal 20.000 baris per import');
 
@@ -180,11 +182,17 @@ export async function importRows(db: Db, rows: RawRow[], userId: string): Promis
           }
           order++;
 
-          const prices = vrows.map((r) => ({
-            unit: (r.data.satuan || 'pcs').toLowerCase(),
-            qtyPerUnit: Math.max(1, Number(r.data.isi) || 1),
-            price: parsePrice(r.data.harga)!,
-          }));
+          const prices = vrows.map((r) => {
+            const price = parsePrice(r.data.harga)!;
+            const coret = parsePrice(r.data.harga_coret);
+            return {
+              unit: (r.data.satuan || 'pcs').toLowerCase(),
+              qtyPerUnit: Math.max(1, Number(r.data.isi) || 1),
+              price,
+              // kolom tidak ada di file → undefined (biarkan); kosong → null (lepas promo)
+              originalPrice: hasCoret ? (coret !== null && coret > price ? coret : null) : undefined,
+            };
+          });
           await upsertVariantPrices(c, variantId, prices, { removeMissing: false });
           result.prices += prices.length;
         }
@@ -200,7 +208,7 @@ export async function exportRows(db: Queryable): Promise<string> {
   const { rows } = await db.query<Record<Column, string | number | null>>(
     `select coalesce(c.name, '') as kategori, coalesce(b.name, '') as merek, p.name as nama, v.label as varian,
             coalesce(v.color_hex, '') as warna, coalesce(v.sku, '') as sku, vp.unit as satuan, vp.qty_per_unit as isi,
-            vp.price as harga, v.stock_status as stok, p.description as deskripsi
+            vp.price as harga, coalesce(vp.original_price::text, '') as harga_coret, v.stock_status as stok, p.description as deskripsi
        from products p
        join product_variants v on v.product_id = p.id
        join variant_prices vp on vp.variant_id = v.id
@@ -217,10 +225,10 @@ export function templateCsv(): string {
     Papa.unparse({
       fields: [...COLUMNS],
       data: [
-        ['Pulpen', 'Standard', 'Standard AE7 Alfa Tip 0.5', 'Hitam', '#1B1B1B', '', 'pcs', 1, 2500, 'ada', 'Pulpen sehari-hari'],
-        ['Pulpen', 'Standard', 'Standard AE7 Alfa Tip 0.5', 'Hitam', '#1B1B1B', '', 'lusin', 12, 27000, 'ada', ''],
-        ['Pulpen', 'Standard', 'Standard AE7 Alfa Tip 0.5', 'Biru', '#1F3FAE', '', 'pcs', 1, 2500, 'ada', ''],
-        ['Kertas', 'SiDU', 'Kertas HVS SiDU A4 70 gsm', 'A4', '', '', 'rim', 1, 52000, 'ada', '500 lembar per rim'],
+        ['Pulpen', 'Standard', 'Standard AE7 Alfa Tip 0.5', 'Hitam', '#1B1B1B', '', 'pcs', 1, 2500, 3000, 'ada', 'Pulpen sehari-hari'],
+        ['Pulpen', 'Standard', 'Standard AE7 Alfa Tip 0.5', 'Hitam', '#1B1B1B', '', 'lusin', 12, 27000, '', 'ada', ''],
+        ['Pulpen', 'Standard', 'Standard AE7 Alfa Tip 0.5', 'Biru', '#1F3FAE', '', 'pcs', 1, 2500, '', 'ada', ''],
+        ['Kertas', 'SiDU', 'Kertas HVS SiDU A4 70 gsm', 'A4', '', '', 'rim', 1, 52000, '', 'ada', '500 lembar per rim'],
       ],
     })
   );

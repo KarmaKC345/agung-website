@@ -1,25 +1,27 @@
 ---
-name: Papan Lorong
-description: Fondasi desain Toko New Agung. Etalase toko ATK yang bersih dan ramah untuk pembeli di HP, dengan papan lorong gantung sebagai navigasi kategori.
-version: 2.0.0
+name: Etalase
+description: Fondasi desain Toko New Agung. Etalase belanja gaya marketplace (Tokopedia, Shopee, Lazada) yang padat dan bisa dipercaya, untuk pembeli di HP, dengan warna dan foto toko sendiri.
+version: 3.0.0
 source_of_truth: apps/web/app/globals.css
-design_read: "Redesign (visual overhaul, isi & struktur dipertahankan) untuk etalase toko ATK lokal, pembeli Makassar yang kebanyakan di HP; bahasa ritel yang bersih, ramah, dan bisa dipercaya; Tailwind v4 + Phosphor Icons + gerak CSS yang ditahan."
-dials: { DESIGN_VARIANCE: 5, MOTION_INTENSITY: 4, VISUAL_DENSITY: 4 }
+design_read: "Etalase e-commerce gaya marketplace untuk pembeli Makassar yang kebanyakan di HP; bahasa belanja yang padat, akrab, dan mengutamakan kepercayaan; Tailwind v4 + Phosphor Icons + gerak minimal."
+dials: { DESIGN_VARIANCE: 3, MOTION_INTENSITY: 3, VISUAL_DENSITY: 7 }
 colors:
   light:
     paper: "#F4F5F8"        # latar halaman, abu dingin (lantai keramik, latar logo)
     surface: "#FCFCFD"      # kartu, header, formulir
-    sunken: "#ECEEF3"       # bidang foto pengganti, chip, segmen
+    sunken: "#ECEEF3"       # bidang foto pengganti, chip, strip info header
     ink: "#14162A"
     ink-muted: "#575C70"
     line: "#E1E4EB"         # garis kartu (dekoratif)
-    line-strong: "#C5CAD6"  # garis nota putus-putus, penghubung alur
+    line-strong: "#C5CAD6"  # garis nota putus-putus
     field: "#82889C"        # garis tepi kontrol, min. 3:1
-    brand: "#282C83"        # SATU-SATUNYA aksen: aksi utama, tautan, fokus, pilihan aktif
+    brand: "#282C83"        # SATU-SATUNYA warna aksi: tombol, tautan, fokus, pilihan aktif
     brand-hover: "#20246E"
     brand-text: "#282C83"
     brand-tint: "#ECEDF9"
-    signal: "#D11D20"       # merah logo: hanya angka keranjang, status pesanan baru, konfirmasi hapus
+    signal: "#D11D20"       # merah logo = arti PROMO: badge diskon, bagian "Lagi promo"; juga angka keranjang
+    signal-text: "#C0181B"  # persen diskon & tautan promo sebagai teks
+    signal-tint: "#FCECEC"  # latar bagian "Lagi promo"
     wa: "#1D7F46"           # hanya tombol WhatsApp
     wa-text: "#17703D"
     ok: "#2B7342"
@@ -39,79 +41,92 @@ colors:
     brand-text: "#B4B8FF"
     brand-tint: "#1F2350"
     signal: "#D7322F"
+    signal-text: "#FF8A85"
+    signal-tint: "#2C1520"
     wa: "#238550"
     wa-text: "#5CC27E"
     ok: "#5CC27E"
     warn: "#E0A640"
     danger: "#FF7A7A"
+  banner-scrim:             # tetap, tidak ikut mode gelap (teks putih di atas foto)
+    brand: "#282C83"
+    signal: "#B4161B"
+    ink: "#14162A"
 typography:
   families:
     sans: "'Plus Jakarta Sans Variable', system-ui, sans-serif"   # Tokotype (Indonesia), OFL-1.1, self-hosted
     mono: "'IBM Plex Mono', ui-monospace, monospace"              # OFL-1.1, 500, hanya kode pesanan
   roles:
-    hero:      { size: "36px / 44px (≥640) / 50px (≥1024)", weight: 800, tracking: "-0.035em", line-height: 1.06, lines: "tepat 2 baris" }
-    section:   { size: "28px (bagian utama) / 22px (cuplikan katalog)", weight: 700, tracking: "-0.025em" }
-    page-title: { size: "26-32px", weight: 700 }
-    body:      { size: "16-17px", line-height: 1.625, max-width: "44-60ch" }
-    card-name: { size: "14px", weight: 500, line-height: 1.375 }
-    price:     { weight: 700, numeric: tabular-nums, tracking: "-0.02em", currency: "Rp 0.62em naik 0.38em", size: "17-19px kartu / 36-40px detail / 30px nota" }
-    signage:   { weight: 700, transform: uppercase, tracking: "0.04em", note: "hanya di papan lorong" }
-    code:      { family: mono, weight: 500 }
+    banner:     { size: "20px / 30px (≥640) / 38px (≥1024)", weight: 800, tracking: "-0.02em", line-height: 1.15 }
+    section:    { size: "18px / 20px (≥640)", weight: 700, tracking: "-0.015em" }
+    page-title: { size: "22px / 26px (≥640)", weight: 700 }
+    product-title: { size: "20px / 24px (≥640)", weight: 700 }
+    body:       { size: "14-15px", line-height: 1.6, max-width: "65ch" }
+    card-name:  { size: "13px / 14px (≥640)", weight: 400, line-height: 1.35, lines: "selalu 2 baris (min-height 2.7em)" }
+    price:      { weight: 700, numeric: tabular-nums, tracking: "-0.02em", currency: "Rp 0.62em naik 0.38em", size: "16-17px kartu / 30-34px detail / 20px subtotal" }
+    meta:       { size: "11-12px", color: ink-muted, note: "satuan, harga coret, Dibeli Nx, merek" }
+    code:       { family: mono, weight: 500 }
 rounded:
-  control: 12px    # --radius-tag: tombol, input, kartu, nota
-  media: 20px      # --radius-media: foto besar, bento, kartu kosong, peta
-  sign: 6px        # --radius-sign: papan lorong
-  inner: 10px      # foto di dalam kartu, ikon tombol kecil
-  pill: 9999px     # chip, badge, status
+  control: 12px    # --radius-tag: tombol, input, kartu barang, kartu bagian
+  media: 20px      # --radius-media: banner, bagian promo, lembar filter HP, peta
+  badge: 6px       # badge diskon
+  pill: 9999px     # chip, tab urutan, titik banner, status
 spacing:
-  container: 1152px
+  container: 1280px
   gutter: 16px
-  touch-target: 44px   # nyata (h-11/h-12) atau area .tap
-  section-gap: "64px (HP) / 80px (≥768)"
+  card-gap: "10px (HP) / 12px"
+  touch-target: "44px (h-11 atau .tap); titik banner 24px (WCAG 2.2 AA)"
+  section-gap: "32px (HP) / 40px (≥768)"
 elevation:
   card: none           # datar, garis 1px
   card-hover: "0 10px 28px -16px rgb(shadow-tint / .28)"
   popover: "0 12px 32px -16px rgb(shadow-tint / .35)"   # saran pencarian, dialog
 motion:
   control: "150ms cubic-bezier(0.16,1,0.3,1): warna, garis, bayangan; tekan scale(0.98)"
-  hero-entry: "rise 640ms berurutan (70ms per elemen): status, judul, teks, tombol"
-  section-reveal: "CSS scroll-driven (animation-timeline: view()), tanpa listener JS"
-  sign-swing: "rotate(-1.2deg) 220ms, poros di tali"
-  reduced-motion: "semua mati, isi langsung tampil"
+  banner: "berganti tiap 6 detik (scroll-snap + scrollTo smooth); berhenti saat disorot/difokus/tab tersembunyi; mati untuk reduced-motion"
+  reduced-motion: "semua durasi 0, banner tidak berganti sendiri"
 components:
   buttons:        { css: ".btn .btn-primary .btn-secondary .btn-wa .btn-lg" }
   chip:           { css: ".chip" }
   card:           { css: ".card .card-hover" }
   tap-target:     { css: ".tap" }
-  aisle-sign:     { file: apps/web/components/AisleSigns.tsx, css: ".aisle-rail .aisle-sign" }
-  product-card:   { file: apps/web/components/ProductCard.tsx }
+  header:         { file: apps/web/components/SiteHeader.tsx }
+  banner:         { file: apps/web/components/BannerCarousel.tsx }
+  product-card:   { file: apps/web/components/ProductCard.tsx, exports: "ProductCard ProductRow ProductGrid DiscountBadge soldLabel" }
+  catalog:        { file: apps/web/components/Catalog.tsx, mobile: apps/web/components/FilterSheet.tsx, params: apps/web/lib/catalog-params.ts }
+  product-buy:    { file: apps/web/components/ProductPurchase.tsx }
   product-image:  { file: apps/web/components/ProductImage.tsx, icons: apps/web/components/CategoryIcon.tsx }
   price-tag:      { file: apps/web/components/Price.tsx }
   receipt:        { file: apps/web/components/CartView.tsx }
   map:            { file: apps/web/components/MapEmbed.tsx }
   dialog:         { file: apps/web/components/panel/Dialog.tsx }
-icons: "@phosphor-icons/react (ssr di Server Component), bobot regular/bold, fill untuk status aktif"
+icons: "@phosphor-icons/react (ssr di Server Component), bobot regular/bold, fill untuk ikon judul bagian & status aktif, duotone untuk ikon kategori"
 ---
 
-# Papan Lorong v2
+# Etalase v3
 
 Fondasi desain untuk etalase online Toko New Agung Alat Tulis & Kantor (Jl. DR. Ratulangi No.52, Makassar) dan panel pemiliknya. Sumber kebenaran token ada di `apps/web/app/globals.css`, dan rencana produk ada di `docs/PRD.md`.
 
 ## Ikhtisar
 
-**Bacaan desain:** redesign untuk etalase toko ATK lokal, dengan pembeli Makassar yang kebanyakan memakai HP (orang tua, pelajar, kantor). Bahasanya ritel yang bersih, ramah, dan bisa dipercaya.
+**Bacaan desain:** etalase e-commerce gaya marketplace untuk pembeli Makassar yang kebanyakan memakai HP. Klien meminta beranda yang berisi promo, barang baru, dan barang yang sering dibeli, dengan tampilan barang seperti Tokopedia, Shopee, Lazada, dan HnD Computer. Pembeli sudah terbiasa dengan pola itu, jadi pola yang akrab lebih penting daripada keunikan.
 
-- **Mode redesign:** visual dirombak, sedangkan isi, rute, label menu, logo, warna merek, dan alur pemesanan dipertahankan.
 - **Dial:**
-  - **VARIANCE 5:** asimetris secukupnya, karena katalog harus mudah dipindai.
-  - **MOTION 4:** transisi, masuk berurutan di pembuka, muncul saat discroll.
-  - **DENSITY 4:** lega, tapi rak barang tetap padat.
-- **Panel pemilik** adalah dashboard, jadi tata letaknya tidak diubah. Panel hanya ikut token: font, warna, radius, tombol, dan ikon.
+  - **VARIANCE 3:** grid simetris dan berulang, supaya rak mudah dipindai.
+  - **MOTION 3:** hanya umpan balik kontrol dan banner yang bergeser.
+  - **DENSITY 7:** banyak barang per layar (2 kolom di HP, 5-6 di layar lebar), info ringkas.
+- **Panel pemilik** adalah dashboard. Tata letaknya tidak diubah, hanya ikut token.
 
-Bukti visualnya berasal dari toko sendiri:
+**Pengecualian yang disengaja** dari aturan umum, karena memang konvensi belanja online:
 
-- **Logo.** Sampel warnanya: biru `#282C83`, merah `#D11D20`, latar `#E3E4E6`.
-- **Tiga foto interior**, dipakai dengan izin pemilik dan dipotong tanpa wajah pelanggan yang jelas:
+- Teks di atas foto banner, dengan scrim gradien warna tetap supaya kontrasnya terjamin.
+- Badge diskon di pojok foto barang.
+- Carousel banner di beranda.
+
+**Bukti visual dari toko sendiri:**
+
+- **Logo.** Biru `#282C83`, merah `#D11D20`, latar `#E3E4E6`.
+- **Tiga foto interior**, dipakai dengan izin pemilik sebagai foto banner bawaan:
 
 | Berkas | SHA-256 |
 |---|---|
@@ -120,51 +135,55 @@ Bukti visualnya berasal dari toko sendiri:
 | `apps/web/public/foto/etalase-kalkulator.webp` | `b59834aae77e69da97e27f93ca7b83501014628807082db4ee397788692df977` |
 
 - **Profil Google Maps:** rating 4,5 dari 10.466 ulasan.
-- **Konfirmasi pemilik:**
-  - WhatsApp 0823-4848-5101.
-  - Buka setiap hari 05.00-22.00 WITA.
-  - Domain `newagung.com`.
+- **Konfirmasi pemilik:** WhatsApp 0823-4848-5101, buka setiap hari 05.00-22.00 WITA, domain `newagung.com`.
 
-**Ciri khas: Papan Lorong.** Papan putih bertali yang tergantung dari rel biru, meniru papan di lorong toko. Papan Lorong adalah navigasi kategori, bukan hiasan, dan merupakan satu-satunya elemen yang "berani". Elemen lain dibuat tenang.
+## Catatan kurasi (v2 ke v3)
 
-## Catatan kurasi (v1 ke v2)
-
-**Dipertahankan.**
-- Papan Lorong, warna logo, latar abu dingin (bukan krem), dan foto toko asli.
-- Nota dengan garis putus-putus, harga dengan angka tabular, dan alur pemesanan WhatsApp.
-- Semua rute dan label menu.
-
-**Diubah.**
-
-| Aspek | v1 | v2 |
+| Aspek | v2 "Papan Lorong" | v3 "Etalase" |
 |---|---|---|
-| Font | Archivo dengan lebar sempit di banyak tempat | Plus Jakarta Sans, buatan foundry Indonesia, lebih ramah dibaca. Gaya kapital hanya tersisa di papan lorong. |
-| Warna aksi | Merah untuk tombol utama, biru untuk struktur, hijau untuk WhatsApp (tiga warna bersaing) | Satu aksen biru merek untuk semua aksi utama; merah hanya untuk angka keranjang dan konfirmasi hapus; hijau hanya untuk WhatsApp |
-| Radius | 4px kotak | Kontrol dan kartu 12px, media 20px, chip pill |
-| Ikon | SVG digambar tangan | Phosphor Icons |
-| Kartu barang | Grid garis bersama dengan blok abu besar bertuliskan nama | Kartu berjarak dengan foto atau ikon jenis barang di bidang lembut |
-| Beranda | Tiga bagian foto+teks berturut-turut, tagline di bawah tombol hero | Enam pola tata letak berbeda; hero tepat 4 elemen |
-| Tanda baca | Em-dash dan en-dash di jam buka, pesan WhatsApp, judul | Tanda hubung biasa (`05.00-22.00`) |
-| Garis tepi kontrol | 1,6:1 | Token `field` ≥ 3:1 (WCAG 1.4.11) |
+| Beranda | Tentang toko: hero foto, fakta, bento, alur, papan lorong | Banner promo, grid ikon kategori, rak "Lagi promo", "Paling sering dibeli", "Baru masuk rak", "Pilihan toko", merek, lalu info toko ringkas di bawah |
+| Kartu barang | Berjarak di dalam kartu, merek di atas, harga + tombol | Foto penuh di atas, badge diskon, nama 2 baris, harga tebal, harga coret + persen, "Dibeli Nx" |
+| Katalog | Chip kategori + select urutan | Kolom filter kiri (kategori, penawaran, merek, rentang harga), tab urutan, chip filter aktif; di HP lembar "Filter" dari bawah |
+| Detail barang | 2 kolom | 3 kolom: foto, info, kotak "Atur jumlah" yang menempel (subtotal, "+ Keranjang", "Beli langsung"); di HP bilah beli di bawah layar |
+| Header | Satu baris, menu teks | Strip info toko, kotak cari besar dengan tombol "Cari", pintasan di bawahnya, favorit, keranjang |
+| Merah | Hanya angka keranjang & hapus | Arti "promo/diskon" (tetap bukan warna tombol) |
+| Kontainer | 1152px | 1280px |
+| Ciri khas | Papan lorong gantung | Dihapus. Kategori memakai ikon bulat seperti marketplace |
+| Gerak | Masuk berurutan, muncul saat discroll | Dihapus. Hanya banner yang bergeser |
 
-**Dikecualikan.**
-- Spanduk dan nomor Printech, wajah pelanggan, dan logo merek pihak ketiga sebagai hiasan.
-- Teks ulasan Google, foto stok, ilustrasi, gradien, glassmorphism, dan carousel banner.
-- Label nomor bagian, eyebrow di atas setiap judul, dan bahasa iklan.
+**Dipertahankan:**
+
+- Warna logo, latar abu dingin, foto toko asli, dan Plus Jakarta Sans.
+- Nota keranjang, alur pesanan WhatsApp, dan time picker jam ambil.
+- Semua rute.
+
+**Dikecualikan:**
+
+- Spanduk dan nomor Printech, wajah pelanggan, foto stok, dan ilustrasi.
+- Angka "terjual" palsu. "Dibeli Nx" hanya dihitung dari pesanan yang sudah diproses toko (status disiapkan/siap/selesai, 180 hari terakhir), dan bagian "Paling sering dibeli" baru muncul bila angkanya ada.
+- Timer hitung mundur "flash sale" dan stok "tinggal 2!" buatan. Promo hanya tampil bila pemilik mengisi harga coret.
 
 ## Warna dan status semantik
 
-Satu aksen: **biru merek**. Biru dipakai untuk:
-- tombol utama ("Lihat katalog", "Masukkan keranjang");
-- tombol "+" di kartu;
-- tautan;
+**Biru merek** adalah satu-satunya warna aksi:
+
+- tombol utama ("+ Keranjang", "Cari", "Lihat N barang"), tombol "+" di kartu;
+- tautan dan "Lihat semua";
 - cincin fokus;
-- chip, varian, dan satuan yang sedang dipilih;
-- titik alur "Belanja dari HP".
+- tab urutan, chip filter, varian, dan satuan yang dipilih.
 
-**Merah sinyal** hanya untuk angka di ikon keranjang, status pesanan "Baru" di panel, dan tombol konfirmasi hapus/batal di dialog. **Hijau** hanya untuk aksi WhatsApp. Tidak ada token gradien.
+**Merah** artinya promo:
 
-Status selalu ditulis dengan kata: "Ada", "Sisa sedikit", "Stok habis", dan "Buka, tutup 22.00". Varian yang habis juga dicoret, jadi warna tidak pernah menjadi satu-satunya penanda.
+- badge persen di foto barang;
+- persen di bawah harga;
+- latar `signal-tint` bagian "Lagi promo";
+- tautan pintasan "Lagi promo".
+
+Merah juga dipakai untuk angka di ikon keranjang dan untuk konfirmasi hapus di panel. **Merah tidak pernah menjadi warna tombol beli.**
+
+**Hijau** hanya untuk aksi WhatsApp.
+
+Status selalu ditulis dengan kata: "Ada", "Sisa sedikit", "Stok habis". Harga coret memakai `<s>` dengan teks tersembunyi "Harga normal", dan badge memakai teks tersembunyi "Diskon", jadi warna tidak pernah menjadi satu-satunya penanda.
 
 Kontras terukur (WCAG 2.x: teks ≥ 4,5:1, garis kontrol ≥ 3:1):
 
@@ -174,108 +193,123 @@ Kontras terukur (WCAG 2.x: teks ≥ 4,5:1, garis kontrol ≥ 3:1):
 | `ink-muted` di `paper` / `sunken` | 6,08 / 5,71 | 7,65 / 6,48 |
 | Putih di `brand` (tombol utama) | 11,81 | 6,13 |
 | `brand-text` di `paper` | 10,83 | 10,09 |
-| Putih di `signal` (badge) | 5,37 | 4,79 |
+| Putih di `signal` (badge diskon) | 5,37 | 4,79 |
+| `signal-text` di `surface` / `signal-tint` | 6,05 / 5,42 | 7,59 / 7,47 |
+| `ink-muted` di `signal-tint` | 5,79 | 6,89 |
+| Putih di scrim banner (brand / signal / ink) | 11,81 / 6,84 / 17,83 | sama |
 | Putih di `wa` (tombol WhatsApp) | 5,03 | 4,62 |
-| `wa-text` di `paper` / `surface` | 5,63 | 7,79 |
 | `ok` / `warn` / `danger` di `surface` | 5,64 / 5,11 / 6,67 | 7,79 / 7,98 / 6,84 |
 | `field` (garis kontrol) di `surface` / `paper` / `sunken` | 3,44 / 3,24 / 3,04 | 3,61 / 3,94 / 3,34 |
 
-Halaman memakai **satu tema** mengikuti `prefers-color-scheme`, dan tidak ada bagian yang membalik warna di tengah halaman. Tidak ada `#000` atau `#fff` murni. Logo di mode gelap diletakkan di atas plat `#E3E4E6`.
+Satu tema mengikuti `prefers-color-scheme`. Logo di mode gelap diletakkan di atas plat `#E3E4E6`.
 
-## Tipografi dan lisensi font
+## Tipografi
 
-**Plus Jakarta Sans Variable** dipakai untuk seluruh teks UI. Font ini dari Tokotype (Indonesia), berlisensi SIL OFL-1.1, dan di-host sendiri dari paket npm `@fontsource-variable/plus-jakarta-sans` 5.3.0, jadi tidak ada hotlink Google Fonts.
+**Plus Jakarta Sans Variable** (Tokotype, OFL-1.1) di-host sendiri dari `@fontsource-variable/plus-jakarta-sans`. **IBM Plex Mono 500** hanya untuk kode pesanan. Tidak ada serif. Ukuran per peran ada di frontmatter. Harga selalu memakai `Price` (angka tabular, "Rp" kecil terangkat).
 
-| Peran | Ukuran | Gaya |
-|---|---|---|
-| Judul hero | 36px, 44px (≥640), 50px (≥1024) | 800, tracking −0,035em, **tepat 2 baris** (dua `span` blok) |
-| Judul bagian utama | 28px | 700, tracking −0,025em |
-| Judul cuplikan katalog | 22px | 700 |
-| Teks | 16-17px | line-height 1,625, maks. 44-60ch |
-| Nama barang di kartu | 14px | 500 |
-| Harga | 17-19px kartu, 36-40px detail, 30px nota | 700, angka tabular, "Rp" kecil terangkat |
-| `signage` | - | 700, kapital, tracking 0,04em; **hanya** di papan lorong |
+## Tata letak
 
-**IBM Plex Mono 500** (OFL-1.1) dipakai hanya untuk kode pesanan. Tidak ada serif. Teks di SVG logo hanya ada di logo; ganti dengan file vektor asli bila tersedia.
+Kontainer 1280px (`max-w-7xl`) dengan gutter 16px. Breakpoint: 640, 768, 1024, dan 1280px.
 
-## Tata letak dan perilaku responsif
+**Header** (menempel di atas):
 
-Kontainer 1152px dengan gutter 16px. Breakpoint: 640, 768, dan 1024px. Target sentuh minimal 44×44px, baik dengan ukuran sebenarnya (`h-11`/`h-12`) maupun dengan `.tap` yang memperluas area sentuh tanpa mengubah tampilan.
+- **Strip info (≥768px).** Alamat ambil di toko, status buka, "Tentang toko", dan nomor WhatsApp.
+- **Baris utama.**
+  - Logo.
+  - "Kategori" (≥1024px).
+  - Kotak cari selebar mungkin dengan tombol "Cari".
+  - Pintasan di bawah kotak cari: Lagi promo, Terlaris, Baru masuk, dan 5 kategori dari API (≥1024px).
+  - Favorit dan Keranjang.
+- **Di HP.** Kotak cari di baris kedua, dan navigasi bawah (Beranda, Kategori, Favorit, Keranjang). Navigasi bawah disembunyikan di halaman barang, diganti bilah beli.
 
-**Header.** Tinggi 64px di HP dan 72px di layar ≥768px, dalam satu baris:
-- logo;
-- kotak cari (≥768px);
-- menu Katalog, Kategori, Tentang toko, Favorit (≥1024px);
-- status buka (≥1280px);
-- tombol Keranjang dengan badge.
+**Beranda**, dari atas ke bawah:
 
-Di HP, kotak cari pindah ke baris kedua (48px), dan navigasi ada di bawah (64px: Beranda, Kategori, Favorit, Keranjang) dengan ikon terisi untuk halaman aktif.
+1. **Banner.** Rasio 16:8 (HP), 16:6 (≥640), 16:5 (≥1024). Isinya dari panel "Banner beranda", dengan foto toko bila kosong. Teks selalu di kiri di atas scrim gradien.
+2. **Kartu "Kategori".** Ikon bulat `brand-tint` dengan nama kategori. "Lagi promo" ada di urutan pertama dengan ikon bulat `signal-tint`.
+3. **"Lagi promo".** Bidang `signal-tint` beradius 20px, diurutkan dari diskon terbesar.
+4. **"Paling sering dibeli".** Hanya tampil bila ada barang dengan angka dibeli lebih dari 0.
+5. **"Baru masuk rak"** dan **"Pilihan toko"** (barang yang ditandai pemilik).
+6. **"Merek di rak".** Chip dengan jumlah barang.
+7. **"Belanja dari HP, ambil di toko".** 3 langkah, dan 4 fakta toko (jam, Google, alamat, WhatsApp).
 
-**Beranda.** Enam bagian dengan pola tata letak berbeda:
-1. **Pembuka terbelah.** Teks di kiri, foto lorong kertas di kanan, radius 20px. Isinya tepat 4 elemen: pill status buka, judul 2 baris, subteks ≤ 20 kata, serta "Lihat katalog" dan "Rute ke toko".
-2. **Baris fakta.** Satu lajur dengan pembatas tipis, tanpa kartu. Isinya jam buka, rating Google, alamat, dan WhatsApp, masing-masing dengan ikon dalam lingkaran `brand-tint`. Di HP ditumpuk.
-3. **Bento "Di dalam toko".** Tepat 4 sel dalam 2 baris berirama: [teks + "Tentang toko" | foto papan lorong 2:1], lalu [foto etalase 2:1 | merek di rak berlatar `brand-tint`].
-4. **"Belanja dari HP".** Alur 4 langkah berikon dalam lingkaran biru, tersambung garis: horizontal di layar ≥1024px, vertikal di HP. Judul langkahnya adalah kata kerja itu sendiri, tanpa "Langkah 1".
-5. **"Pilih lorong".** Lima Papan Lorong dengan barang terbanyak dalam satu rel.
-6. **"Baru masuk rak".** Lima kartu dalam satu baris: di HP digeser dengan snap, di ≥1024px 5 kolom.
+Setiap rak berisi 6 kartu: digeser dengan snap di HP (kartu 152px), dan 6 kolom di ≥1024px. Judul rak memakai ikon bulat, judul, catatan kecil, dan "Lihat semua" di kanan.
 
-**Katalog, kategori, dan merek.** Grid 2, 3, lalu 5 kolom dengan jarak 12-16px. Filter memakai `.chip`, dan urutan memakai select.
+**Katalog, kategori, merek, dan cari** memakai komponen yang sama, `Catalog`:
 
-**Detail barang.** Foto di kartu media 20px yang menempel saat discroll pada layar ≥768px. Di sebelahnya: merek, nama, deskripsi, pemilih varian (lingkaran warna atau tombol teks), satuan sebagai segmen di atas `sunken`, harga besar, stepper 52px, dan "Masukkan keranjang". Di bawahnya tiga baris info berikon (ambil/antar, harga diperbarui, tanya lewat WhatsApp), lalu baris rak "Satu rak dengan barang ini".
+- **Kolom filter kiri** 232px (≥1024px):
+  - kategori, dengan sub-kategori terbuka untuk kategori aktif;
+  - "Penawaran": Lagi promo, Pilihan toko;
+  - merek: 8 teratas, sisanya di "Lihat N merek lain";
+  - rentang harga: form GET.
+- **Di HP**, tombol "Filter" dengan jumlah filter aktif membuka lembar dari bawah (`<dialog>`), dengan tombol "Lihat N barang".
+- **Tab urutan** berupa chip: Paling sesuai (hanya di cari), Terbaru, Terlaris, Diskon terbesar (hanya saat promo), Harga terendah, Harga tertinggi.
+- **Chip filter aktif** dengan tombol ×, dan "Hapus semua".
+- **Grid** 2, 3, 4, lalu 5 kolom (≥1280px).
 
-**Keranjang.** Daftar barang di dalam satu kartu. Setiap baris berisi gambar mini, nama dan harga di atas, lalu stepper 48px dan tombol hapus berikon di bawah. Nota di kanan menempel saat discroll dan berisi total, nama, cara terima (pilihan aktif biru), jam ambil (time picker), dan tombol WhatsApp.
+Semua filter berupa tautan atau form GET, jadi tetap jalan tanpa JavaScript. Nilai URL yang asing dibuang (`lib/catalog-params.ts`). Parameter URL: `merek`, `min`, `max`, `promo=1`, `pilihan=1`, `sort`, `page`.
 
-**Footer.** Logo dan nama toko, empat baris berikon (alamat dengan "Rute ke toko", jam, WhatsApp, telepon), dan peta Google Maps beradius 20px.
+**Detail barang:**
 
-## Elevasi dan kedalaman
+- **Kolom 1 (340px / 400px).** Foto yang menempel.
+- **Kolom 2.** Nama, merek, "Dibeli Nx", stok, dan badge "Pilihan toko". Lalu harga besar, persen dan harga coret, pilihan varian, dan "Beli per" (tiap satuan menampilkan harga, harga per pcs bila lebih hemat, dan badge persen bila promo). Terakhir keterangan dan info ambil di toko.
+- **Kolom 3 (280-300px), "Atur jumlah".** Stepper, stok, subtotal, "+ Keranjang" (utama), "Beli langsung" (garis biru; masuk keranjang lalu membuka keranjang), dan "Tanya dulu via WhatsApp".
+- **Di HP dan tablet.** Jumlah dan subtotal ada di kolom info, dan bilah bawah berisi WhatsApp, "Beli langsung", dan "+ Keranjang".
+- Satuan awal adalah satuan yang sedang promo, supaya harga sama dengan di kartu.
 
-Kartu **datar**: `surface` dengan garis `line` 1px. Bayangan tipis berwarna latar hanya muncul saat kartu disorot, dan pada saran pencarian serta dialog. Header dan navigasi bawah memakai `surface` 90-95% dengan blur latar. Tidak ada glow atau bayangan hitam murni.
+**Keranjang dan footer** tidak berubah dari v2: nota yang menempel, time picker jam ambil, dan peta.
 
-## Bentuk
-
-Satu aturan radius yang terdokumentasi:
+## Bentuk dan elevasi
 
 | Radius | Dipakai untuk |
 |---|---|
-| 12px | Kontrol dan kartu |
-| 20px | Media besar: foto pembuka, bento, kartu detail, kartu kosong, nota, peta |
-| 10px | Foto di dalam kartu, tombol ikon kecil |
-| 6px | Papan lorong |
-| Pill | Chip, badge, status |
+| 12px | Kontrol, kartu barang, kartu bagian, kotak "Atur jumlah" |
+| 20px | Banner, bidang "Lagi promo", lembar filter HP, peta, kartu kosong |
+| 6px | Badge diskon |
+| Pill | Chip, tab urutan, titik banner, status |
+
+Foto di kartu barang menempel penuh ke tepi kartu, tanpa radius sendiri. Kartu **datar** dengan garis `line` 1px, dan bayangan tipis hanya saat disorot. Tidak ada glow atau bayangan hitam murni.
 
 ## Interaksi dan gerak
 
-- **Kontrol:** 150ms `cubic-bezier(0.16,1,0.3,1)`; tombol mengecil `scale(0.98)` saat ditekan.
-- **Pembuka:** status, judul, teks, dan tombol masuk berurutan (`.rise`, jeda 70ms). Ini memberi hierarki pada momen pertama.
-- **Bagian beranda:** muncul saat masuk layar (`.reveal`, CSS `animation-timeline: view()`), tanpa listener scroll JS. Browser tanpa dukungan langsung menampilkan isi.
-- **Papan Lorong:** berayun 1,2° saat disorot.
-- **Tombol "+":** berubah menjadi centang hijau selama 1,4 detik, diumumkan lewat `role="status"`.
-- **Fokus:** `:focus-visible` 2px `brand-text` dengan offset 2px; kotak cari memakai `focus-within`.
-- **`prefers-reduced-motion`:** semua durasi menjadi 0 dan isi langsung tampil.
+- **Kontrol.** 150ms; tombol mengecil `scale(0.98)` saat ditekan.
+- **Banner.**
+  - Geser dengan jari (scroll-snap), dengan tombol panah (muncul saat disorot, ≥768px), atau dengan titik (24×24px, tidak saling tumpuk).
+  - Berganti tiap 6 detik, kecuali saat disorot atau difokus, saat tab tidak terlihat, atau bila `prefers-reduced-motion` aktif.
+- **Tombol "+" di kartu.** Berubah menjadi centang hijau selama 1,4 detik, dan diumumkan lewat `role="status"`.
+- **Lembar filter HP.** Tertutup sendiri saat filter dipilih, harga diterapkan, latar diklik, atau Esc ditekan.
+- **Fokus.** `:focus-visible` 2px `brand-text` dengan offset 2px.
 
 ## Kontrak komponen
 
 | Komponen | Slot |
 |---|---|
-| Papan Lorong | rel, tali (2), nama kategori dengan "&" menjadi "/", jumlah barang, aktif (`aria-current`) |
-| Kartu barang | foto atau ikon jenis barang, favorit, merek, nama (2 baris), titik warna (maks. 5 + "+n"), "mulai" di atas harga bila harga varian berbeda, harga, satuan, status stok, aksi ("+" biru untuk satu varian, "Pilih" untuk bervarian) |
+| Kartu barang | foto penuh atau ikon jenis barang, badge diskon (kiri atas), favorit (kanan atas), label "Stok habis" di tengah foto, nama 2 baris, "mulai" bila harga varian berbeda, harga, satuan, harga coret + persen, baris meta ("Sisa sedikit" > "Dibeli Nx" > merek), "+" untuk barang satu varian |
+| Banner | foto (opsional), scrim tema (brand / signal / ink), judul ≤ 80 karakter, keterangan ≤ 140, tombol semu "Lihat sekarang" (≥640px), tautan ke halaman di situs ini |
+| Judul rak | ikon bulat (brand-tint, atau signal untuk promo), judul, catatan, "Lihat semua" |
 | Tombol | `.btn` + peran (`-primary`, `-secondary`, `-wa`), opsional `.btn-lg`; label tidak pernah pecah baris |
-| Chip | `.chip`; aktif lewat `aria-current="page"` atau `aria-pressed="true"` |
-| Nota keranjang | total, jumlah jenis, garis putus-putus, nama, cara terima, jam ambil (time picker, dibatasi jam buka) atau catatan, galat, tombol WhatsApp, petunjuk |
-| Dialog panel | judul berisi nama objek, akibat, input (khusus isian), "Batal", aksi berlabel kata kerja + objek (merah sinyal untuk hapus/batal) |
+| Chip | `.chip`; aktif lewat `aria-current` atau `aria-pressed` |
+| Nota keranjang | total, garis putus-putus, nama, cara terima, jam ambil, tombol WhatsApp |
+| Dialog panel | judul berisi nama objek, akibat, "Batal", aksi berlabel kata kerja + objek |
 
-**Satu label per tujuan, di mana pun letaknya:** "Lihat katalog", "Rute ke toko", "Semua kategori", "Tentang toko".
+## Data di balik tampilan
+
+- **Harga coret.** Kolom `original_price` per satuan, diisi di panel ("Harga coret") atau lewat import (`harga_coret`).
+  - Database menolak harga coret yang tidak lebih besar dari harga jual.
+  - Harga coret dilepas otomatis bila harga dinaikkan melewatinya.
+- **Kartu barang** menampilkan satuan dengan diskon terbesar.
+- **Pilihan toko.** Centang "Pilihan toko" di form barang.
+- **Banner.** Panel → "Banner beranda", dengan jadwal mulai dan selesai (WITA).
+- **Dibeli.** View `product_sales`.
 
 ## Yang dilakukan dan yang dihindari
 
-* Lakukan: pakai biru merek sebagai satu-satunya aksen aksi. Merah hanya untuk sinyal, hijau hanya untuk WhatsApp.
-* Lakukan: tulis status dengan kata, dan jaga target sentuh minimal 44px.
+* Lakukan: biru untuk aksi, merah untuk promo, hijau untuk WhatsApp. Jangan ditukar.
+* Lakukan: tulis status dengan kata, dan jaga target sentuh minimal 44px (24px untuk titik banner).
+* Lakukan: tampilkan promo dan "Dibeli" hanya dari data sungguhan.
 * Lakukan: pakai foto asli toko atau barang; bila belum ada, pakai ikon jenis barang (`CategoryIcon`).
-* Lakukan: biarkan Papan Lorong menjadi satu-satunya elemen yang berani.
-* Lakukan: jaga judul hero tepat 2 baris dan subteks ≤ 20 kata.
 * Hindari: em-dash (—) dan en-dash (–) di teks apa pun. Pakai tanda hubung biasa.
-* Hindari: eyebrow kapital di atas judul bagian, label nomor bagian, dan tagline di bawah tombol hero.
+* Hindari: hitung mundur palsu, stok "tinggal sedikit" buatan, dan angka terjual karangan.
 * Hindari: SVG ikon buatan tangan. Pakai Phosphor.
-* Hindari: gradien, glow, krem/kuningan, serif, dan foto stok.
+* Hindari: glow, krem/kuningan, serif, foto stok, dan teks di atas foto tanpa scrim.
 * Hindari: `confirm()`/`prompt()` bawaan browser. Pakai `useDialog()`.
 * Lakukan: bila token di `globals.css` berubah, perbarui dokumen ini di commit yang sama.

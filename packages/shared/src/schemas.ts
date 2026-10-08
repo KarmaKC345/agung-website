@@ -47,7 +47,9 @@ export const productListQuerySchema = z.object({
   category: slug.optional(),
   brand: slug.optional(),
   q: z.string().trim().max(100).optional(),
-  sort: z.enum(['relevan', 'terbaru', 'termurah', 'termahal', 'az']).optional(),
+  sort: z.enum(['relevan', 'terbaru', 'terlaris', 'diskon', 'termurah', 'termahal', 'az']).optional(),
+  promo: z.enum(['1', 'true']).transform(() => true).optional(),
+  featured: z.enum(['1', 'true']).transform(() => true).optional(),
   minPrice: z.coerce.number().int().min(0).optional(),
   maxPrice: z.coerce.number().int().min(0).optional(),
   page: z.coerce.number().int().min(1).max(1000).default(1),
@@ -59,11 +61,18 @@ export type ProductListQuery = z.infer<typeof productListQuerySchema>;
 // Panel
 // ----------------------------------------------------------------------------
 
-export const variantPriceInputSchema = z.object({
-  unit: z.string().trim().min(1).max(20),
-  qtyPerUnit: z.number().int().min(1).max(100_000),
-  price: rupiah,
-});
+export const variantPriceInputSchema = z
+  .object({
+    unit: z.string().trim().min(1).max(20),
+    qtyPerUnit: z.number().int().min(1).max(100_000),
+    price: rupiah,
+    /** harga coret: harus lebih besar dari harga; kosong = tidak promo */
+    originalPrice: rupiah.nullable().default(null),
+  })
+  .refine((p) => p.originalPrice === null || p.originalPrice > p.price, {
+    message: 'Harga coret harus lebih besar dari harga jual',
+    path: ['originalPrice'],
+  });
 
 export const variantInputSchema = z.object({
   id: uuid.optional(),
@@ -85,6 +94,7 @@ export const productInputSchema = z.object({
   categoryId: uuid.nullable(),
   brandId: uuid.nullable(),
   isActive: z.boolean().default(true),
+  isFeatured: z.boolean().default(false),
   images: z.array(z.string().url().or(z.string().startsWith('/'))).max(5).default([]),
   variants: z.array(variantInputSchema).min(1, 'Minimal satu varian').max(40),
 });
@@ -142,3 +152,16 @@ export const staffUpdateSchema = z.object({
   role: staffRoleSchema.optional(),
   active: z.boolean().optional(),
 });
+
+export const bannerInputSchema = z.object({
+  title: z.string().trim().min(1).max(80),
+  subtitle: z.string().trim().max(140).default(''),
+  imageUrl: z.string().url().or(z.string().startsWith('/')).nullable().default(null),
+  linkUrl: z.string().trim().startsWith('/', 'Tautan harus halaman di website ini, mis. /barang?promo=1').max(200),
+  theme: z.enum(['brand', 'signal', 'ink']).default('brand'),
+  sortOrder: z.number().int().min(0).max(1000).default(0),
+  isActive: z.boolean().default(true),
+  startsAt: z.iso.datetime({ offset: true }).nullable().default(null),
+  endsAt: z.iso.datetime({ offset: true }).nullable().default(null),
+});
+export type BannerInput = z.infer<typeof bannerInputSchema>;

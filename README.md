@@ -94,6 +94,12 @@ Build pertama memakan beberapa menit. Setelah selesai:
 
 Saat pertama dijalankan, database otomatis terisi skema + data awal (`supabase/seed.sql`).
 
+**Migrasi otomatis.** Setiap kali API menyala, migrasi di `supabase/migrations/` yang belum
+pernah dijalankan langsung dijalankan dan dicatat di tabel `schema_migrations`. Jadi setelah
+`git pull`, cukup `docker compose up -d --build`; tidak perlu menjalankan SQL manual. Data
+awal (`seed.sql`) hanya dimasukkan bila database masih kosong. Matikan dengan
+`AUTO_MIGRATE=false` / `AUTO_SEED=false` bila perlu.
+
 ### Perintah sehari-hari
 
 | Perlu | Perintah |
@@ -107,9 +113,10 @@ Saat pertama dijalankan, database otomatis terisi skema + data awal (`supabase/s
 | Ulang dari nol (**menghapus semua data & foto**) | `docker compose down -v` |
 
 Data tersimpan di volume Docker `newagung_db-data` (database) dan `newagung_uploads` (foto).
-Skrip `docker/db/init.sh` hanya berjalan saat volume database masih kosong. Migrasi baru
-di `supabase/migrations/` nanti dijalankan manual:
-`docker compose exec -T db psql -U newagung -d newagung < supabase/migrations/NAMA_FILE.sql`.
+Skrip lama `docker/db/init.sh` sudah dihapus; database yang dibuat skrip itu dikenali otomatis
+dan hanya migrasi barunya yang dijalankan. Contoh promo dan "Pilihan toko" di `seed.sql` hanya
+masuk ke database baru. Untuk melihatnya di database lama, isi sendiri lewat panel, atau ulang
+dari nol dengan `docker compose down -v` (**menghapus semua data & foto**).
 
 ### Cara kerjanya
 
@@ -132,8 +139,23 @@ pencarian. **Barang dan harga di dalamnya hanya contoh.** Sebelum website dibuka
 
 1. Hapus barang contoh: `delete from products;` (di SQL editor Supabase).
 2. Panel → **Import / export** → unduh template, isi dari ekspor program kasir, lalu import.
-   Kolom: `kategori, merek, nama, varian, warna, sku, satuan, isi, harga, stok, deskripsi`.
-   Satu baris = satu harga. Barang dengan nama sama digabung jadi satu.
+   Kolom: `kategori, merek, nama, varian, warna, sku, satuan, isi, harga, harga_coret, stok, deskripsi`.
+   Satu baris = satu harga. Barang dengan nama sama digabung jadi satu. `harga_coret` (harga
+   normal sebelum promo) boleh kosong; bila diisi harus lebih besar dari `harga`.
+
+### Promo, terlaris, pilihan toko, dan banner
+
+Beranda bergaya marketplace dan semua isinya diatur dari panel:
+
+- **Lagi promo:** isi **Harga coret** pada satuan yang sedang diskon (Panel → Barang). Kartu
+  menampilkan harga dicoret dan persen diskonnya. Harga coret otomatis dilepas bila harga jual
+  dinaikkan melewatinya.
+- **Paling sering dibeli:** dihitung dari pesanan 180 hari terakhir yang sudah diproses toko
+  (disiapkan/siap/selesai). Pesanan yang tidak ditindaklanjuti tidak dihitung. Bagian ini baru
+  muncul setelah ada pesanan yang diproses.
+- **Pilihan toko:** centang "Pilihan toko" di form barang.
+- **Banner:** Panel → **Banner beranda**. Unggah foto, tulis judul, pilih halaman tujuan
+  (mis. `/barang?promo=1`), dan atur jadwal mulai/selesai bila perlu.
 
 ## Deploy ke cloud (nanti)
 
@@ -171,11 +193,13 @@ sehingga halaman terkait langsung diperbarui.
 ## Catatan desain
 
 Fondasi desain lengkap (token, tipografi, kontras terukur, tata letak, kontrak komponen) ada di
-[`DESIGN.md`](DESIGN.md) v2. Ringkasnya:
+[`DESIGN.md`](DESIGN.md) v3 "Etalase". Ringkasnya:
 
-- Satu aksen: biru logo `#282C83` untuk semua aksi utama. Merah logo hanya untuk angka keranjang
-  dan konfirmasi hapus, hijau hanya untuk WhatsApp. Latar abu dingin, mode gelap otomatis.
+- Tampilan etalase gaya marketplace (Tokopedia, Shopee, Lazada): banner, ikon kategori, rak
+  promo/terlaris/baru, kartu barang dengan badge diskon dan "Dibeli Nx", katalog dengan kolom
+  filter, dan halaman barang dengan kotak "Atur jumlah".
+- Biru logo `#282C83` untuk semua aksi. Merah logo berarti promo/diskon (tidak pernah untuk
+  tombol). Hijau hanya untuk WhatsApp. Latar abu dingin, mode gelap otomatis.
 - Font Plus Jakarta Sans (Tokotype, Indonesia, OFL) dan ikon Phosphor.
-- Ciri khas: **papan lorong gantung** sebagai navigasi kategori (`.aisle-sign` di `apps/web/app/globals.css`).
 - Logo di `apps/web/components/Logo.tsx` digambar ulang dari foto logo. Ganti dengan file vektor asli bila ada.
 - Foto toko di `apps/web/public/foto/` dipakai dengan izin pemilik, dipotong tanpa wajah pelanggan yang jelas.

@@ -1,17 +1,15 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { Suspense } from 'react';
-import { AisleSigns, signText } from '@/components/AisleSigns';
 import { Breadcrumbs } from '@/components/Breadcrumbs';
-import { SortSelect } from '@/components/ListControls';
-import { hrefWith, Pagination } from '@/components/Pagination';
-import { ProductGrid } from '@/components/ProductCard';
+import { Catalog } from '@/components/Catalog';
+import { CategoryIcon } from '@/components/CategoryIcon';
 import { findCategory, getBrands, getCategories, getProducts } from '@/lib/api';
+import { currentQuery, hrefWith, toListParams, type CatalogSearch } from '@/lib/catalog-params';
 
 type Props = {
   params: Promise<{ slug: string }>;
-  searchParams: Promise<{ sort?: string; merek?: string; page?: string }>;
+  searchParams: Promise<CatalogSearch>;
 };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
@@ -32,102 +30,63 @@ export default async function CategoryPage({ params, searchParams }: Props) {
   const found = findCategory(tree, slug);
   if (!found) notFound();
   const { category, parent } = found;
-  const page = Math.max(1, Number(sp.page) || 1);
-
-  const result = await getProducts({ category: slug, brand: sp.merek, sort: sp.sort, page, pageSize: 30 });
-  const siblings = parent ? parent.children ?? [] : category.children ?? [];
-  const brandsHere = brands.filter((b) => (b.productCount ?? 0) > 0);
-  const base = `/kategori/${slug}`;
+  const list = { ...toListParams(sp), category: slug };
+  const result = await getProducts({ ...list, pageSize: 30 });
+  const query = currentQuery(sp, list);
+  const siblings = parent ? (parent.children ?? []) : (category.children ?? []);
+  // pindah sub-kategori tetap membawa filter yang sedang dipakai
+  const subHref = (s: string) => hrefWith(`/kategori/${s}`, query);
 
   return (
-    <div className="mx-auto max-w-6xl px-4 pt-5">
-      <Breadcrumbs items={[{ href: '/kategori', label: 'Kategori' }, ...(parent ? [{ href: `/kategori/${parent.slug}`, label: parent.name }] : []), { label: category.name }]} />
-
-      <div className="mt-5 md:w-[340px]">
-        <div className="aisle-rail">
-          <h1 className="aisle-sign transform-none! text-center" aria-label={category.name}>
-            <span className="signage block text-[20px]">{signText(category.name)}</span>
-            <span className="mt-1 block text-[12px] text-muted">{category.productCount} barang</span>
-          </h1>
-        </div>
-      </div>
-
-      {siblings.length > 0 && (
-        <nav aria-label="Sub-kategori" className="scrollbar-none -mx-4 mt-6 overflow-x-auto px-4">
-          <ul className="flex w-max gap-2">
-            <li>
-              <Link
-                href={`/kategori/${parent?.slug ?? category.slug}`}
-                aria-current={!parent ? 'page' : undefined}
-                className="tap chip"
-              >
-                Semua
-              </Link>
-            </li>
-            {siblings.map((c) => (
-              <li key={c.id}>
-                <Link
-                  href={`/kategori/${c.slug}`}
-                  aria-current={c.slug === slug ? 'page' : undefined}
-                  className="tap chip"
-                >
-                  {c.name}
-                  <span className="text-[12px] opacity-60 tabular-nums">{c.productCount}</span>
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </nav>
-      )}
-
-      <div className="mt-6 flex flex-wrap items-center justify-between gap-3">
-        <form className="flex items-center gap-2 text-[14px]" action={base}>
-          <label htmlFor="merek" className="text-muted">
-            Merek
-          </label>
-          <select
-            id="merek"
-            name="merek"
-            defaultValue={sp.merek ?? ''}
-            className="h-11 rounded-tag border border-field bg-surface px-2 font-medium"
-          >
-            <option value="">Semua merek</option>
-            {brandsHere.map((b) => (
-              <option key={b.id} value={b.slug}>
-                {b.name}
-              </option>
-            ))}
-          </select>
-          {sp.sort && <input type="hidden" name="sort" value={sp.sort} />}
-          <button className="btn btn-secondary">Terapkan</button>
-        </form>
-        <Suspense>
-          <SortSelect />
-        </Suspense>
-      </div>
-
-      <div className="mt-4">
-        {result.items.length ? (
-          <ProductGrid products={result.items} priorityCount={2} />
-        ) : (
-          <p className="card rounded-[var(--radius-media)] p-8 text-center text-muted">
-            Belum ada barang di lorong ini{sp.merek ? ' untuk merek tersebut' : ''}.
-          </p>
-        )}
-      </div>
-      <Pagination
-        page={page}
-        pageSize={result.pageSize}
-        total={result.total}
-        makeHref={(p) => hrefWith(base, { merek: sp.merek, sort: sp.sort, page: p })}
+    <div className="mx-auto max-w-7xl px-4 pt-4">
+      <Breadcrumbs
+        items={[{ href: '/kategori', label: 'Kategori' }, ...(parent ? [{ href: `/kategori/${parent.slug}`, label: parent.name }] : []), { label: category.name }]}
       />
-
-      <section className="mt-14" aria-labelledby="lorong-lain">
-        <h2 id="lorong-lain" className="mb-4 text-[18px] font-bold">
-          Lorong lain
-        </h2>
-        <AisleSigns categories={tree} active={parent?.slug ?? category.slug} />
-      </section>
+      <Catalog
+        base={`/kategori/${slug}`}
+        query={query}
+        categories={tree}
+        brands={brands}
+        activeCategory={slug}
+        result={result}
+        page={list.page}
+        header={
+          <>
+            <div className="flex items-center gap-3">
+              <span className="grid size-11 shrink-0 place-items-center rounded-full bg-brand-tint text-brand-text">
+                <CategoryIcon slug={slug} size={24} weight="duotone" aria-hidden />
+              </span>
+              <h1 className="text-[22px] font-bold tracking-[-0.015em] sm:text-[26px]">
+                {category.name} <span className="text-[15px] font-normal text-muted tabular-nums">{result.total} barang</span>
+              </h1>
+            </div>
+            {siblings.length > 0 && (
+              <nav aria-label="Sub-kategori" className="scrollbar-none -mx-4 mt-3 overflow-x-auto px-4 lg:mx-0 lg:px-0">
+                <ul className="flex w-max gap-2">
+                  <li>
+                    <Link href={subHref(parent?.slug ?? category.slug)} aria-current={!parent ? 'page' : undefined} className="tap chip">
+                      Semua {(parent ?? category).name.toLowerCase()}
+                    </Link>
+                  </li>
+                  {siblings.map((c) => (
+                    <li key={c.id}>
+                      <Link href={subHref(c.slug)} aria-current={c.slug === slug ? 'page' : undefined} className="tap chip">
+                        {c.name}
+                        <span className="text-[12px] opacity-60 tabular-nums">{c.productCount}</span>
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </nav>
+            )}
+          </>
+        }
+        empty={
+          <p className="card rounded-[var(--radius-media)] p-8 text-center text-muted">
+            Belum ada barang di {category.name.toLowerCase()} yang cocok dengan filter ini.
+          </p>
+        }
+      />
     </div>
   );
 }

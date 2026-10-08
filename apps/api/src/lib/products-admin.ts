@@ -22,17 +22,31 @@ export async function uniqueSlug(
   }
 }
 
+type PriceUpsert = { unit: string; qtyPerUnit: number; price: number; originalPrice?: number | null };
+
+/**
+ * Simpan harga per satuan. originalPrice: angka = harga coret baru, null = hapus promo,
+ * undefined = biarkan harga coret lama (dipakai import tanpa kolom harga_coret).
+ * Harga coret lama yang tidak lagi lebih besar dari harga baru otomatis dilepas.
+ */
 export async function upsertVariantPrices(
   c: DbClient,
   variantId: string,
-  prices: ProductInput['variants'][number]['prices'],
+  prices: PriceUpsert[],
   opts: { removeMissing: boolean },
 ): Promise<void> {
   for (const p of prices) {
+    const keep = p.originalPrice === undefined;
     await c.query(
-      `insert into variant_prices (variant_id, unit, qty_per_unit, price) values ($1, $2, $3, $4)
-       on conflict (variant_id, unit) do update set qty_per_unit = excluded.qty_per_unit, price = excluded.price`,
-      [variantId, p.unit, p.qtyPerUnit, p.price],
+      `insert into variant_prices (variant_id, unit, qty_per_unit, price, original_price) values ($1, $2, $3, $4, $5)
+       on conflict (variant_id, unit) do update set
+         qty_per_unit = excluded.qty_per_unit,
+         price = excluded.price,
+         original_price = case
+           when not $6::boolean then excluded.original_price
+           when variant_prices.original_price > excluded.price then variant_prices.original_price
+           else null end`,
+      [variantId, p.unit, p.qtyPerUnit, p.price, keep ? null : p.originalPrice, keep],
     );
   }
   if (opts.removeMissing) {
@@ -45,22 +59,25 @@ export async function upsertVariantPrices(
 
 /** Simpan barang beserta varian, harga, dan foto. Mengembalikan id barang. */
 export async function saveProduct(c: DbClient, id: string | null, input: ProductInput): Promise<{ id: string; slug: string }> {
-  const slug = await uniqueSlug(c, 'products', input.slug || input.name, id ?? undefined);
+  // Saat mengubah barang tanpa slug baru, alamat lama dipertahankan agar tautan yang sudah
+  // dibagikan dan hasil Google tidak rusak walau nama barang diganti.
+  const current = id && !input.slug ? (await c.query<{ slug: string }>('select slug from products where id = $1', [id])).rows[0]?.slug : undefined;
+  const slug = current ?? (await uniqueSlug(c, 'products', input.slug || input.name, id ?? undefined));
   let productId: string;
 
   if (id) {
     const { rows } = await c.query<{ id: string }>(
-      `update products set name = $2, slug = $3, description = $4, category_id = $5, brand_id = $6, is_active = $7
+      `update products set name = $2, slug = $3, description = $4, category_id = $5, brand_id = $6, is_active = $7, is_featured = $8
         where id = $1 returning id`,
-      [id, input.name, slug, input.description, input.categoryId, input.brandId, input.isActive],
+      [id, input.name, slug, input.description, input.categoryId, input.brandId, input.isActive, input.isFeatured],
     );
     if (!rows[0]) throw new HttpError(404, 'Barang tidak ditemukan');
     productId = id;
   } else {
     const { rows } = await c.query<{ id: string }>(
-      `insert into products (name, slug, description, category_id, brand_id, is_active)
-       values ($1, $2, $3, $4, $5, $6) returning id`,
-      [input.name, slug, input.description, input.categoryId, input.brandId, input.isActive],
+      `insert into products (name, slug, description, category_id, brand_id, is_active, is_featured)
+       values ($1, $2, $3, $4, $5, $6, $7) returning id`,
+      [input.name, slug, input.description, input.categoryId, input.brandId, input.isActive, input.isFeatured],
     );
     productId = rows[0]!.id;
   }

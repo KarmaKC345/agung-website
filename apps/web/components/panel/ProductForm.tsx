@@ -14,6 +14,8 @@ interface PriceDraft {
   unit: string;
   qtyPerUnit: number;
   price: number | '';
+  /** harga coret (harga normal sebelum promo); kosong = tidak promo */
+  originalPrice: number | '';
 }
 interface VariantDraft {
   key: string;
@@ -28,7 +30,7 @@ interface VariantDraft {
 const UNITS = ['pcs', 'lusin', 'pak', 'box', 'rim', 'kotak', 'set', 'botol', 'tabung', 'roll', 'lembar'];
 let keySeq = 0;
 const newKey = () => `v${++keySeq}`;
-const emptyVariant = (): VariantDraft => ({ key: newKey(), label: '', colorHex: null, sku: '', stockStatus: 'ada', prices: [{ unit: 'pcs', qtyPerUnit: 1, price: '' }] });
+const emptyVariant = (): VariantDraft => ({ key: newKey(), label: '', colorHex: null, sku: '', stockStatus: 'ada', prices: [{ unit: 'pcs', qtyPerUnit: 1, price: '', originalPrice: '' }] });
 
 export function ProductForm({ product }: { product?: ProductDetail }) {
   const router = useRouter();
@@ -41,6 +43,7 @@ export function ProductForm({ product }: { product?: ProductDetail }) {
   const [categoryId, setCategoryId] = useState(product?.category?.id ?? '');
   const [brandId, setBrandId] = useState(product?.brand?.id ?? '');
   const [isActive, setIsActive] = useState(product?.isActive ?? true);
+  const [isFeatured, setIsFeatured] = useState(product?.isFeatured ?? false);
   const [images, setImages] = useState<string[]>(product?.images ?? []);
   const [variants, setVariants] = useState<VariantDraft[]>(
     product?.variants.map((v) => ({
@@ -50,7 +53,7 @@ export function ProductForm({ product }: { product?: ProductDetail }) {
       colorHex: v.colorHex,
       sku: v.sku ?? '',
       stockStatus: v.stockStatus,
-      prices: v.prices.map((p) => ({ unit: p.unit, qtyPerUnit: p.qtyPerUnit, price: p.price })),
+      prices: v.prices.map((p) => ({ unit: p.unit, qtyPerUnit: p.qtyPerUnit, price: p.price, originalPrice: p.originalPrice ?? '' })),
     })) ?? [emptyVariant()],
   );
   const [busy, setBusy] = useState(false);
@@ -108,6 +111,7 @@ export function ProductForm({ product }: { product?: ProductDetail }) {
       categoryId: categoryId || null,
       brandId: brandId || null,
       isActive,
+      isFeatured,
       images,
       variants: variants.map((v) => ({
         id: v.id,
@@ -115,12 +119,21 @@ export function ProductForm({ product }: { product?: ProductDetail }) {
         colorHex: v.colorHex,
         sku: v.sku.trim() || null,
         stockStatus: v.stockStatus,
-        prices: v.prices.map((p) => ({ unit: p.unit.trim(), qtyPerUnit: Number(p.qtyPerUnit) || 1, price: Number(p.price) })),
+        prices: v.prices.map((p) => ({
+          unit: p.unit.trim(),
+          qtyPerUnit: Number(p.qtyPerUnit) || 1,
+          price: Number(p.price),
+          originalPrice: p.originalPrice === '' ? null : Number(p.originalPrice),
+        })),
       })),
     };
     if (body.variants.some((v) => v.prices.some((p) => !Number.isFinite(p.price) || String(p.price) === ''))) {
       setBusy(false);
       return setError('Semua harga wajib diisi angka.');
+    }
+    if (body.variants.some((v) => v.prices.some((p) => p.originalPrice !== null && p.originalPrice <= p.price))) {
+      setBusy(false);
+      return setError('Harga coret harus lebih besar dari harga jual. Kosongkan bila barang tidak sedang promo.');
     }
     try {
       if (product) await adminFetch(`/products/${product.id}`, { method: 'PUT', json: body });
@@ -189,6 +202,13 @@ export function ProductForm({ product }: { product?: ProductDetail }) {
           <input type="checkbox" checked={isActive} onChange={(e) => setIsActive(e.target.checked)} className="size-5" />
           Tampil di website
         </label>
+        <label className="flex min-h-11 items-start gap-2 text-[15px]">
+          <input type="checkbox" checked={isFeatured} onChange={(e) => setIsFeatured(e.target.checked)} className="mt-0.5 size-5" />
+          <span>
+            Pilihan toko
+            <span className="block text-[13px] text-muted">Ditonjolkan di beranda, bagian “Pilihan toko”.</span>
+          </span>
+        </label>
       </section>
 
       <section className="mt-5 rounded-tag border border-line bg-surface p-4">
@@ -218,7 +238,10 @@ export function ProductForm({ product }: { product?: ProductDetail }) {
 
       <section className="mt-5 rounded-tag border border-line bg-surface p-4">
         <h2 className="font-semibold">Varian & harga</h2>
-        <p className="text-[13px] text-muted">Satu varian per warna/ukuran. Satu barang tanpa pilihan cukup satu varian dengan nama kosong.</p>
+        <p className="text-[13px] text-muted">
+          Satu varian per warna/ukuran. Satu barang tanpa pilihan cukup satu varian dengan nama kosong. Isi <b>harga coret</b> (harga normal) bila
+          sedang promo; website menampilkan harga dicoret dan persen diskonnya.
+        </p>
         <div className="mt-4 space-y-4">
           {variants.map((v, vi) => (
             <fieldset key={v.key} className="rounded-tag border border-line p-3">
@@ -243,6 +266,7 @@ export function ProductForm({ product }: { product?: ProductDetail }) {
                     <th className="pb-1 font-medium">Satuan</th>
                     <th className="pb-1 font-medium">Isi</th>
                     <th className="pb-1 font-medium">Harga (Rp)</th>
+                    <th className="pb-1 font-medium">Harga coret</th>
                     <th />
                   </tr>
                 </thead>
@@ -258,6 +282,9 @@ export function ProductForm({ product }: { product?: ProductDetail }) {
                       <td className="pr-2 pb-2">
                         <input type="number" min={0} required inputMode="numeric" value={p.price} onChange={(e) => setVariant(v.key, { prices: v.prices.map((x, i) => (i === pi ? { ...x, price: e.target.value === '' ? '' : Number(e.target.value) } : x)) })} className={`${inputCls} tabular-nums`} aria-label="Harga" />
                       </td>
+                      <td className="pr-2 pb-2">
+                        <input type="number" min={0} inputMode="numeric" placeholder="opsional" value={p.originalPrice} onChange={(e) => setVariant(v.key, { prices: v.prices.map((x, i) => (i === pi ? { ...x, originalPrice: e.target.value === '' ? '' : Number(e.target.value) } : x)) })} className={`${inputCls} tabular-nums`} aria-label="Harga coret (harga normal sebelum promo)" />
+                      </td>
                       <td className="pb-2">
                         {v.prices.length > 1 && (
                           <button type="button" onClick={() => setVariant(v.key, { prices: v.prices.filter((_, i) => i !== pi) })} className="tap px-2 text-muted hover:text-danger" aria-label="Hapus satuan">×</button>
@@ -269,7 +296,7 @@ export function ProductForm({ product }: { product?: ProductDetail }) {
               </table>
               <div className="flex flex-wrap gap-3 text-[13px]">
                 {v.prices.length < 6 && (
-                  <button type="button" onClick={() => setVariant(v.key, { prices: [...v.prices, { unit: 'lusin', qtyPerUnit: 12, price: '' }] })} className="font-semibold text-brand-text">+ Satuan (lusin/box…)</button>
+                  <button type="button" onClick={() => setVariant(v.key, { prices: [...v.prices, { unit: 'lusin', qtyPerUnit: 12, price: '', originalPrice: '' }] })} className="font-semibold text-brand-text">+ Satuan (lusin/box…)</button>
                 )}
                 <button type="button" onClick={() => setVariants([...variants.slice(0, vi + 1), { ...v, key: newKey(), id: undefined, label: '', prices: v.prices.map((p) => ({ ...p })) }, ...variants.slice(vi + 1)])} className="font-semibold text-brand-text">Salin varian</button>
                 {variants.length > 1 && (
