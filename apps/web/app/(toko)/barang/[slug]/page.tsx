@@ -34,16 +34,18 @@ export default async function ProductPage({ params }: Props) {
   const [product, store] = await Promise.all([getProduct(slug), getStore()]);
   if (!product) notFound();
 
-  // Produk serupa: kategori yang sama; bila kurang dari 2, kategori induknya; bila masih kurang, produk terbaru
-  const others = async (category?: string) =>
-    (await getProducts({ category, sort: category ? undefined : 'terbaru', pageSize: 7 })).items.filter((p) => p.id !== product.id).slice(0, 6);
-  let related = product.category ? await others(product.category.slug) : [];
-  let relatedTitle = 'Produk serupa';
-  if (related.length < 2 && product.category?.parent) related = await others(product.category.parent.slug);
-  if (related.length < 2) {
-    related = await others();
-    relatedTitle = 'Produk lainnya';
-  }
+  // Produk serupa: kategori yang sama; bila kosong, kategori induknya
+  const sameCategory = async (category: string) =>
+    (await getProducts({ category, pageSize: 7 })).items.filter((p) => p.id !== product.id).slice(0, 6);
+  let related = product.category ? await sameCategory(product.category.slug) : [];
+  if (!related.length && product.category?.parent) related = await sameCategory(product.category.parent.slug);
+
+  // Rekomendasi: Pilihan toko lalu terlaris, tanpa produk ini dan tanpa yang sudah tampil di Produk serupa
+  const shown = new Set([product.id, ...related.map((p) => p.id)]);
+  const [featured, bestSelling] = await Promise.all([getProducts({ featured: true, pageSize: 12 }), getProducts({ sort: 'terlaris', pageSize: 12 })]);
+  const recommended = [...featured.items, ...bestSelling.items]
+    .filter((p) => !shown.has(p.id) && shown.add(p.id))
+    .slice(0, 6);
   const crumbs = [
     ...(product.category?.parent ? [{ href: `/kategori/${product.category.parent.slug}`, label: product.category.parent.name }] : []),
     ...(product.category ? [{ href: `/kategori/${product.category.slug}`, label: product.category.name }] : []),
@@ -157,11 +159,20 @@ export default async function ProductPage({ params }: Props) {
       </div>
 
       {related.length > 0 && (
-        <section className="mt-10 md:mt-12" aria-labelledby="serak">
-          <h2 id="serak" className="mb-3 text-[18px] font-bold tracking-[-0.015em] sm:text-[20px]">
-            {relatedTitle}
+        <section className="mt-10 md:mt-12" aria-labelledby="serupa">
+          <h2 id="serupa" className="mb-3 text-[18px] font-bold tracking-[-0.015em] sm:text-[20px]">
+            Produk serupa
           </h2>
           <ProductRow products={related} />
+        </section>
+      )}
+
+      {recommended.length > 0 && (
+        <section className="mt-10 md:mt-12" aria-labelledby="rekomendasi">
+          <h2 id="rekomendasi" className="mb-3 text-[18px] font-bold tracking-[-0.015em] sm:text-[20px]">
+            Rekomendasi untuk Anda
+          </h2>
+          <ProductRow products={recommended} />
         </section>
       )}
 

@@ -255,6 +255,7 @@ Semua filter berupa tautan atau form GET, jadi tetap jalan tanpa JavaScript. Nil
 - **Kolom 3 (280-300px), "Atur jumlah".** Stepper, stok, subtotal, "+ Keranjang" (utama), "Beli langsung" (garis biru; masuk keranjang lalu membuka keranjang), dan "Tanya dulu via WhatsApp".
 - **Di HP dan tablet.** Jumlah, subtotal, "Beli langsung", "+ Keranjang", dan "Tanya via WhatsApp" tampil di kolom info. Setelah tombol itu tergulir keluar layar, bilah bawah (WhatsApp, "Beli langsung", "+ Keranjang") muncul, jadi tombol beli selalu terlihat dan tidak pernah dobel.
 - Satuan awal adalah satuan yang sedang promo, supaya harga sama dengan di kartu.
+- **Di bawahnya.** "Produk serupa" (kategori yang sama, atau kategori induk bila kosong; tidak tampil bila tidak ada), lalu selalu "Rekomendasi untuk Anda" (Pilihan toko, lalu terlaris; tanpa produk yang sudah tampil). Jarak ke footer 48px.
 
 **Keranjang dan footer** tidak berubah dari v2: nota yang menempel, time picker jam ambil, dan peta.
 
