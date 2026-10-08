@@ -78,7 +78,7 @@ export function SiteHeader({ store, categories }: { store: StoreInfo; categories
           </nav>
         </div>
         <div className="ml-auto flex items-center gap-1.5 md:ml-0">
-          <Link href="/favorit" className="tap hidden size-11 place-items-center rounded-tag text-ink hover:bg-sunken md:grid" aria-label="Favorit">
+          <Link href="/favorit" className="tap grid size-11 place-items-center rounded-tag text-ink hover:bg-sunken" aria-label="Favorit dan riwayat pesanan">
             <BookmarkSimple size={22} weight="bold" aria-hidden />
           </Link>
           <CartLink />

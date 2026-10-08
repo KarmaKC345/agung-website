@@ -220,7 +220,7 @@ Kontainer 1280px (`max-w-7xl`) dengan gutter 16px. Breakpoint: 640, 768, 1024, d
   - Kotak cari selebar mungkin dengan tombol "Cari".
   - Pintasan di bawah kotak cari: Promo, Terlaris, Produk terbaru, dan 5 kategori dari API (≥1024px).
   - Favorit dan Keranjang.
-- **Di HP.** Kotak cari di baris kedua, dan navigasi bawah (Beranda, Kategori, Favorit, Keranjang). Navigasi bawah disembunyikan di halaman barang, diganti bilah beli.
+- **Di HP.** Logo, ikon Favorit, dan Keranjang di baris pertama; kotak cari di baris kedua; navigasi bawah (Beranda, Kategori, Favorit, Keranjang). Navigasi bawah disembunyikan di halaman barang, diganti bilah beli.
 
 **Beranda**, dari atas ke bawah:
 
