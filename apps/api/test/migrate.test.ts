@@ -37,7 +37,7 @@ describe('migrasi otomatis', () => {
     }
     const db = createPool(URL);
     const res = await migrate(db, dir, { seed: true });
-    expect(res.applied).toEqual(['20261008000000_marketplace.sql', '20261009000000_banner_copy.sql']);
+    expect(res.applied).toEqual(['20261008000000_marketplace.sql', '20261009000000_banner_copy.sql', '20261010000000_demo_foto.sql']);
     expect(res.seeded).toBe(false);
     const { rows } = await db.query(`select title from promo_banners order by sort_order`);
     expect(rows).toHaveLength(3);

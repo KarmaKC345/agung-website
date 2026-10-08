@@ -213,6 +213,14 @@ Beranda bergaya marketplace dan semua isinya diatur dari panel:
   `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `REVALIDATE_SECRET`.
 - Domain: hubungkan `newagung.com`.
 
+**Foto contoh.** 30 dari 32 produk contoh memakai foto contoh dari Wikimedia Commons (lisensi
+bebas) di `apps/web/public/produk/`, dengan kredit di halaman `/kredit-foto` (tautan "Kredit foto"
+di footer). Untuk menggantinya: Panel → Barang → buka produk, hapus foto contoh (tombol ×),
+lalu unggah foto asli.
+Setelah semua produk contoh dihapus dan diganti data asli, hapus juga folder `apps/web/public/produk/`
+dan isi `apps/web/lib/kredit-foto.json` dengan `[]` agar tautan "Kredit foto" hilang.
+Skrip pembuatnya: `python3 scripts/demo-foto.py`.
+
 Setelah harga atau barang diubah di panel, API memanggil `POST /api/revalidate` di website
 sehingga halaman terkait langsung diperbarui.
 

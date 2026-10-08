@@ -23,7 +23,7 @@ export function ProductImage({
   if (src) {
     return (
       <div className={`relative aspect-square overflow-hidden bg-white ${className}`}>
-        <Image src={src} alt={name} fill sizes={sizes} priority={priority} className="object-contain p-3" />
+        <Image src={src} alt={name} fill sizes={sizes} priority={priority} className="object-contain" />
       </div>
     );
   }

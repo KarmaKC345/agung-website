@@ -82,7 +82,7 @@ export default async function ProductPage({ params }: Props) {
           <div className="card relative overflow-hidden">
             {product.images[0] ? (
               <div className="relative aspect-square bg-white">
-                <Image src={product.images[0]} alt={product.name} fill priority sizes="(min-width: 1280px) 400px, (min-width: 1024px) 340px, 100vw" className="object-contain p-6" />
+                <Image src={product.images[0]} alt={product.name} fill priority sizes="(min-width: 1280px) 400px, (min-width: 1024px) 340px, 100vw" className="object-contain" />
               </div>
             ) : (
               <ProductImage src={null} name={product.name} categorySlug={product.category?.slug} sizes="400px" />
