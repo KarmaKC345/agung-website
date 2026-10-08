@@ -8,11 +8,13 @@ export type Revalidate = (tags: string[]) => void;
  * kegagalan revalidasi tidak boleh menggagalkan penyimpanan data.
  */
 export function createRevalidator(env: Env, log: Logger): Revalidate {
-  if (!env.WEB_URL || !env.REVALIDATE_SECRET) {
+  const targetUrl = (process.env.WEB_URL || env.WEB_URL || '').replace(/\/$/, '');
+  if (!targetUrl || !env.REVALIDATE_SECRET) {
     return () => {};
   }
   return (tags) => {
-    fetch(`${env.WEB_URL.replace(/\/$/, '')}/api/revalidate`, {
+    const url = new URL('api/revalidate', targetUrl.endsWith('/') ? targetUrl : `${targetUrl}/`);
+    fetch(url, {
       method: 'POST',
       headers: { 'content-type': 'application/json', 'x-revalidate-secret': env.REVALIDATE_SECRET },
       body: JSON.stringify({ tags }),

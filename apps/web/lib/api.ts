@@ -5,7 +5,10 @@ import { SERVER_API_URL } from './config';
 const REVALIDATE = 300;
 
 async function get<T>(path: string, tags: string[], revalidate = REVALIDATE): Promise<T | null> {
-  const res = await fetch(`${SERVER_API_URL}/api${path}`, { next: { revalidate, tags } });
+  const baseUrl = (process.env.API_INTERNAL_URL || SERVER_API_URL).replace(/\/$/, '');
+  const cleanPath = path.startsWith('/') ? path.slice(1) : path;
+  const url = new URL(`api/${cleanPath}`, baseUrl.endsWith('/') ? baseUrl : `${baseUrl}/`);
+  const res = await fetch(url, { next: { revalidate, tags } });
   if (res.status === 404) return null;
   if (!res.ok) throw new Error(`API ${path} → ${res.status}`);
   return (await res.json()) as T;
