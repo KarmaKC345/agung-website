@@ -1,9 +1,9 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { btnPrimary, inputCls } from '@/components/panel/PanelShell';
-import { updatePassword } from '@/lib/admin';
+import { supabase, updatePassword } from '@/lib/admin';
 
 /** Tujuan link undangan pegawai & reset kata sandi dari email Supabase */
 export default function SetPasswordPage() {
@@ -11,6 +11,10 @@ export default function SetPasswordPage() {
   const [pw, setPw] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  // baca token dari tautan undangan/reset segera saat halaman dibuka
+  useEffect(() => {
+    supabase();
+  }, []);
   return (
     <div className="grid min-h-dvh place-items-center px-4">
       <form

@@ -143,6 +143,19 @@ docker compose --profile staging logs tunnel | findstr trycloudflare
 - Pesanan percobaan dari client masuk ke WhatsApp toko dan ke panel seperti pesanan biasa.
   Batalkan dari panel setelah dicoba.
 - Panel tetap bisa dibuka client di `<link>/panel` bila Anda memberinya akun.
+- **Mengundang pegawai saat staging:** tautan undangan dan reset kata sandi mengarah ke `SITE_URL`.
+  Isi `SITE_URL` di `.env` dengan link `https://....trycloudflare.com` yang sedang aktif, jalankan
+  `docker compose --profile staging up -d api`, dan di Supabase (Authentication → URL Configuration →
+  Redirect URLs) tambahkan `https://*.trycloudflare.com/**`. Tanpa ini tautan mengarah ke
+  `localhost:3000`, yang tidak bisa dibuka dari HP pegawai.
+
+### Mengundang pegawai
+
+Panel → **Pegawai** → isi email → **Undang**. Supabase mengirim email undangan berisi tautan untuk
+mengatur kata sandi. Layanan email bawaan Supabase hanya mengizinkan beberapa email per jam; bila
+batas itu tercapai (atau email sudah pernah diundang), panel menampilkan **tautan undangan** yang bisa
+disalin atau dikirim lewat WhatsApp. Tautan berlaku 24 jam dan hanya sekali pakai. Untuk mengirim
+lebih banyak email, pasang SMTP sendiri di Supabase (Authentication → Emails → SMTP Settings).
 
 ### Cara kerjanya
 

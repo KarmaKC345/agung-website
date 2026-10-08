@@ -410,16 +410,34 @@ export function adminRoutes(ctx: Ctx): Router {
       throw new HttpError(501, 'Undangan pegawai butuh Supabase (SUPABASE_URL & SUPABASE_SERVICE_ROLE_KEY)');
     }
     const supabase = createClient(env.SUPABASE_URL, env.SUPABASE_SERVICE_ROLE_KEY, { auth: { persistSession: false } });
-    const { data, error } = await supabase.auth.admin.inviteUserByEmail(input.email, {
-      redirectTo: (env.SITE_URL || env.WEB_URL) ? `${(env.SITE_URL || env.WEB_URL).replace(/\/$/, '')}/panel/atur-sandi` : undefined,
-    });
-    if (error || !data.user) throw new HttpError(502, `Gagal mengirim undangan: ${error?.message ?? 'tanpa user'}`);
+    const site = (env.SITE_URL || env.WEB_URL).replace(/\/$/, '');
+    const redirectTo = site ? `${site}/panel/atur-sandi` : undefined;
+
+    // Utamakan email undangan. Bila email tidak bisa dikirim (batas email Supabase) atau akun
+    // sudah pernah diundang, buat tautan atur kata sandi tanpa email untuk dibagikan pemilik
+    // lewat WhatsApp. Tautan ini tidak terkena batas email.
+    let userId: string;
+    let inviteLink: string | null = null;
+    const sent = await supabase.auth.admin.inviteUserByEmail(input.email, { redirectTo });
+    if (!sent.error && sent.data.user) {
+      userId = sent.data.user.id;
+    } else {
+      const message = sent.error?.message ?? '';
+      const rateLimited = sent.error?.status === 429 || /rate limit/i.test(message);
+      const registered = /already (been )?registered/i.test(message);
+      if (!rateLimited && !registered) throw new HttpError(502, `Undangan belum berhasil dikirim: ${message || 'akun tidak dibuat'}`);
+      const link = await supabase.auth.admin.generateLink({ type: registered ? 'recovery' : 'invite', email: input.email, options: { redirectTo } });
+      if (link.error || !link.data.user) throw new HttpError(502, `Tautan undangan belum berhasil dibuat: ${link.error?.message ?? 'akun tidak dibuat'}`);
+      userId = link.data.user.id;
+      inviteLink = link.data.properties.action_link;
+    }
+
     await db.query(
       `insert into staff (user_id, email, role) values ($1, $2, $3)
        on conflict (user_id) do update set role = excluded.role, active = true`,
-      [data.user.id, input.email.toLowerCase(), input.role],
+      [userId, input.email.toLowerCase(), input.role],
     );
-    res.status(201).json({ userId: data.user.id, email: input.email, role: input.role, active: true });
+    res.status(201).json({ userId, email: input.email, role: input.role, active: true, inviteLink });
   });
 
   r.patch('/staff/:id', ownerOnly, async (req, res) => {
