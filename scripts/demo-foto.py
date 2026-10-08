@@ -15,6 +15,8 @@ import io
 import json
 import re
 import sys
+import time
+import urllib.error
 import urllib.parse
 import urllib.request
 from pathlib import Path
@@ -65,16 +67,31 @@ LISENSI_BEBAS = re.compile(r'^(cc0|public domain|pd|cc by(-sa)? [0-9.]+)', re.I)
 
 
 def get(url: str) -> bytes:
-    req = urllib.request.Request(url, headers={'User-Agent': UA})
-    with urllib.request.urlopen(req, timeout=30) as r:
-        return r.read()
+    """Unduh dengan jeda sopan; coba ulang bila Wikimedia membalas 429 (terlalu banyak permintaan)."""
+    for percobaan in range(5):
+        time.sleep(1.2)
+        req = urllib.request.Request(url, headers={'User-Agent': UA})
+        try:
+            with urllib.request.urlopen(req, timeout=30) as r:
+                return r.read()
+        except urllib.error.HTTPError as e:
+            if e.code != 429 or percobaan == 4:
+                raise
+            time.sleep(10 * (percobaan + 1))
+    raise RuntimeError('tidak terjangkau')
+
+
+def thumb_upload(url: str) -> str:
+    """Thumbnail 960px (ukuran standar Wikimedia) lewat upload.wikimedia.org."""
+    url = url.split('?')[0].replace('://thumb.wikimedia.org/', '://upload.wikimedia.org/')
+    return re.sub(r'/\d+px-', '/960px-', url)
 
 
 def cari_commons(q: str, n: int = 8) -> list[dict]:
     params = {
         'action': 'query', 'format': 'json', 'generator': 'search', 'gsrnamespace': 6,
         'gsrsearch': f'{q} filetype:bitmap', 'gsrlimit': n, 'prop': 'imageinfo',
-        'iiprop': 'url|extmetadata|size|mime', 'iiurlwidth': 1000,
+        'iiprop': 'url|extmetadata|size|mime', 'iiurlwidth': 960,
     }
     data = json.loads(get(f'{API}?{urllib.parse.urlencode(params)}'))
     hasil = []
@@ -88,7 +105,7 @@ def cari_commons(q: str, n: int = 8) -> list[dict]:
             continue
         pembuat = re.sub('<[^>]+>', '', meta.get('Artist', {}).get('value', '')).strip() or 'Tidak diketahui'
         hasil.append({
-            'judul': page['title'], 'thumb': info.get('thumburl') or info['url'],
+            'judul': page['title'], 'thumb': thumb_upload(info.get('thumburl') or info['url']),
             'halaman': info.get('descriptionurl', ''), 'lisensi': lisensi, 'pembuat': pembuat[:120],
         })
     return hasil
@@ -98,6 +115,8 @@ def cari():
     for slug, kunci in PRODUK.items():
         folder = WORK / 'kandidat' / slug
         folder.mkdir(parents=True, exist_ok=True)
+        if any(folder.glob('*.jpg')):
+            continue  # sudah punya kandidat
         semua = []
         for q in kunci:
             try:
