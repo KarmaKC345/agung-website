@@ -7,7 +7,7 @@ import { MapEmbed } from './MapEmbed';
 export function SiteFooter({ store }: { store: StoreInfo }) {
   const summary = summarizeHours(store.openingHours);
   return (
-    <footer className="mt-20 border-t border-line bg-surface pb-24 md:pb-0">
+    <footer className="mt-12 border-t border-line bg-surface pb-24 md:pb-0">
       <div className="mx-auto grid max-w-7xl gap-10 px-4 py-12 text-[15px] lg:grid-cols-[1fr_1.15fr]">
         <div>
           <div className="flex items-center gap-3">

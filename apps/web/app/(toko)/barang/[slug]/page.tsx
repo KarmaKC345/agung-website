@@ -34,9 +34,16 @@ export default async function ProductPage({ params }: Props) {
   const [product, store] = await Promise.all([getProduct(slug), getStore()]);
   if (!product) notFound();
 
-  const related = product.category
-    ? (await getProducts({ category: product.category.slug, pageSize: 7 })).items.filter((p) => p.id !== product.id).slice(0, 6)
-    : [];
+  // Produk serupa: kategori yang sama; bila kurang dari 2, kategori induknya; bila masih kurang, produk terbaru
+  const others = async (category?: string) =>
+    (await getProducts({ category, sort: category ? undefined : 'terbaru', pageSize: 7 })).items.filter((p) => p.id !== product.id).slice(0, 6);
+  let related = product.category ? await others(product.category.slug) : [];
+  let relatedTitle = 'Produk serupa';
+  if (related.length < 2 && product.category?.parent) related = await others(product.category.parent.slug);
+  if (related.length < 2) {
+    related = await others();
+    relatedTitle = 'Produk lainnya';
+  }
   const crumbs = [
     ...(product.category?.parent ? [{ href: `/kategori/${product.category.parent.slug}`, label: product.category.parent.name }] : []),
     ...(product.category ? [{ href: `/kategori/${product.category.slug}`, label: product.category.name }] : []),
@@ -65,7 +72,7 @@ export default async function ProductPage({ params }: Props) {
   const anyStock = product.variants.some((v) => v.stockStatus !== 'habis');
 
   return (
-    <div className="mx-auto max-w-7xl px-4 pt-4 pb-20 lg:pb-0">
+    <div className="mx-auto max-w-7xl px-4 pt-4">
       <Breadcrumbs items={crumbs} />
 
       <div className="mt-4 grid gap-6 lg:grid-cols-[340px_minmax(0,1fr)] lg:gap-8 xl:grid-cols-[400px_minmax(0,1fr)]">
@@ -150,9 +157,9 @@ export default async function ProductPage({ params }: Props) {
       </div>
 
       {related.length > 0 && (
-        <section className="mt-12" aria-labelledby="serak">
+        <section className="mt-10 md:mt-12" aria-labelledby="serak">
           <h2 id="serak" className="mb-3 text-[18px] font-bold tracking-[-0.015em] sm:text-[20px]">
-            Produk serupa
+            {relatedTitle}
           </h2>
           <ProductRow products={related} />
         </section>
