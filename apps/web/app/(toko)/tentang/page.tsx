@@ -8,8 +8,9 @@ import kalkulator from '@/public/foto/etalase-kalkulator.webp';
 import papan from '@/public/foto/papan-lorong.webp';
 
 export const metadata: Metadata = {
-  title: 'Alamat & jam buka',
-  description: 'Toko New Agung, Jl. DR. Ratulangi No.52, Mariso, Makassar. Buka setiap hari 05.00-22.00 WITA.',
+  title: 'Tentang toko',
+  description: 'Toko New Agung, toko alat tulis dan perlengkapan kantor di Jl. DR. Ratulangi No.52, Mariso, Makassar. Buka setiap hari pukul 05.00-22.00 WITA.',
+  alternates: { canonical: '/tentang' },
 };
 
 export default async function AboutPage() {
@@ -17,9 +18,13 @@ export default async function AboutPage() {
 
   return (
     <div className="mx-auto max-w-7xl px-4 pt-5">
-      <Breadcrumbs items={[{ label: 'Alamat & jam buka' }]} />
+      <Breadcrumbs items={[{ label: 'Tentang toko' }]} />
       <h1 className="mt-4 text-[28px] leading-tight font-bold sm:text-[34px]">{store.name}</h1>
       <StatusPill hours={store.openingHours} timezone={store.timezone} className="mt-2 text-muted" />
+      <p className="mt-4 max-w-[65ch] text-[16px] leading-relaxed text-muted">
+        Toko alat tulis dan perlengkapan kantor di Makassar. Kami menyediakan kebutuhan sekolah, kantor, dan usaha, mulai dari pulpen, kertas, map,
+        kalkulator, hingga tinta printer. Anda dapat berbelanja langsung di toko atau memesan melalui website ini dan WhatsApp.
+      </p>
 
       <div className="mt-8 grid gap-8 md:grid-cols-2">
         <div className="space-y-8">
@@ -29,7 +34,7 @@ export default async function AboutPage() {
             </h2>
             <p className="mt-2 text-[17px] leading-relaxed">{store.address}</p>
             <a href={store.mapsUrl} target="_blank" rel="noopener" className="mt-3 inline-flex h-11 items-center rounded-tag bg-ink px-4 font-semibold text-surface">
-              Rute di Google Maps
+              Petunjuk arah di Google Maps
             </a>
           </section>
 
@@ -60,7 +65,7 @@ export default async function AboutPage() {
             </h2>
             <ul className="mt-2 space-y-2 text-[16px]">
               <li>
-                WhatsApp pesanan:{' '}
+                WhatsApp:{' '}
                 <a href={waLink(store.whatsapp)} target="_blank" rel="noopener" className="font-semibold text-wa-text underline underline-offset-4">
                   {formatPhone(store.whatsapp)}
                 </a>
@@ -72,9 +77,9 @@ export default async function AboutPage() {
                 </a>
               </li>
               <li>
-                Google:{' '}
+                Ulasan Google:{' '}
                 <a href={store.mapsUrl} target="_blank" rel="noopener" className="underline underline-offset-4">
-                  4,5 dari 10.000+ ulasan
+                  rating 4,5 (10.000+ ulasan)
                 </a>
               </li>
             </ul>
@@ -87,7 +92,7 @@ export default async function AboutPage() {
               <Image src={kalkulator} alt="Etalase kalkulator Casio dan lorong tinta" fill placeholder="blur" sizes="(min-width: 768px) 560px, 100vw" className="object-cover" />
             </div>
             <div className="relative aspect-[5/2] overflow-hidden rounded-tag">
-              <Image src={papan} alt="Papan gantung lorong di dalam toko" fill placeholder="blur" sizes="(min-width: 768px) 560px, 100vw" className="object-cover" />
+              <Image src={papan} alt="Papan petunjuk lorong di dalam Toko New Agung" fill placeholder="blur" sizes="(min-width: 768px) 560px, 100vw" className="object-cover" />
             </div>
           </div>
         </div>

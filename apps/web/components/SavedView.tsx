@@ -27,12 +27,12 @@ function Favorites() {
       .catch(() => setFailed(true));
   }, [ids]);
 
-  if (failed) return <p className="text-danger">Favorit gagal dimuat. Muat ulang halaman.</p>;
+  if (failed) return <p className="text-danger">Daftar favorit belum berhasil dimuat. Silakan muat ulang halaman.</p>;
   if (!items) return <div className="h-40" aria-busy />;
   if (!items.length) {
     return (
       <p className="card rounded-[var(--radius-media)] p-10 text-center text-muted">
-        Belum ada favorit. Tekan ikon penanda di foto barang untuk menyimpannya di sini.
+        Belum ada produk favorit. Tekan ikon simpan pada foto produk untuk menambahkannya ke daftar ini.
       </p>
     );
   }
@@ -87,7 +87,7 @@ function OrderCard({ order }: { order: PastOrder }) {
       }
       setNote(result);
     } catch {
-      setError('Harga terbaru gagal dimuat. Coba lagi.');
+      setError('Harga terbaru belum berhasil dimuat. Silakan coba kembali.');
     } finally {
       setBusy(false);
     }
@@ -115,7 +115,7 @@ function OrderCard({ order }: { order: PastOrder }) {
       <hr className="receipt-rule my-3" />
       <div className="flex flex-wrap items-center justify-between gap-3">
         <span className="text-[14px]">
-          Total waktu itu <b className="tabular-nums">{formatRupiah(order.total)}</b>
+          Total saat itu <b className="tabular-nums">{formatRupiah(order.total)}</b>
         </span>
         <button
           type="button"
@@ -123,13 +123,13 @@ function OrderCard({ order }: { order: PastOrder }) {
           disabled={busy}
           className="btn btn-primary"
         >
-          {busy ? 'Memeriksa harga…' : 'Pesan lagi'}
+          {busy ? 'Memeriksa harga…' : 'Pesan kembali'}
         </button>
       </div>
       {error && <p className="mt-2 text-[14px] text-danger">{error}</p>}
       {note && (
         <div role="status" className="mt-3 rounded-[10px] bg-sunken p-3.5 text-[14px]">
-          <p className="font-semibold">{note.added} barang masuk keranjang dengan harga terbaru.</p>
+          <p className="font-semibold">{note.added} produk telah ditambahkan ke keranjang dengan harga terbaru.</p>
           {note.changed.length > 0 && (
             <ul className="mt-1 space-y-0.5">
               {note.changed.map((c) => (
@@ -139,7 +139,7 @@ function OrderCard({ order }: { order: PastOrder }) {
               ))}
             </ul>
           )}
-          {note.missing.length > 0 && <p className="mt-1 text-danger">Tidak tersedia lagi: {note.missing.join(', ')}</p>}
+          {note.missing.length > 0 && <p className="mt-1 text-danger">Sudah tidak tersedia: {note.missing.join(', ')}</p>}
           <Link href="/keranjang" className="mt-2 inline-block font-semibold text-brand-text underline underline-offset-4">
             Lanjut ke keranjang
           </Link>
@@ -154,7 +154,7 @@ function History() {
   if (!history.length) {
     return (
       <p className="card rounded-[var(--radius-media)] p-10 text-center text-muted">
-        Pesanan yang dikirim dari perangkat ini akan muncul di sini, supaya bisa dipesan ulang dengan sekali tekan.
+        Pesanan yang Anda kirim dari perangkat ini akan tampil di sini, sehingga Anda dapat memesannya kembali dengan sekali tekan.
       </p>
     );
   }
@@ -192,7 +192,7 @@ export function SavedView() {
         {tabBtn('riwayat', 'Riwayat pesanan')}
       </div>
       <div className="mt-5">{!hydrated ? <div className="h-40" aria-busy /> : tab === 'favorit' ? <Favorites /> : <History />}</div>
-      <p className="mt-6 text-[13px] text-muted">Favorit dan riwayat tersimpan di perangkat ini saja. Data hilang bila riwayat browser dibersihkan.</p>
+      <p className="mt-6 text-[13px] text-muted">Favorit dan riwayat pesanan tersimpan di perangkat ini dan akan terhapus apabila data browser dibersihkan.</p>
     </>
   );
 }

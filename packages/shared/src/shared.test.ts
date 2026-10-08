@@ -22,15 +22,15 @@ describe('opening hours (WITA)', () => {
   // 2026-10-07 is a Wednesday. WITA = UTC+8.
   it('is open during the day', () => {
     const s = getOpenStatus(hours, 'Asia/Makassar', new Date('2026-10-07T02:00:00Z')); // 10.00 WITA
-    expect(s).toEqual({ isOpen: true, label: 'Buka · tutup 22.00' });
+    expect(s).toEqual({ isOpen: true, label: 'Buka · hingga 22.00' });
   });
   it('is closed after 22.00 and reopens at 05.00', () => {
     const s = getOpenStatus(hours, 'Asia/Makassar', new Date('2026-10-07T14:30:00Z')); // 22.30 WITA
-    expect(s).toEqual({ isOpen: false, label: 'Tutup · buka 05.00' });
+    expect(s).toEqual({ isOpen: false, label: 'Tutup · buka besok pukul 05.00' });
   });
   it('is closed before 05.00', () => {
     const s = getOpenStatus(hours, 'Asia/Makassar', new Date('2026-10-06T20:00:00Z')); // 04.00 WITA
-    expect(s).toEqual({ isOpen: false, label: 'Tutup · buka 05.00' });
+    expect(s).toEqual({ isOpen: false, label: 'Tutup · buka pukul 05.00' });
   });
   it('returns today\'s hours in WITA, even when UTC is still yesterday', () => {
     const sunClosed = { ...hours, sun: null };
@@ -51,7 +51,7 @@ describe('whatsapp', () => {
       code: 'NA-261007-014',
       customerName: 'Rina',
       fulfilment: 'ambil',
-      pickupNote: 'jam 16.00',
+      pickupNote: 'pukul 16.00',
       lines: [
         { name: 'Kertas HVS SiDU A4 70 gsm (A4)', unit: 'rim', qty: 2, price: 52000 },
         { name: 'Buku Tulis SiDU (58 lembar)', unit: 'pcs', qty: 10, price: 5500 },
@@ -59,16 +59,18 @@ describe('whatsapp', () => {
     });
     expect(msg).toBe(
       [
-        'Halo Toko New Agung, saya mau pesan:',
+        'Halo Toko New Agung, saya ingin memesan:',
         '',
         '1. Kertas HVS SiDU A4 70 gsm (A4): 2 rim × Rp52.000',
         '2. Buku Tulis SiDU (58 lembar): 10 pcs × Rp5.500',
         '',
-        'Perkiraan total: Rp159.000',
+        'Total: Rp159.000',
         'Kode pesanan: NA-261007-014',
         '',
         'Nama: Rina',
-        'Ambil di toko, jam 16.00',
+        'Cara terima: Ambil di toko, pukul 16.00',
+        '',
+        'Terima kasih.',
       ].join('\n'),
     );
   });

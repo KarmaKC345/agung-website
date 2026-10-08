@@ -35,7 +35,7 @@ export function QuickAdd({ product }: { product: ProductSummary }) {
     >
       {added ? <Check size={18} weight="bold" aria-hidden /> : <Plus size={18} weight="bold" aria-hidden />}
       <span className="sr-only" role="status">
-        {added ? 'Ditambahkan' : ''}
+        {added ? `${product.name} ditambahkan ke keranjang` : ''}
       </span>
     </button>
   );

@@ -21,7 +21,7 @@ export function FilterSheet({ count, total, children }: { count: number; total: 
       </button>
       <dialog
         ref={ref}
-        aria-label="Filter barang"
+        aria-label="Filter produk"
         onClick={(e) => {
           // klik latar gelap, tautan filter, atau kirim form harga → tutup
           if (e.target === ref.current || (e.target as HTMLElement).closest('a')) close();
@@ -38,7 +38,7 @@ export function FilterSheet({ count, total, children }: { count: number; total: 
         <div className="px-4 pt-3 pb-[calc(env(safe-area-inset-bottom)+16px)]">{children}</div>
         <div className="sticky bottom-0 border-t border-line bg-surface px-4 py-3">
           <button type="button" onClick={close} className="btn btn-primary w-full">
-            Lihat {total} barang
+            Tampilkan {total} produk
           </button>
         </div>
       </dialog>

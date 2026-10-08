@@ -19,7 +19,7 @@ export function StatusPill({ hours, timezone, className = '' }: { hours: WeeklyH
         aria-hidden
         className={`size-2 rounded-full ${status === null ? 'bg-line-strong' : status.isOpen ? 'bg-ok' : 'bg-danger'}`}
       />
-      <span className={status === null ? 'opacity-0' : ''}>{status?.label ?? 'Buka · tutup 22.00'}</span>
+      <span className={status === null ? 'opacity-0' : ''}>{status?.label ?? 'Buka · hingga 22.00'}</span>
     </span>
   );
 }

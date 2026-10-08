@@ -46,7 +46,7 @@ export function createApp(opts: { db: Db; env: Env; log?: Logger; revalidate?: R
   app.use('/api', publicRoutes(ctx));
   app.use('/api/admin', adminRoutes(ctx));
   app.use((_req, res) => {
-    res.status(404).json({ error: 'Tidak ditemukan' });
+    res.status(404).json({ error: 'Halaman tidak ditemukan' });
   });
   app.use(errorHandler);
 

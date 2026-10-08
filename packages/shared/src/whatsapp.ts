@@ -26,19 +26,21 @@ export function buildOrderMessage(order: WaOrder): string {
   const items = order.lines
     .map((l, i) => `${i + 1}. ${l.name}: ${l.qty} ${l.unit} × ${formatRupiah(l.price)}`)
     .join('\n');
-  const how = order.fulfilment === 'ambil' ? 'Ambil di toko' : 'Minta diantar (ongkir dikonfirmasi toko)';
+  const how = order.fulfilment === 'ambil' ? 'Ambil di toko' : 'Diantar (ongkos kirim mohon dikonfirmasi)';
   const note = order.pickupNote?.trim() ? `, ${order.pickupNote.trim()}` : '';
 
   return [
-    `Halo ${shortName}, saya mau pesan:`,
+    `Halo ${shortName}, saya ingin memesan:`,
     '',
     items,
     '',
-    `Perkiraan total: ${formatRupiah(orderTotal(order.lines))}`,
+    `Total: ${formatRupiah(orderTotal(order.lines))}`,
     order.code ? `Kode pesanan: ${order.code}` : null,
     '',
     `Nama: ${order.customerName}`,
-    `${how}${note}`,
+    `Cara terima: ${how}${note}`,
+    '',
+    'Terima kasih.',
   ]
     .filter((l) => l !== null)
     .join('\n');

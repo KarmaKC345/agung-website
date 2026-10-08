@@ -74,7 +74,7 @@ function PriceInput({ row, onSaved }: { row: PriceRow; onSaved: (p: number) => v
       </div>
       {history && (
         <ul className="mt-1 text-[12px] text-muted">
-          {history.length === 0 && <li>Belum pernah diubah.</li>}
+          {history.length === 0 && <li>Harga ini belum pernah diubah.</li>}
           {history.map((h, i) => (
             <li key={i}>
               {dateFmt.format(new Date(h.changedAt))}: {formatRupiah(h.oldPrice)} → {formatRupiah(h.newPrice)}
@@ -104,7 +104,7 @@ function BulkForm({ brands, cats, onDone }: { brands: Brand[]; cats: Category[];
         const target = [brands.find((b) => b.id === brandId)?.name, cats.flatMap((c) => [c, ...(c.children ?? [])]).find((c) => c.id === categoryId)?.name]
           .filter(Boolean)
           .join(' + ');
-        if (!target) return setMsg('Pilih merek atau kategori.');
+        if (!target) return setMsg('Pilih merek atau kategori terlebih dahulu.');
         const ok = await dialog.confirm({
           title: `Ubah semua harga ${target}?`,
           message: `Semua harga ${pct > 0 ? 'naik' : 'turun'} ${Math.abs(pct)}% lalu dibulatkan ke Rp${Number(roundTo).toLocaleString('id-ID')}. Setiap perubahan tercatat di riwayat harga.`,
@@ -119,7 +119,7 @@ function BulkForm({ brands, cats, onDone }: { brands: Brand[]; cats: Category[];
           setMsg(`${r.updated} harga diubah.`);
           onDone();
         } catch (err) {
-          setMsg(err instanceof Error ? err.message : 'Gagal');
+          setMsg(err instanceof Error ? err.message : 'Perubahan belum berhasil disimpan');
         }
       }}
     >
@@ -143,8 +143,8 @@ function BulkForm({ brands, cats, onDone }: { brands: Brand[]; cats: Category[];
         </select>
       </label>
       <label className="text-[13px]">
-        Naik/turun %
-        <input type="number" step="0.5" min={-50} max={100} required value={percent} onChange={(e) => setPercent(e.target.value)} placeholder="mis. 5" className={`mt-1 ${inputCls}`} />
+        Perubahan (%)
+        <input type="number" step="0.5" min={-50} max={100} required value={percent} onChange={(e) => setPercent(e.target.value)} placeholder="Contoh: 5" className={`mt-1 ${inputCls}`} />
       </label>
       <label className="text-[13px]">
         Bulatkan ke
@@ -192,9 +192,9 @@ export default function PricesPage() {
     <>
       <PageTitle actions={me.role === 'owner' && <button className={btnSecondary} onClick={() => setShowBulk(!showBulk)}>Ubah massal %</button>}>Ubah harga</PageTitle>
       {showBulk && <BulkForm brands={brands} cats={cats} onDone={load} />}
-      <p className="mt-3 text-[14px] text-muted">Ketik harga baru lalu tekan Enter atau pindah kolom. Tersimpan otomatis dan langsung tampil di website.</p>
+      <p className="mt-3 text-[14px] text-muted">Ketik harga baru, lalu tekan Enter atau pindah ke kolom lain. Perubahan tersimpan otomatis dan langsung tampil di website.</p>
       <div className="mt-3 flex flex-wrap gap-2">
-        <input type="search" placeholder="Cari barang" value={q} onChange={(e) => { setQ(e.target.value); setPage(1); }} className={`${inputCls} max-w-xs`} />
+        <input type="search" placeholder="Cari produk" value={q} onChange={(e) => { setQ(e.target.value); setPage(1); }} className={`${inputCls} max-w-xs`} />
         <select value={brandId} onChange={(e) => { setBrandId(e.target.value); setPage(1); }} className={`${inputCls} w-auto`}>
           <option value="">Semua merek</option>
           {brands.map((b) => <option key={b.id} value={b.id}>{b.name}</option>)}
@@ -207,7 +207,7 @@ export default function PricesPage() {
           <table className="w-full min-w-[560px] border-y border-line bg-surface text-[14px]">
             <thead>
               <tr className="border-b border-line text-left text-[12px] text-muted">
-                <th className="px-3 py-2 font-medium">Barang</th>
+                <th className="px-3 py-2 font-medium">Produk</th>
                 <th className="px-3 py-2 font-medium">Satuan</th>
                 <th className="px-3 py-2 font-medium">Harga</th>
               </tr>

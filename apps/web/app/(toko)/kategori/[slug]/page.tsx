@@ -18,7 +18,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (!found) return {};
   return {
     title: found.category.name,
-    description: `Harga ${found.category.name.toLowerCase()} di Toko New Agung Makassar. Pesan lewat WhatsApp, ambil di Jl. DR. Ratulangi No.52.`,
+    description: `Daftar harga ${found.category.name.toLowerCase()} di Toko New Agung Makassar. Pesan melalui WhatsApp dan ambil di Jl. DR. Ratulangi No.52.`,
     alternates: { canonical: `/kategori/${slug}` },
   };
 }
@@ -57,7 +57,7 @@ export default async function CategoryPage({ params, searchParams }: Props) {
                 <CategoryIcon slug={slug} size={24} weight="duotone" aria-hidden />
               </span>
               <h1 className="text-[22px] font-bold tracking-[-0.015em] sm:text-[26px]">
-                {category.name} <span className="text-[15px] font-normal text-muted tabular-nums">{result.total} barang</span>
+                {category.name} <span className="text-[15px] font-normal text-muted tabular-nums">{result.total} produk</span>
               </h1>
             </div>
             {siblings.length > 0 && (
@@ -83,7 +83,7 @@ export default async function CategoryPage({ params, searchParams }: Props) {
         }
         empty={
           <p className="card rounded-[var(--radius-media)] p-8 text-center text-muted">
-            Belum ada barang di {category.name.toLowerCase()} yang cocok dengan filter ini.
+            Belum ada produk {category.name.toLowerCase()} yang sesuai dengan filter Anda. Silakan ubah atau hapus filter.
           </p>
         }
       />

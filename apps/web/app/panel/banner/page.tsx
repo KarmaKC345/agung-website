@@ -17,9 +17,9 @@ const THEMES: { value: PromoBanner['theme']; label: string; cls: string }[] = [
 ];
 
 const LINKS = [
-  { value: '/barang?promo=1', label: 'Semua barang promo' },
-  { value: '/barang?sort=terlaris', label: 'Barang terlaris' },
-  { value: '/barang', label: 'Katalog' },
+  { value: '/barang?promo=1', label: 'Semua produk promo' },
+  { value: '/barang?sort=terlaris', label: 'Produk terlaris' },
+  { value: '/barang', label: 'Semua produk' },
   { value: '/kategori', label: 'Daftar kategori' },
   { value: '/tentang', label: 'Tentang toko' },
 ];
@@ -76,10 +76,10 @@ export default function BannerAdminPage() {
       const token = await getToken();
       const res = await fetch(`${API_URL}/api/admin/uploads`, { method: 'POST', body: form, headers: token ? { Authorization: `Bearer ${token}` } : {} });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error ?? 'Gagal mengunggah');
+      if (!res.ok) throw new Error(data.error ?? 'Foto belum berhasil diunggah');
       set({ imageUrl: (data.urls as string[])[0] ?? null });
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Gagal mengunggah foto');
+      setError(e instanceof Error ? e.message : 'Foto belum berhasil diunggah');
     } finally {
       setUploading(false);
     }
@@ -98,14 +98,14 @@ export default function BannerAdminPage() {
       setDraft(null);
       await load();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Gagal menyimpan');
+      setError(err instanceof Error ? err.message : 'Perubahan belum berhasil disimpan');
     } finally {
       setBusy(false);
     }
   }
 
   async function remove(b: PromoBanner) {
-    const ok = await dialog.confirm({ title: `Hapus banner “${b.title}”?`, message: 'Banner hilang dari beranda. Untuk menyembunyikan sementara, matikan “Tampil”.', confirmLabel: 'Hapus banner', danger: true });
+    const ok = await dialog.confirm({ title: `Hapus banner “${b.title}”?`, message: 'Banner akan dihapus dari beranda secara permanen. Untuk menyembunyikan sementara, matikan pilihan “Tampil di beranda”.', confirmLabel: 'Hapus banner', danger: true });
     if (!ok) return;
     await adminFetch(`/banners/${b.id}`, { method: 'DELETE' }).catch((e: Error) => setError(e.message));
     await load();
@@ -125,7 +125,7 @@ export default function BannerAdminPage() {
         Banner beranda
       </PageTitle>
       <p className="-mt-3 mb-5 max-w-[65ch] text-[14px] text-muted">
-        Banner tampil bergantian di bagian atas beranda. Pakai untuk promo, barang baru masuk, atau info toko. Banner dengan tanggal selesai hilang sendiri.
+        Banner tampil bergantian di bagian atas beranda. Gunakan untuk promo, produk terbaru, atau informasi toko. Banner dengan tanggal selesai otomatis disembunyikan setelah tanggal tersebut.
       </p>
       {error && <p role="alert" className="mb-4 font-medium text-danger">{error}</p>}
 
@@ -146,19 +146,19 @@ export default function BannerAdminPage() {
           <div className="grid gap-4 sm:grid-cols-2">
             <label className="block text-[14px] font-semibold">
               Judul <span className="font-normal text-muted">({draft.title.length}/80)</span>
-              <input required maxLength={80} value={draft.title} onChange={(e) => set({ title: e.target.value })} placeholder="mis. Diskon kertas A4 minggu ini" className={`mt-1 ${inputCls}`} />
+              <input required maxLength={80} value={draft.title} onChange={(e) => set({ title: e.target.value })} placeholder="Contoh: Diskon kertas A4 minggu ini" className={`mt-1 ${inputCls}`} />
             </label>
             <label className="block text-[14px] font-semibold">
               Keterangan <span className="font-normal text-muted">(opsional)</span>
-              <input maxLength={140} value={draft.subtitle} onChange={(e) => set({ subtitle: e.target.value })} placeholder="mis. Berlaku sampai stok habis" className={`mt-1 ${inputCls}`} />
+              <input maxLength={140} value={draft.subtitle} onChange={(e) => set({ subtitle: e.target.value })} placeholder="Contoh: Berlaku sampai stok habis" className={`mt-1 ${inputCls}`} />
             </label>
             <label className="block text-[14px] font-semibold">
-              Saat diklik buka
+              Halaman tujuan
               <input list="banner-links" required value={draft.linkUrl} onChange={(e) => set({ linkUrl: e.target.value })} className={`mt-1 ${inputCls}`} />
               <datalist id="banner-links">
                 {LINKS.map((l) => <option key={l.value} value={l.value}>{l.label}</option>)}
               </datalist>
-              <span className="mt-1 block text-[12px] font-normal text-muted">Halaman di website ini, mis. /barang?promo=1 atau /kategori/kertas</span>
+              <span className="mt-1 block text-[12px] font-normal text-muted">Halaman di website ini, contoh: /barang?promo=1 atau /kategori/kertas</span>
             </label>
             <fieldset>
               <legend className="text-[14px] font-semibold">Warna latar (bila tanpa foto)</legend>
@@ -191,7 +191,7 @@ export default function BannerAdminPage() {
                 Hapus foto
               </button>
             )}
-            <span className="text-[13px] text-muted">Foto mendatar (lebar 3:1) paling pas. Tulisan selalu di kiri.</span>
+            <span className="text-[13px] text-muted">Gunakan foto mendatar dengan rasio 3:1. Teks banner selalu tampil di sisi kiri.</span>
           </div>
 
           <label className="flex min-h-11 items-center gap-2 text-[15px]">

@@ -10,7 +10,7 @@ type Props = { params: Promise<{ slug: string }>; searchParams: Promise<CatalogS
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const brand = (await getBrands()).find((b) => b.slug === slug);
-  return brand ? { title: `${brand.name}`, description: `Produk ${brand.name} di Toko New Agung Makassar.`, alternates: { canonical: `/merek/${slug}` } } : {};
+  return brand ? { title: `${brand.name}`, description: `Belanja produk ${brand.name} di Toko New Agung, Makassar.`, alternates: { canonical: `/merek/${slug}` } } : {};
 }
 
 export default async function BrandPage({ params, searchParams }: Props) {
@@ -36,10 +36,10 @@ export default async function BrandPage({ params, searchParams }: Props) {
         page={list.page}
         header={
           <h1 className="text-[22px] font-bold tracking-[-0.015em] sm:text-[26px]">
-            {brand.name} <span className="text-[15px] font-normal text-muted tabular-nums">{result.total} barang</span>
+            {brand.name} <span className="text-[15px] font-normal text-muted tabular-nums">{result.total} produk</span>
           </h1>
         }
-        empty={<p className="card rounded-[var(--radius-media)] p-8 text-center text-muted">Tidak ada barang {brand.name} yang cocok dengan filter ini.</p>}
+        empty={<p className="card rounded-[var(--radius-media)] p-8 text-center text-muted">Belum ada produk {brand.name} yang sesuai dengan filter Anda. Silakan ubah atau hapus filter.</p>}
       />
     </div>
   );

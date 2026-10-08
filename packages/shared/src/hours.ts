@@ -44,7 +44,7 @@ export function hoursToday(hours: WeeklyHours, timeZone: string, now: Date = new
 
 export interface OpenStatus {
   isOpen: boolean;
-  /** "Buka · tutup 22.00" / "Tutup · buka 05.00" / "Tutup · buka Senin 05.00" */
+  /** "Buka · hingga 22.00" / "Tutup · buka pukul 05.00" / "Tutup · buka besok pukul 05.00" */
   label: string;
 }
 
@@ -53,18 +53,18 @@ export function getOpenStatus(hours: WeeklyHours, timeZone: string, now: Date = 
   const today = hours[day];
 
   if (today && minutes >= toMinutes(today.open) && minutes < toMinutes(today.close)) {
-    return { isOpen: true, label: `Buka · tutup ${formatTime(today.close)}` };
+    return { isOpen: true, label: `Buka · hingga ${formatTime(today.close)}` };
   }
   if (today && minutes < toMinutes(today.open)) {
-    return { isOpen: false, label: `Tutup · buka ${formatTime(today.open)}` };
+    return { isOpen: false, label: `Tutup · buka pukul ${formatTime(today.open)}` };
   }
   const startIdx = DAY_KEYS.indexOf(day);
   for (let i = 1; i <= 7; i++) {
     const key = DAY_KEYS[(startIdx + i) % 7]!;
     const h = hours[key];
     if (h) {
-      const when = i === 1 ? '' : `${DAY_LABEL[key]} `;
-      return { isOpen: false, label: `Tutup · buka ${when}${formatTime(h.open)}` };
+      const when = i === 1 ? 'besok ' : `${DAY_LABEL[key]} `;
+      return { isOpen: false, label: `Tutup · buka ${when}pukul ${formatTime(h.open)}` };
     }
   }
   return { isOpen: false, label: 'Tutup' };

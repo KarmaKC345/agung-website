@@ -91,7 +91,7 @@ export function adminRoutes(ctx: Ctx): Router {
   r.get('/products/:id', async (req, res) => {
     const { id } = idParam.parse(req.params);
     const product = await getProduct(db, { id }, { includeInactive: true });
-    if (!product) throw notFound('Barang');
+    if (!product) throw notFound('Produk');
     res.json(product);
   });
 
@@ -114,14 +114,14 @@ export function adminRoutes(ctx: Ctx): Router {
   r.delete('/products/:id', ownerOnly, async (req, res) => {
     const { id } = idParam.parse(req.params);
     const { rows } = await db.query<{ slug: string }>('delete from products where id = $1 returning slug', [id]);
-    if (!rows[0]) throw notFound('Barang');
+    if (!rows[0]) throw notFound('Produk');
     revalidate(['products', 'categories', 'brands', `product:${rows[0].slug}`]);
     res.status(204).end();
   });
 
   r.post('/uploads', images.array('files', 5), async (req, res) => {
     const files = (req.files as Express.Multer.File[] | undefined) ?? [];
-    if (!files.length) throw new HttpError(400, 'Tidak ada foto yang diunggah');
+    if (!files.length) throw new HttpError(400, 'Belum ada foto yang dipilih');
     const urls = [];
     for (const f of files) urls.push(await storeImage(f));
     res.status(201).json({ urls });
@@ -166,7 +166,7 @@ export function adminRoutes(ctx: Ctx): Router {
 
   r.post('/prices/bulk', ownerOnly, async (req, res) => {
     const input = bulkPriceSchema.parse(req.body);
-    if (!input.brandId && !input.categoryId) throw new HttpError(400, 'Pilih merek atau kategori');
+    if (!input.brandId && !input.categoryId) throw new HttpError(400, 'Pilih merek atau kategori terlebih dahulu');
     const updated = await withTx(
       db,
       async (c) => {
@@ -224,12 +224,12 @@ export function adminRoutes(ctx: Ctx): Router {
   r.put('/categories/:id', ownerOnly, async (req, res) => {
     const { id } = idParam.parse(req.params);
     const input = categoryInputSchema.parse(req.body);
-    if (input.parentId === id) throw new HttpError(400, 'Kategori tidak bisa jadi induk dirinya sendiri');
+    if (input.parentId === id) throw new HttpError(400, 'Kategori tidak dapat menjadi induk bagi dirinya sendiri');
     if (input.parentId) {
       const { rows } = await db.query('select 1 from categories where id = $1 and parent_id is not null', [input.parentId]);
       if (rows.length) throw new HttpError(400, 'Maksimal 2 tingkat kategori');
       const { rows: kids } = await db.query('select 1 from categories where parent_id = $1 limit 1', [id]);
-      if (kids.length) throw new HttpError(400, 'Kategori ini punya sub-kategori, jadi tidak bisa dipindah ke bawah kategori lain');
+      if (kids.length) throw new HttpError(400, 'Kategori ini memiliki subkategori, sehingga tidak dapat dipindahkan ke bawah kategori lain');
     }
     const slug = await uniqueSlug(db, 'categories', input.slug || input.name, id);
     const { rowCount } = await db.query(
@@ -373,7 +373,7 @@ export function adminRoutes(ctx: Ctx): Router {
   });
 
   r.post('/import', ownerOnly, sheets.single('file'), async (req, res) => {
-    if (!req.file) throw new HttpError(400, 'Pilih file .csv atau .xlsx');
+    if (!req.file) throw new HttpError(400, 'Pilih file .csv atau .xlsx terlebih dahulu');
     const rows = await parseSheet(req.file.buffer, req.file.originalname);
     const result = await importRows(db, rows, req.staff!.userId);
     revalidate(['products', 'categories', 'brands']);
@@ -425,7 +425,7 @@ export function adminRoutes(ctx: Ctx): Router {
   r.patch('/staff/:id', ownerOnly, async (req, res) => {
     const { id } = idParam.parse(req.params);
     const input = staffUpdateSchema.parse(req.body);
-    if (id === req.staff!.userId) throw new HttpError(400, 'Tidak bisa mengubah akses akun sendiri');
+    if (id === req.staff!.userId) throw new HttpError(400, 'Anda tidak dapat mengubah akses akun Anda sendiri');
     const { rowCount } = await db.query(
       `update staff set role = coalesce($2, role), active = coalesce($3, active) where user_id = $1`,
       [id, input.role ?? null, input.active ?? null],

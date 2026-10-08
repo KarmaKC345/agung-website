@@ -71,7 +71,7 @@ export async function saveProduct(c: DbClient, id: string | null, input: Product
         where id = $1 returning id`,
       [id, input.name, slug, input.description, input.categoryId, input.brandId, input.isActive, input.isFeatured],
     );
-    if (!rows[0]) throw new HttpError(404, 'Barang tidak ditemukan');
+    if (!rows[0]) throw new HttpError(404, 'Produk tidak ditemukan');
     productId = id;
   } else {
     const { rows } = await c.query<{ id: string }>(

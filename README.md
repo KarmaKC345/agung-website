@@ -147,10 +147,10 @@ pencarian. **Barang dan harga di dalamnya hanya contoh.** Sebelum website dibuka
 
 Beranda bergaya marketplace dan semua isinya diatur dari panel:
 
-- **Lagi promo:** isi **Harga coret** pada satuan yang sedang diskon (Panel → Barang). Kartu
+- **Promo spesial:** isi **Harga coret** pada satuan yang sedang diskon (Panel → Barang). Kartu
   menampilkan harga dicoret dan persen diskonnya. Harga coret otomatis dilepas bila harga jual
   dinaikkan melewatinya.
-- **Paling sering dibeli:** dihitung dari pesanan 180 hari terakhir yang sudah diproses toko
+- **Produk terlaris:** dihitung dari pesanan 180 hari terakhir yang sudah diproses toko
   (disiapkan/siap/selesai). Pesanan yang tidak ditindaklanjuti tidak dihitung. Bagian ini baru
   muncul setelah ada pesanan yang diproses.
 - **Pilihan toko:** centang "Pilihan toko" di form barang.
@@ -196,7 +196,7 @@ Fondasi desain lengkap (token, tipografi, kontras terukur, tata letak, kontrak k
 [`DESIGN.md`](DESIGN.md) v3 "Etalase". Ringkasnya:
 
 - Tampilan etalase gaya marketplace (Tokopedia, Shopee, Lazada): banner, ikon kategori, rak
-  promo/terlaris/baru, kartu barang dengan badge diskon dan "Dibeli Nx", katalog dengan kolom
+  promo/terlaris/baru, kartu barang dengan badge diskon dan "Dipesan N kali", katalog dengan kolom
   filter, dan halaman barang dengan kotak "Atur jumlah".
 - Biru logo `#282C83` untuk semua aksi. Merah logo berarti promo/diskon (tidak pernah untuk
   tombol). Hijau hanya untuk WhatsApp. Latar abu dingin, mode gelap otomatis.

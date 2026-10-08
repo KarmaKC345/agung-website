@@ -38,7 +38,7 @@ describe('katalog publik', () => {
     const res = await request(app).get('/api/store').expect(200);
     expect(res.body.whatsapp).toBe('6282348485101');
     expect(res.body.timezone).toBe('Asia/Makassar');
-    expect(res.body.status.label).toMatch(/^(Buka · tutup 22\.00|Tutup · buka 05\.00)$/);
+    expect(res.body.status.label).toMatch(/^(Buka · hingga 22\.00|Tutup · buka (besok )?pukul 05\.00)$/);
   });
 
   it('mengembalikan pohon kategori dengan jumlah barang', async () => {

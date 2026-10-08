@@ -5,11 +5,11 @@ import { Price } from './Price';
 import { ProductImage } from './ProductImage';
 import { QuickAdd } from './QuickAdd';
 
-/** "Dibeli 1rb+x" gaya marketplace: angka dibulatkan agar tidak terkesan menghitung detail */
+/** "Dipesan 1rb+ kali": angka besar dibulatkan seperti di marketplace */
 export function soldLabel(n: number): string {
-  if (n >= 1000) return `Dibeli ${Math.floor(n / 1000)}rb+`;
-  if (n >= 100) return `Dibeli ${Math.floor(n / 100) * 100}+`;
-  return `Dibeli ${n}x`;
+  if (n >= 1000) return `Dipesan ${Math.floor(n / 1000)}rb+ kali`;
+  if (n >= 100) return `Dipesan ${Math.floor(n / 100) * 100}+ kali`;
+  return `Dipesan ${n} kali`;
 }
 
 /** Badge diskon merah di pojok foto */
@@ -24,7 +24,7 @@ export function DiscountBadge({ percent, className = '' }: { percent: number; cl
 
 /**
  * Kartu barang gaya marketplace: foto penuh, badge diskon, nama 2 baris, harga tebal,
- * harga coret + persen, lalu jumlah dibeli. Tombol + hanya untuk barang tanpa pilihan.
+ * harga coret + persen, lalu jumlah pesanan. Tombol + hanya untuk barang tanpa pilihan.
  */
 export function ProductCard({ product, priority }: { product: ProductSummary; priority?: boolean }) {
   const href = `/barang/${product.slug}`;
@@ -59,7 +59,7 @@ export function ProductCard({ product, priority }: { product: ProductSummary; pr
         </h3>
 
         <p className="mt-1.5 flex flex-wrap items-baseline gap-x-1">
-          {product.priceVaries && <span className="text-[11px] text-muted">mulai</span>}
+          {product.priceVaries && <span className="text-[11px] text-muted">Mulai</span>}
           <Price value={product.price} className="text-[16px] sm:text-[17px]" />
           <span className="text-[11px] text-muted">/{product.unit}</span>
         </p>

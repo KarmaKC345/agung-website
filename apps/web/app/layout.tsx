@@ -11,7 +11,7 @@ export const metadata: Metadata = {
     template: '%s · New Agung Makassar',
   },
   description:
-    'Cek harga alat tulis, kertas, map, kalkulator, dan tinta di Toko New Agung, Jl. DR. Ratulangi No.52 Makassar. Pesan lewat WhatsApp, ambil di toko. Buka setiap hari 05.00-22.00.',
+    'Toko alat tulis dan perlengkapan kantor di Jl. DR. Ratulangi No.52, Makassar. Cek harga pulpen, kertas, map, kalkulator, dan tinta, lalu pesan melalui WhatsApp. Buka setiap hari pukul 05.00-22.00 WITA.',
   openGraph: { type: 'website', locale: 'id_ID', siteName: 'New Agung', images: ['/foto/lorong-kertas.webp'] },
 };
 

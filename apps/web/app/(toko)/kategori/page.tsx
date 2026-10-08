@@ -22,7 +22,7 @@ export default async function CategoriesPage() {
               </span>
               <span className="min-w-0 flex-1">
                 <span className="block text-[16px] font-bold group-hover:text-brand-text">{c.name}</span>
-                <span className="block text-[13px] text-muted tabular-nums">{c.productCount} barang</span>
+                <span className="block text-[13px] text-muted tabular-nums">{c.productCount} produk</span>
               </span>
             </Link>
             {c.children && c.children.length > 0 && (

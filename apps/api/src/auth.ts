@@ -41,7 +41,7 @@ export function createAuth(env: Env, db: Db): RequestHandler {
   return async (req, _res, next) => {
     const header = req.get('authorization') ?? '';
     const token = header.startsWith('Bearer ') ? header.slice(7).trim() : '';
-    if (!token) throw new HttpError(401, 'Silakan masuk terlebih dahulu');
+    if (!token) throw new HttpError(401, 'Silakan masuk terlebih dahulu.');
 
     if (env.DEV_AUTH_TOKEN && token === env.DEV_AUTH_TOKEN) {
       req.staff = { userId: DEV_USER_ID, email: 'dev@localhost', role: 'owner' };
@@ -53,11 +53,11 @@ export function createAuth(env: Env, db: Db): RequestHandler {
     try {
       payload = await verify(token);
     } catch {
-      throw new HttpError(401, 'Sesi tidak valid atau sudah habis. Silakan masuk lagi.');
+      throw new HttpError(401, 'Sesi Anda telah berakhir. Silakan masuk kembali.');
     }
     const userId = payload.sub;
     const email = typeof payload.email === 'string' ? payload.email.toLowerCase() : '';
-    if (!userId) throw new HttpError(401, 'Sesi tidak valid');
+    if (!userId) throw new HttpError(401, 'Sesi tidak valid. Silakan masuk kembali.');
 
     let { rows } = await db.query<{ role: StaffRole; active: boolean }>(
       'select role, active from staff where user_id = $1',
@@ -75,13 +75,13 @@ export function createAuth(env: Env, db: Db): RequestHandler {
     }
 
     const staff = rows[0];
-    if (!staff || !staff.active) throw new HttpError(403, 'Akun ini tidak punya akses ke panel toko');
+    if (!staff || !staff.active) throw new HttpError(403, 'Akun ini tidak memiliki akses ke panel toko.');
     req.staff = { userId, email, role: staff.role };
     next();
   };
 }
 
 export const ownerOnly: RequestHandler = (req, _res, next) => {
-  if (req.staff?.role !== 'owner') throw new HttpError(403, 'Hanya pemilik yang bisa melakukan ini');
+  if (req.staff?.role !== 'owner') throw new HttpError(403, 'Hanya pemilik toko yang dapat melakukan tindakan ini.');
   next();
 };

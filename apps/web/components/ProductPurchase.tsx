@@ -178,7 +178,7 @@ export function ProductPurchase({
 
         {variant.prices.length > 1 && (
           <fieldset className="mt-5">
-            <legend className="text-[14px] font-semibold">Beli per</legend>
+            <legend className="text-[14px] font-semibold">Pilih satuan</legend>
             <div className="mt-2 flex flex-wrap gap-2">
               {variant.prices.map((p) => {
                 const perPiece = p.qtyPerUnit > 1 ? Math.round(p.price / p.qtyPerUnit) : null;
@@ -238,7 +238,7 @@ export function ProductPurchase({
           )}
           {out ? (
             <p className="mt-4 rounded-tag bg-sunken p-3 text-[14px]">
-              <span className="font-semibold text-danger">Stok habis.</span> Tanyakan ke toko kapan ada lagi.
+              <span className="font-semibold text-danger">Stok sedang habis.</span> Hubungi kami untuk menanyakan jadwal stok berikutnya.
             </p>
           ) : (
             <>
@@ -260,16 +260,16 @@ export function ProductPurchase({
           )}
           <a href={waHref} target="_blank" rel="noopener" className="mt-4 flex items-center justify-center gap-1.5 text-[14px] font-semibold text-wa-text hover:underline">
             <WhatsappLogo size={18} weight="bold" aria-hidden />
-            Tanya dulu via WhatsApp
+            Tanya via WhatsApp
           </a>
           <div role="status" className="min-h-0">
             {added && (
               <p className="mt-3 flex items-start gap-1.5 rounded-tag bg-sunken p-2.5 text-[13px]">
                 <Check size={16} weight="bold" className="mt-0.5 shrink-0 text-ok" aria-hidden />
                 <span>
-                  {added} masuk keranjang.{' '}
+                  {added} berhasil ditambahkan ke keranjang.{' '}
                   <Link href="/keranjang" className="font-semibold text-brand-text underline underline-offset-4">
-                    Lihat
+                    Lihat keranjang
                   </Link>
                 </span>
               </p>
@@ -282,19 +282,19 @@ export function ProductPurchase({
       <div className="fixed inset-x-0 bottom-0 z-30 border-t border-line bg-surface/95 pb-[env(safe-area-inset-bottom)] backdrop-blur-md lg:hidden">
         {added && (
           <p role="status" className="border-b border-line px-4 py-2 text-[13px]">
-            {added} masuk keranjang.{' '}
+            {added} berhasil ditambahkan ke keranjang.{' '}
             <Link href="/keranjang" className="font-semibold text-brand-text underline underline-offset-4">
               Lihat keranjang
             </Link>
           </p>
         )}
         <div className="mx-auto flex max-w-7xl items-center gap-2 px-4 py-2.5">
-          <a href={waHref} target="_blank" rel="noopener" aria-label="Tanya barang ini via WhatsApp" className="grid size-11 shrink-0 place-items-center rounded-tag border border-field text-wa-text">
+          <a href={waHref} target="_blank" rel="noopener" aria-label="Tanyakan produk ini via WhatsApp" className="grid size-11 shrink-0 place-items-center rounded-tag border border-field text-wa-text">
             <WhatsappLogo size={22} weight="bold" aria-hidden />
           </a>
           {out ? (
             <a href={waHref} target="_blank" rel="noopener" className="btn btn-secondary flex-1">
-              Stok habis, tanya toko
+              Tanyakan ketersediaan
             </a>
           ) : (
             <>

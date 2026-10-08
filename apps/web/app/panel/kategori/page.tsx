@@ -32,7 +32,7 @@ export default function CategoriesAdminPage() {
       await fn();
       await load();
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Gagal');
+      setError(e instanceof Error ? e.message : 'Perubahan belum berhasil disimpan');
     }
   }
 
@@ -47,8 +47,8 @@ export default function CategoriesAdminPage() {
       message: (() => {
         const kids = c.children ?? [];
         const direct = c.productCount - kids.reduce((n, k) => n + k.productCount, 0);
-        const own = direct > 0 ? `${direct} barang yang langsung ada di sini tetap ada, tapi tanpa kategori sampai dipindahkan.` : 'Tidak ada barang yang langsung ada di kategori ini.';
-        return kids.length ? `${own} ${kids.length} sub-kategorinya menjadi kategori utama beserta barangnya.` : own;
+        const own = direct > 0 ? `${direct} produk di kategori ini tetap tersimpan, tetapi tidak memiliki kategori sampai dipindahkan.` : 'Tidak ada produk yang terdaftar langsung di kategori ini.';
+        return kids.length ? `${own} ${kids.length} subkategorinya akan menjadi kategori utama beserta produknya.` : own;
       })(),
       confirmLabel: 'Hapus kategori',
       danger: true,
@@ -78,7 +78,7 @@ export default function CategoriesAdminPage() {
     <>
       <PageTitle>Kategori & merek</PageTitle>
       {error && <p className="mb-4 text-danger">{error}</p>}
-      {!isOwner && <p className="mb-4 text-[14px] text-muted">Hanya pemilik yang bisa mengubah kategori.</p>}
+      {!isOwner && <p className="mb-4 text-[14px] text-muted">Hanya pemilik toko yang dapat mengubah kategori.</p>}
 
       <div className="grid gap-8 lg:grid-cols-[1fr_320px]">
         <section>
@@ -87,7 +87,7 @@ export default function CategoriesAdminPage() {
               <li key={c.id} className="rounded-tag border border-line bg-surface">
                 <div className="flex items-center gap-2 border-b border-line px-3 py-2">
                   <span className="signage text-[14px]">{c.name}</span>
-                  <span className="text-[12px] text-muted tabular-nums">{c.productCount} barang</span>
+                  <span className="text-[12px] text-muted tabular-nums">{c.productCount} produk</span>
                   {actions(c, cats, i)}
                 </div>
                 {c.children && c.children.length > 0 && (
@@ -117,7 +117,7 @@ export default function CategoriesAdminPage() {
             >
               <input value={newName} onChange={(e) => setNewName(e.target.value)} placeholder="Nama kategori baru" className={`${inputCls} max-w-xs`} />
               <select value={newParent} onChange={(e) => setNewParent(e.target.value)} className={`${inputCls} w-auto`}>
-                <option value="">Kategori utama (papan lorong)</option>
+                <option value="">Kategori utama</option>
                 {cats.map((c) => <option key={c.id} value={c.id}>Di bawah: {c.name}</option>)}
               </select>
               <button className={btnPrimary}>Tambah</button>
@@ -161,7 +161,7 @@ export default function CategoriesAdminPage() {
                       onClick={async () => {
                         const ok = await dialog.confirm({
                           title: `Hapus merek “${b.name}”?`,
-                          message: `${b.productCount ?? 0} barang tetap ada, tapi tanpa merek.`,
+                          message: `${b.productCount ?? 0} produk tetap tersimpan, tetapi tanpa merek.`,
                           confirmLabel: 'Hapus merek',
                           danger: true,
                         });

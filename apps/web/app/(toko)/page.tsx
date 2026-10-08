@@ -22,8 +22,8 @@ import { getBanners, getBrands, getCategories, getProducts, getStore } from '@/l
 /** Pengganti bila pemilik menghapus semua banner: tetap ada satu pembuka berfoto toko */
 const FALLBACK_BANNER: PromoBanner = {
   id: 'toko',
-  title: 'Alat tulis & kantor, lengkap di satu toko',
-  subtitle: 'Pesan dari HP, barang disiapkan dulu, tinggal ambil di Jl. DR. Ratulangi No.52.',
+  title: 'Alat tulis & perlengkapan kantor dalam satu toko',
+  subtitle: 'Pesan secara online, kami siapkan pesanan Anda, lalu ambil di Jl. DR. Ratulangi No.52, Makassar.',
   imageUrl: '/foto/lorong-kertas.webp',
   linkUrl: '/barang',
   theme: 'brand',
@@ -70,9 +70,9 @@ function SectionHead({
 }
 
 const STEPS = [
-  { icon: Basket, title: 'Pilih barang', body: 'Masukkan ke keranjang, per pcs, lusin, rim, atau box.' },
-  { icon: WhatsappLogo, title: 'Kirim lewat WhatsApp', body: 'Daftar belanja terkirim rapi dengan kode pesanan.' },
-  { icon: Storefront, title: 'Ambil atau diantar', body: 'Barang disiapkan dulu. Bayar di toko atau saat diantar.' },
+  { icon: Basket, title: 'Pilih produk', body: 'Tambahkan produk ke keranjang dalam satuan pcs, lusin, rim, atau box.' },
+  { icon: WhatsappLogo, title: 'Kirim pesanan via WhatsApp', body: 'Rincian pesanan dan kode pesanan tersusun otomatis.' },
+  { icon: Storefront, title: 'Ambil atau terima kiriman', body: 'Kami siapkan pesanan Anda. Pembayaran dilakukan di toko atau saat pesanan diterima.' },
 ];
 
 export default async function HomePage() {
@@ -102,9 +102,9 @@ export default async function HomePage() {
       href: '/tentang',
       external: false,
     },
-    { icon: Star, title: '4,5 di Google', detail: '10.000+ ulasan', href: store.mapsUrl, external: true },
+    { icon: Star, title: 'Rating 4,5 di Google', detail: 'Lebih dari 10.000 ulasan', href: store.mapsUrl, external: true },
     { icon: MapPin, title: 'Jl. DR. Ratulangi No.52', detail: 'Mariso, Makassar', href: store.mapsUrl, external: true },
-    { icon: WhatsappLogo, title: 'Tanya via WhatsApp', detail: formatPhone(store.whatsapp), href: waLink(store.whatsapp), external: true },
+    { icon: WhatsappLogo, title: 'Hubungi kami via WhatsApp', detail: formatPhone(store.whatsapp), href: waLink(store.whatsapp), external: true },
   ];
 
   return (
@@ -120,7 +120,7 @@ export default async function HomePage() {
             Kategori
           </h2>
           <Link href="/kategori" className="tap text-[14px] font-semibold text-brand-text hover:underline">
-            Semua
+            Lihat semua
           </Link>
         </div>
         <ul className="grid grid-cols-4 gap-y-1 sm:grid-cols-6 lg:grid-cols-[repeat(auto-fit,minmax(96px,1fr))]">
@@ -129,7 +129,7 @@ export default async function HomePage() {
               <span className="grid size-12 place-items-center rounded-full bg-signal-tint text-signal-text sm:size-14">
                 <Tag size={26} weight="duotone" aria-hidden />
               </span>
-              <span className="line-clamp-2 text-[12px] leading-tight font-medium sm:text-[13px]">Lagi promo</span>
+              <span className="line-clamp-2 text-[12px] leading-tight font-medium sm:text-[13px]">Promo</span>
             </Link>
           </li>
           {categories.map((c) => (
@@ -151,8 +151,8 @@ export default async function HomePage() {
             id="promo"
             icon={Tag}
             tone="signal"
-            title="Lagi promo"
-            note={`${promo.total} barang sedang turun harga`}
+            title="Promo spesial"
+            note={`${promo.total} produk sedang diskon`}
             href="/barang?promo=1&sort=diskon"
           />
           <ProductRow products={promo.items.slice(0, 6)} priorityCount={2} />
@@ -161,21 +161,21 @@ export default async function HomePage() {
 
       {laris.length > 0 && (
         <section aria-labelledby="terlaris" className="mt-8 md:mt-10">
-          <SectionHead id="terlaris" icon={TrendUp} title="Paling sering dibeli" note="Dari pesanan 6 bulan terakhir" href="/barang?sort=terlaris" />
+          <SectionHead id="terlaris" icon={TrendUp} title="Produk terlaris" note="Paling banyak dipesan dalam 6 bulan terakhir" href="/barang?sort=terlaris" />
           <ProductRow products={laris.slice(0, 6)} />
         </section>
       )}
 
       {terbaru.items.length > 0 && (
         <section aria-labelledby="baru" className="mt-8 md:mt-10">
-          <SectionHead id="baru" icon={Sparkle} title="Baru masuk rak" href="/barang?sort=terbaru" />
+          <SectionHead id="baru" icon={Sparkle} title="Produk terbaru" note="Baru tersedia di toko kami" href="/barang?sort=terbaru" />
           <ProductRow products={terbaru.items.slice(0, 6)} />
         </section>
       )}
 
       {pilihan.items.length > 0 && (
         <section aria-labelledby="pilihan" className="mt-8 md:mt-10">
-          <SectionHead id="pilihan" icon={ThumbsUp} title="Pilihan toko" note="Dipilih pemilik toko" href="/barang?featured=1" />
+          <SectionHead id="pilihan" icon={ThumbsUp} title="Pilihan toko" note="Rekomendasi dari Toko New Agung" href="/barang?featured=1" />
           <ProductRow products={pilihan.items.slice(0, 6)} />
         </section>
       )}
@@ -183,7 +183,7 @@ export default async function HomePage() {
       {topBrands.length > 0 && (
         <section aria-labelledby="merek" className="mt-8 md:mt-10">
           <h2 id="merek" className="mb-3 text-[18px] font-bold tracking-[-0.015em] sm:text-[20px]">
-            Merek di rak
+            Belanja berdasarkan merek
           </h2>
           <ul className="flex flex-wrap gap-2">
             {topBrands.map((b) => (
@@ -198,13 +198,13 @@ export default async function HomePage() {
         </section>
       )}
 
-      {/* Toko & cara pesan: ringkas, di bawah etalase */}
+      {/* Cara berbelanja & info toko: ringkas, di bawah etalase */}
       <section aria-labelledby="cara" className="card mt-10 grid overflow-hidden md:mt-12 lg:grid-cols-[1.1fr_1fr]">
         <div className="p-5 sm:p-6">
           <h2 id="cara" className="text-[18px] font-bold tracking-[-0.015em] sm:text-[20px]">
-            Belanja dari HP, ambil di toko
+            Cara berbelanja
           </h2>
-          <p className="mt-1 text-[14px] text-muted">Tanpa akun dan tanpa bayar online. Harga akhir dikonfirmasi toko lewat WhatsApp.</p>
+          <p className="mt-1 text-[14px] text-muted">Tidak perlu membuat akun dan tidak perlu membayar secara online. Harga akhir dikonfirmasi oleh tim kami melalui WhatsApp.</p>
           <ol className="mt-5 grid gap-4 sm:grid-cols-3">
             {STEPS.map(({ icon: StepIcon, title, body }, i) => (
               <li key={title} className="flex gap-3 sm:flex-col sm:gap-2">

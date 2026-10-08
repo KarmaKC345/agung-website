@@ -90,7 +90,7 @@ export async function createOrder(db: Db, input: OrderInput): Promise<CreatedOrd
     return [{ variantId: it.variantId, name: lineName(r.product_name, r.label), unit: it.unit, qty: it.qty, price: r.price }];
   });
   if (problems.length) {
-    throw new HttpError(409, 'Beberapa barang sudah tidak tersedia. Periksa lagi daftar pesanan.', { problems });
+    throw new HttpError(409, 'Beberapa produk sudah tidak tersedia. Mohon periksa kembali daftar pesanan Anda.', { problems });
   }
 
   const store = await getStore(db);

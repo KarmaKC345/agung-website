@@ -81,7 +81,7 @@ export function SearchBox({ large = false }: { large?: boolean }) {
       }}
     >
       <label className="sr-only" htmlFor={`${listId}-input`}>
-        Cari barang
+        Cari produk
       </label>
       <div
         className={`flex items-center gap-2.5 rounded-tag border border-field bg-surface focus-within:border-brand-text focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-brand-text ${
@@ -95,7 +95,7 @@ export function SearchBox({ large = false }: { large?: boolean }) {
           value={q}
           autoComplete="off"
           enterKeyHint="search"
-          placeholder="Cari pulpen, kertas A4, map, tinta…"
+          placeholder="Cari produk, merek, atau kategori…"
           className="h-full w-full min-w-0 bg-transparent outline-none placeholder:text-muted"
           role="combobox"
           aria-expanded={open && items.length > 0}

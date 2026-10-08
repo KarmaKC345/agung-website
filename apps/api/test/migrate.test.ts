@@ -37,10 +37,12 @@ describe('migrasi otomatis', () => {
     }
     const db = createPool(URL);
     const res = await migrate(db, dir, { seed: true });
-    expect(res.applied).toEqual(['20261008000000_marketplace.sql']);
+    expect(res.applied).toEqual(['20261008000000_marketplace.sql', '20261009000000_banner_copy.sql']);
     expect(res.seeded).toBe(false);
-    const { rows } = await db.query(`select count(*)::int as n from promo_banners`);
-    expect(rows[0].n).toBe(3);
+    const { rows } = await db.query(`select title from promo_banners order by sort_order`);
+    expect(rows).toHaveLength(3);
+    // teks banner bawaan ikut diperbarui oleh migrasi teks
+    expect(rows[1].title).toBe('Pesan online, ambil di toko');
     await db.end();
   });
 });

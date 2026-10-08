@@ -56,13 +56,13 @@ export function publicRoutes({ db, env }: Ctx): Router {
 
   r.get('/products/:slug', async (req, res) => {
     const product = await getProduct(db, { slug: req.params.slug });
-    if (!product) throw notFound('Barang');
+    if (!product) throw notFound('Produk');
     res.json(product);
   });
 
   r.get('/search', async (req, res) => {
     const query = productListQuerySchema.parse(req.query);
-    if (!query.q) throw new HttpError(400, 'Kata kunci kosong');
+    if (!query.q) throw new HttpError(400, 'Mohon isi kata kunci pencarian');
     const result = await listProducts(db, query);
     if (result.total === 0 && query.page === 1) await recordSearchMiss(db, query.q);
     res.json(result);
@@ -78,12 +78,12 @@ export function publicRoutes({ db, env }: Ctx): Router {
     limit: env.NODE_ENV === 'test' ? 1000 : 10,
     standardHeaders: 'draft-8',
     legacyHeaders: false,
-    message: { error: 'Terlalu banyak pesanan dalam waktu singkat. Coba lagi sebentar.' },
+    message: { error: 'Terlalu banyak pesanan dalam waktu singkat. Mohon tunggu sebentar, lalu coba kembali.' },
   });
 
   r.post('/orders', orderLimiter, async (req, res) => {
     const input = orderInputSchema.parse(req.body);
-    if (input.website) throw new HttpError(400, 'Data tidak valid');
+    if (input.website) throw new HttpError(400, 'Data pesanan tidak valid');
     res.status(201).json(await createOrder(db, input));
   });
 

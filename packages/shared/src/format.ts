@@ -29,15 +29,15 @@ export function slugify(text: string): string {
 }
 
 export const STOCK_LABEL: Record<'ada' | 'sedikit' | 'habis', string> = {
-  ada: 'Ada',
-  sedikit: 'Sisa sedikit',
+  ada: 'Stok tersedia',
+  sedikit: 'Stok terbatas',
   habis: 'Stok habis',
 };
 
 export const ORDER_STATUS_LABEL: Record<'baru' | 'disiapkan' | 'siap' | 'selesai' | 'batal', string> = {
   baru: 'Baru',
   disiapkan: 'Disiapkan',
-  siap: 'Siap diambil/diantar',
+  siap: 'Siap diambil/dikirim',
   selesai: 'Selesai',
-  batal: 'Batal',
+  batal: 'Dibatalkan',
 };

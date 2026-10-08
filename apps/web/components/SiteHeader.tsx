@@ -9,9 +9,9 @@ import { StatusPill } from './StatusPill';
 
 /** Pintasan di bawah kotak cari (layar lebar), seperti tautan cepat di marketplace */
 const QUICK = [
-  { href: '/barang?promo=1', label: 'Lagi promo', promo: true },
+  { href: '/barang?promo=1', label: 'Promo', promo: true },
   { href: '/barang?sort=terlaris', label: 'Terlaris' },
-  { href: '/barang?sort=terbaru', label: 'Baru masuk' },
+  { href: '/barang?sort=terbaru', label: 'Produk terbaru' },
 ];
 
 export function SiteHeader({ store, categories }: { store: StoreInfo; categories: Category[] }) {
@@ -29,7 +29,7 @@ export function SiteHeader({ store, categories }: { store: StoreInfo; categories
         <div className="mx-auto flex h-9 max-w-7xl items-center gap-5 px-4 text-[13px] text-muted">
           <a href={store.mapsUrl} target="_blank" rel="noopener" className="flex items-center gap-1.5 hover:text-ink">
             <MapPin size={14} weight="bold" aria-hidden />
-            Ambil di toko: Jl. DR. Ratulangi No.52, Makassar
+            Jl. DR. Ratulangi No.52, Makassar
           </a>
           <Link href="/tentang" className="hover:text-ink" aria-label="Jam buka toko">
             <StatusPill hours={store.openingHours} timezone={store.timezone} />
@@ -50,7 +50,7 @@ export function SiteHeader({ store, categories }: { store: StoreInfo; categories
         <Link
           href="/"
           className="tap shrink-0 rounded-[10px] text-ink dark:bg-[#e3e4e6] dark:px-1.5 dark:py-0.5 dark:text-[#15172b]"
-          aria-label="New Agung, beranda"
+          aria-label="Toko New Agung, ke beranda"
         >
           <Logo className="h-9 w-auto md:h-11" />
         </Link>

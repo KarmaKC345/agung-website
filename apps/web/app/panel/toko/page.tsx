@@ -34,9 +34,9 @@ export default function StoreSettingsPage() {
         try {
           const saved = await adminFetch<StoreInfo>('/store', { method: 'PUT', json: s });
           setS(saved);
-          setMsg({ ok: true, text: 'Tersimpan. Website diperbarui.' });
+          setMsg({ ok: true, text: 'Perubahan tersimpan dan website telah diperbarui.' });
         } catch (err) {
-          setMsg({ ok: false, text: err instanceof Error ? err.message : 'Gagal menyimpan' });
+          setMsg({ ok: false, text: err instanceof Error ? err.message : 'Perubahan belum berhasil disimpan' });
         } finally {
           setBusy(false);
         }
@@ -48,8 +48,8 @@ export default function StoreSettingsPage() {
         {field('Alamat', 'address')}
         {field('Link Google Maps', 'mapsUrl')}
         <div className="grid gap-4 sm:grid-cols-2">
-          {field('WhatsApp pesanan', 'whatsapp', 'Format 62…, mis. 6282348485101')}
-          {field('Telepon', 'phone', 'mis. 0411850555')}
+          {field('Nomor WhatsApp', 'whatsapp', 'Format 62…, contoh: 6282348485101')}
+          {field('Telepon', 'phone', 'Contoh: 0411850555')}
         </div>
         <div className="grid gap-4 sm:grid-cols-2">
           <label className="block text-[14px] font-semibold">
@@ -60,7 +60,7 @@ export default function StoreSettingsPage() {
             Bujur (longitude)
             <input type="number" step="any" value={s.lng ?? ''} onChange={(e) => set({ lng: e.target.value === '' ? null : Number(e.target.value) })} className={`mt-1 font-normal ${inputCls}`} />
           </label>
-          <p className="text-[12px] text-muted sm:col-span-2">Opsional. Di Google Maps: tekan lama titik toko, salin angka koordinatnya.</p>
+          <p className="text-[12px] text-muted sm:col-span-2">Opsional. Di Google Maps, tekan lama titik lokasi toko, lalu salin angka koordinatnya.</p>
         </div>
       </section>
 

@@ -10,7 +10,7 @@ export function CartLink() {
   const count = useShop((s) => s.lines.length);
   const n = hydrated ? count : 0;
   return (
-    <Link href="/keranjang" className="btn btn-secondary relative h-11 px-3.5" aria-label={`Keranjang, ${n} barang`}>
+    <Link href="/keranjang" className="btn btn-secondary relative h-11 px-3.5" aria-label={`Keranjang, ${n} produk`}>
       <Basket size={20} weight="bold" aria-hidden />
       <span className="hidden md:inline">Keranjang</span>
       {n > 0 && (

@@ -18,14 +18,14 @@ function SupabaseLogin({ next }: { next: string }) {
   const [msg, setMsg] = useState<Msg>(null);
 
   async function sendLink() {
-    if (!email) return setMsg({ kind: 'error', text: 'Isi email dulu, lalu tekan tombol ini lagi.' });
+    if (!email) return setMsg({ kind: 'error', text: 'Isi email Anda terlebih dahulu, lalu tekan tombol ini kembali.' });
     setBusy(true);
     setMsg(null);
     try {
       await sendReset(email);
-      setMsg({ kind: 'info', text: `Link untuk membuat kata sandi dikirim ke ${email}. Buka email itu di perangkat ini, lalu atur kata sandi.` });
+      setMsg({ kind: 'info', text: `Tautan untuk membuat kata sandi telah dikirim ke ${email}. Buka email tersebut di perangkat ini, lalu atur kata sandi Anda.` });
     } catch (err) {
-      setMsg({ kind: 'error', text: err instanceof Error ? err.message : 'Gagal mengirim email' });
+      setMsg({ kind: 'error', text: err instanceof Error ? err.message : 'Email belum berhasil dikirim' });
     } finally {
       setBusy(false);
     }
@@ -42,7 +42,7 @@ function SupabaseLogin({ next }: { next: string }) {
           await signIn(email, password);
           router.replace(next);
         } catch (err) {
-          setMsg({ kind: 'error', text: err instanceof Error ? err.message : 'Gagal masuk' });
+          setMsg({ kind: 'error', text: err instanceof Error ? err.message : 'Belum berhasil masuk. Periksa kembali email dan kata sandi Anda.' });
         } finally {
           setBusy(false);
         }
@@ -77,9 +77,9 @@ function SupabaseLogin({ next }: { next: string }) {
         {busy ? 'Memproses…' : 'Masuk'}
       </button>
       <div className="border-t border-line pt-4">
-        <p className="text-[14px] text-muted">Belum punya kata sandi, atau lupa?</p>
+        <p className="text-[14px] text-muted">Belum memiliki kata sandi atau lupa kata sandi?</p>
         <button type="button" disabled={busy} onClick={sendLink} className={`${btnSecondary} mt-2 w-full`}>
-          Kirim link buat kata sandi ke email
+          Kirim tautan atur kata sandi
         </button>
       </div>
     </form>
@@ -100,7 +100,7 @@ function DevLogin({ next }: { next: string }) {
       }}
     >
       <p className="rounded-tag bg-sunken p-3 text-[13px] text-muted">
-        Mode pengembangan lokal. Kata sandi = nilai <code>DEV_AUTH_TOKEN</code> di <code>apps/api/.env</code> (bawaan <code>dev-owner</code>).
+        Mode pengembangan lokal. Kata sandi adalah nilai <code>DEV_AUTH_TOKEN</code> di <code>apps/api/.env</code> (bawaan <code>dev-owner</code>).
       </p>
       <div>
         <label htmlFor="password" className="text-[14px] font-semibold">
@@ -130,10 +130,10 @@ function NotConfigured() {
         </li>
         <li>
           Di file <code>.env</code> (sebelah <code>docker-compose.yml</code>), isi <code>SUPABASE_URL</code>, <code>SUPABASE_ANON_KEY</code>, dan{' '}
-          <code>OWNER_EMAIL</code> (email tadi).
+          <code>OWNER_EMAIL</code> (email yang sama).
         </li>
         <li>
-          Jalankan ulang: <code>docker compose up -d --build</code>, lalu buka halaman ini lagi.
+          Jalankan ulang: <code>docker compose up -d --build</code>, lalu buka kembali halaman ini.
         </li>
       </ol>
     </div>
@@ -164,7 +164,7 @@ export default function LoginPage() {
       <div className="w-full max-w-sm rounded-tag border border-line bg-surface p-6">
         <LogoMark className="h-10 w-10" />
         <h1 className="mt-3 text-[22px] font-bold">Masuk panel toko</h1>
-        <p className="text-[14px] text-muted">Khusus pemilik dan pegawai New Agung.</p>
+        <p className="text-[14px] text-muted">Khusus pemilik dan pegawai Toko New Agung.</p>
         <Suspense>
           <LoginBody />
         </Suspense>

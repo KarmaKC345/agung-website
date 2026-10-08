@@ -43,7 +43,7 @@ export default function ProductsAdminPage() {
 
   return (
     <>
-      <PageTitle actions={<Link href="/panel/barang/baru" className={btnPrimary}>+ Tambah barang</Link>}>Barang</PageTitle>
+      <PageTitle actions={<Link href="/panel/barang/baru" className={btnPrimary}>+ Tambah produk</Link>}>Produk</PageTitle>
       <div className="flex flex-wrap gap-2">
         <input type="search" placeholder="Cari nama, merek, SKU" value={q} onChange={(e) => { setQ(e.target.value); setPage(1); }} className={`${inputCls} max-w-xs`} />
         <select value={categoryId} onChange={(e) => { setCategoryId(e.target.value); setPage(1); }} className={`${inputCls} w-auto`}>
@@ -70,7 +70,7 @@ export default function ProductsAdminPage() {
         <p className="mt-6 text-muted">Memuat…</p>
       ) : (
         <>
-          <p className="mt-4 text-[13px] text-muted tabular-nums">{data.total} barang</p>
+          <p className="mt-4 text-[13px] text-muted tabular-nums">{data.total} produk</p>
           <ul className="mt-2 divide-y divide-line border-y border-line bg-surface">
             {data.items.map((p) => (
               <li key={p.id}>

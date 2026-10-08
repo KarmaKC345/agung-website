@@ -22,7 +22,7 @@ export function SiteFooter({ store }: { store: StoreInfo }) {
                 <p className="font-semibold">Alamat</p>
                 <p className="mt-0.5 max-w-sm leading-relaxed text-muted">{store.address}</p>
                 <a href={store.mapsUrl} target="_blank" rel="noopener" className="tap mt-1.5 inline-block font-semibold text-brand-text hover:underline">
-                  Rute ke toko
+                  Petunjuk arah
                 </a>
               </div>
             </li>
@@ -50,7 +50,7 @@ export function SiteFooter({ store }: { store: StoreInfo }) {
             <li className="flex gap-3.5">
               <WhatsappLogo size={22} className="mt-0.5 shrink-0 text-wa-text" aria-hidden />
               <div>
-                <p className="font-semibold">WhatsApp pesanan</p>
+                <p className="font-semibold">WhatsApp</p>
                 <a href={waLink(store.whatsapp)} target="_blank" rel="noopener" className="tap mt-0.5 inline-block text-muted hover:text-ink hover:underline">
                   {formatPhone(store.whatsapp)}
                 </a>
@@ -71,7 +71,7 @@ export function SiteFooter({ store }: { store: StoreInfo }) {
       </div>
       <div className="border-t border-line">
         <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-x-6 gap-y-2 px-4 py-5 text-[13px] text-muted">
-          <span>Harga di website adalah perkiraan dan dikonfirmasi toko saat memesan.</span>
+          <span>© {new Date().getFullYear()} {store.name}. Harga akhir dikonfirmasi oleh toko saat pemesanan.</span>
           <Link href="/panel" className="tap hover:text-ink">
             Panel toko
           </Link>

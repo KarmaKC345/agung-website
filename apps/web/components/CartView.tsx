@@ -22,14 +22,14 @@ export function CartView({ hours, timezone }: { hours: WeeklyHours; timezone: st
   const [error, setError] = useState<string | null>(null);
   const [problems, setProblems] = useState<Map<string, Problem['reason']>>(new Map());
   const [sent, setSent] = useState<Sent | null>(null);
-  // rentang jam ambil = jam buka hari ini (WITA); cadangan 05.00–22.00
+  // rentang jam ambil = jam buka hari ini (WITA); cadangan 05.00-22.00
   const today = useMemo(() => hoursToday(hours, timezone), [hours, timezone]);
   const window_ = today ?? { open: '05:00', close: '22:00' };
   const summary = summarizeHours(hours);
   const hoursInfo = summary
-    ? `${summary} WITA.`
+    ? `Jam buka: ${summary.charAt(0).toLowerCase()}${summary.slice(1)} WITA.`
     : today
-      ? `Hari ini buka ${formatTime(today.open)}-${formatTime(today.close)} WITA.`
+      ? `Hari ini buka pukul ${formatTime(today.open)}-${formatTime(today.close)} WITA.`
       : 'Hari ini toko tutup.';
   const pickupTime = customer.pickupTime ?? '';
 
@@ -42,19 +42,19 @@ export function CartView({ hours, timezone }: { hours: WeeklyHours; timezone: st
         <p className="mt-4 text-[14px] font-medium text-muted">Kode pesanan</p>
         <p className="mt-1 font-mono text-[26px] font-medium tracking-tight">{sent.code}</p>
         <p className="mt-4 leading-relaxed">
-          Pesanan tersimpan dan WhatsApp sudah dibuka dengan pesan terisi. Tekan <b>kirim</b> di WhatsApp supaya toko menerimanya.
+          Pesanan Anda telah tersimpan dan WhatsApp telah terbuka dengan rincian pesanan. Tekan <b>Kirim</b> di WhatsApp agar pesanan diterima oleh tim kami.
         </p>
         <div className="mt-6 flex flex-wrap gap-2">
           <a href={sent.waUrl} className="btn btn-wa">
             <WhatsappLogo size={20} weight="bold" aria-hidden />
-            Buka WhatsApp lagi
+            Buka WhatsApp kembali
           </a>
           <Link href="/" className="btn btn-secondary">
-            Kembali belanja
+            Lanjut belanja
           </Link>
         </div>
         <p className="mt-6 text-[14px] text-muted">
-          Pesanan ini juga tersimpan di <Link href="/favorit?tab=riwayat" className="underline underline-offset-4">Riwayat</Link> untuk dipesan ulang nanti.
+          Pesanan ini juga tersimpan di <Link href="/favorit?tab=riwayat" className="underline underline-offset-4">Riwayat pesanan</Link>, sehingga Anda dapat memesannya kembali dengan sekali tekan.
         </p>
       </div>
     );
@@ -66,10 +66,10 @@ export function CartView({ hours, timezone }: { hours: WeeklyHours; timezone: st
         <span className="grid size-16 place-items-center rounded-full bg-brand-tint text-brand-text">
           <Basket size={30} weight="bold" aria-hidden />
         </span>
-        <p className="mt-5 text-[18px] font-semibold">Keranjang masih kosong.</p>
-        <p className="mt-1 text-muted">Cari barang atau pilih lorong, lalu tekan “Masukkan keranjang”.</p>
+        <p className="mt-5 text-[18px] font-semibold">Keranjang Anda masih kosong</p>
+        <p className="mt-1 text-muted">Temukan produk yang Anda butuhkan, lalu tekan tombol “+ Keranjang”.</p>
         <Link href="/barang" className="btn btn-primary mt-6">
-          Lihat katalog
+          Mulai belanja
         </Link>
       </div>
     );
@@ -81,7 +81,7 @@ export function CartView({ hours, timezone }: { hours: WeeklyHours; timezone: st
     e.preventDefault();
     const form = new FormData(e.currentTarget);
     if (customer.fulfilment === 'ambil' && pickupTime && (pickupTime < window_.open || pickupTime > window_.close)) {
-      setError(`Jam ambil harus antara ${formatTime(window_.open)} dan ${formatTime(window_.close)}.`);
+      setError(`Jam pengambilan harus di antara pukul ${formatTime(window_.open)} dan ${formatTime(window_.close)}.`);
       return;
     }
     setBusy(true);
@@ -94,7 +94,7 @@ export function CartView({ hours, timezone }: { hours: WeeklyHours; timezone: st
         body: JSON.stringify({
           customerName: customer.name.trim(),
           fulfilment: customer.fulfilment,
-          pickupNote: customer.fulfilment === 'ambil' ? (pickupTime ? `jam ${formatTime(pickupTime)}` : '') : customer.pickupNote.trim(),
+          pickupNote: customer.fulfilment === 'ambil' ? (pickupTime ? `pukul ${formatTime(pickupTime)}` : '') : customer.pickupNote.trim(),
           items: lines.map((l) => ({ variantId: l.variantId, unit: l.unit, qty: l.qty })),
           website: String(form.get('website') ?? ''),
         }),
@@ -102,11 +102,11 @@ export function CartView({ hours, timezone }: { hours: WeeklyHours; timezone: st
       const data = await res.json();
       if (res.status === 409 && data?.details?.problems) {
         setProblems(new Map((data.details.problems as Problem[]).map((p) => [key(p), p.reason])));
-        setError('Ada barang yang sudah habis atau tidak dijual lagi. Hapus barang yang ditandai, lalu kirim lagi.');
+        setError('Beberapa produk sudah habis atau tidak tersedia lagi. Hapus produk yang ditandai, lalu kirim kembali pesanan Anda.');
         return;
       }
       if (!res.ok) {
-        setError(data?.error ?? 'Pesanan gagal dikirim. Coba lagi.');
+        setError(data?.error ?? 'Pesanan belum berhasil dikirim. Silakan coba kembali.');
         return;
       }
       // pakai harga dari server untuk riwayat
@@ -119,7 +119,7 @@ export function CartView({ hours, timezone }: { hours: WeeklyHours; timezone: st
       setSent({ code: data.code, waUrl: data.waUrl, total: data.total });
       window.location.href = data.waUrl;
     } catch {
-      setError('Tidak tersambung ke server. Periksa koneksi internet, lalu kirim lagi.');
+      setError('Koneksi ke server terputus. Periksa koneksi internet Anda, lalu coba kembali.');
     } finally {
       setBusy(false);
     }
@@ -150,7 +150,7 @@ export function CartView({ hours, timezone }: { hours: WeeklyHours; timezone: st
                 </div>
                 {problem && (
                   <p className="mt-1 text-[13px] font-semibold text-danger">
-                    {problem === 'habis' ? 'Stok habis' : 'Sudah tidak dijual dengan satuan ini'}
+                    {problem === 'habis' ? 'Stok habis' : 'Satuan ini sudah tidak tersedia'}
                   </p>
                 )}
                 <div className="mt-2 flex items-center gap-3">
@@ -190,14 +190,14 @@ export function CartView({ hours, timezone }: { hours: WeeklyHours; timezone: st
       {/* Nota & formulir */}
       <form onSubmit={submit} className="card h-fit rounded-[var(--radius-media)] p-5 sm:p-6 lg:sticky lg:top-24">
         <div className="flex items-baseline justify-between">
-          <span className="text-muted">Perkiraan total</span>
+          <span className="text-muted">Total</span>
           <Price value={total} className="text-[30px]" />
         </div>
-        <p className="mt-1 text-[13px] text-muted">{lines.length} jenis barang. Harga akhir dikonfirmasi toko.</p>
+        <p className="mt-1 text-[13px] text-muted">{lines.length} jenis produk. Harga akhir dikonfirmasi oleh toko melalui WhatsApp.</p>
         <hr className="receipt-rule my-5" />
 
         <label className="block text-[14px] font-semibold" htmlFor="nama">
-          Nama
+          Nama pemesan
         </label>
         <input
           id="nama"
@@ -210,12 +210,12 @@ export function CartView({ hours, timezone }: { hours: WeeklyHours; timezone: st
         />
 
         <fieldset className="mt-4">
-          <legend className="text-[14px] font-semibold">Cara terima</legend>
+          <legend className="text-[14px] font-semibold">Cara menerima pesanan</legend>
           <div className="mt-1 grid grid-cols-2 gap-2">
             {(
               [
                 ['ambil', 'Ambil di toko'],
-                ['antar', 'Minta diantar'],
+                ['antar', 'Diantar'],
               ] as [Fulfilment, string][]
             ).map(([v, label]) => (
               <label
@@ -228,12 +228,12 @@ export function CartView({ hours, timezone }: { hours: WeeklyHours; timezone: st
             ))}
           </div>
         </fieldset>
-        {customer.fulfilment === 'antar' && <p className="mt-2 text-[13px] text-muted">Ongkir dan alamat dibicarakan di WhatsApp.</p>}
+        {customer.fulfilment === 'antar' && <p className="mt-2 text-[13px] text-muted">Alamat dan ongkos kirim dikonfirmasi melalui WhatsApp.</p>}
 
         {customer.fulfilment === 'ambil' ? (
           <>
             <label className="mt-4 block text-[14px] font-semibold" htmlFor="jam-ambil">
-              Jam ambil (opsional)
+              Jam pengambilan (opsional)
             </label>
             <div className="mt-1 flex items-center gap-2">
               <input
@@ -253,12 +253,12 @@ export function CartView({ hours, timezone }: { hours: WeeklyHours; timezone: st
                   onClick={() => setCustomer({ pickupTime: '' })}
                   className="tap shrink-0 text-[13px] font-medium text-muted underline underline-offset-4 hover:text-ink"
                 >
-                  Kosongkan
+                  Hapus
                 </button>
               )}
             </div>
             <p id="jam-ambil-info" className="mt-1 text-[12px] text-muted">
-              {hoursInfo} Kosongkan bila belum tahu.
+              {hoursInfo} Boleh dikosongkan.
             </p>
           </>
         ) : (
@@ -269,7 +269,7 @@ export function CartView({ hours, timezone }: { hours: WeeklyHours; timezone: st
             <input
               id="catatan"
               maxLength={200}
-              placeholder="mis. kantor di Jl. Sudirman"
+              placeholder="Contoh: alamat pengantaran atau patokan lokasi"
               value={customer.pickupNote}
               onChange={(e) => setCustomer({ pickupNote: e.target.value })}
               className="mt-1 h-11 w-full rounded-tag border border-field bg-surface px-3"
@@ -297,9 +297,9 @@ export function CartView({ hours, timezone }: { hours: WeeklyHours; timezone: st
           className="btn btn-wa btn-lg mt-6 w-full"
         >
           <WhatsappLogo size={22} weight="bold" aria-hidden />
-          {busy ? 'Menyimpan pesanan…' : 'Kirim pesanan lewat WhatsApp'}
+          {busy ? 'Menyimpan pesanan…' : 'Kirim pesanan via WhatsApp'}
         </button>
-        <p className="mt-2 text-center text-[12px] text-muted">WhatsApp terbuka dengan daftar ini. Tekan kirim di sana.</p>
+        <p className="mt-2 text-center text-[12px] text-muted">WhatsApp akan terbuka dengan rincian pesanan Anda. Tekan Kirim untuk menyelesaikan pesanan.</p>
       </form>
     </div>
   );

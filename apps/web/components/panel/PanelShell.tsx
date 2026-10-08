@@ -19,7 +19,7 @@ export const useMe = () => useContext(MeContext)!;
 
 const NAV: { href: string; label: string; owner?: boolean }[] = [
   { href: '/panel', label: 'Pesanan masuk' },
-  { href: '/panel/barang', label: 'Barang' },
+  { href: '/panel/barang', label: 'Produk' },
   { href: '/panel/harga', label: 'Ubah harga' },
   { href: '/panel/banner', label: 'Banner beranda' },
   { href: '/panel/kategori', label: 'Kategori & merek' },
@@ -43,7 +43,7 @@ export function PanelShell({ children }: { children: React.ReactNode }) {
       .then(setMe)
       .catch((e: unknown) => {
         if (e instanceof ApiError && e.status === 401) router.replace(`/panel/masuk?lanjut=${encodeURIComponent(path)}`);
-        else setError(e instanceof Error ? e.message : 'Gagal memuat panel');
+        else setError(e instanceof Error ? e.message : 'Panel belum berhasil dimuat');
       });
   }, [isPublic, path, router]);
 

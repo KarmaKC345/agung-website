@@ -43,7 +43,7 @@ export default function OrdersPage() {
       setCounts(c);
       setError(null);
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Gagal memuat');
+      setError(e instanceof Error ? e.message : 'Data belum berhasil dimuat');
     }
   }, [page, status, q]);
 
@@ -78,7 +78,7 @@ export default function OrdersPage() {
         ))}
         <input
           type="search"
-          placeholder="Cari kode / nama"
+          placeholder="Cari kode pesanan atau nama"
           value={q}
           onChange={(e) => {
             setQ(e.target.value);
@@ -93,7 +93,7 @@ export default function OrdersPage() {
         <p className="mt-6 text-muted">Memuat…</p>
       ) : data.items.length === 0 ? (
         <p className="mt-6 rounded-tag border border-dashed border-field bg-surface p-6 text-center text-muted">
-          Belum ada pesanan{status ? ` berstatus “${ORDER_STATUS_LABEL[status]}”` : ''}. Pesanan dari tombol WhatsApp di website muncul di sini.
+          Belum ada pesanan{status ? ` berstatus “${ORDER_STATUS_LABEL[status]}”` : ''}. Pesanan yang dikirim melalui website akan tampil di sini.
         </p>
       ) : (
         <ul className="mt-5 grid gap-3 xl:grid-cols-2">
@@ -105,7 +105,7 @@ export default function OrdersPage() {
                 <span className="ml-auto text-[13px] text-muted">{timeFmt.format(new Date(o.createdAt))}</span>
               </div>
               <p className="mt-2 text-[15px]">
-                <b>{o.customerName}</b> · {o.fulfilment === 'ambil' ? 'Ambil di toko' : 'Minta diantar'}
+                <b>{o.customerName}</b> · {o.fulfilment === 'ambil' ? 'Ambil di toko' : 'Diantar'}
                 {o.pickupNote && <span className="text-muted"> · {o.pickupNote}</span>}
               </p>
               <ul className="mt-3 space-y-1 text-[14px]">
@@ -138,7 +138,7 @@ export default function OrdersPage() {
                       onClick={async () => {
                         const ok = await dialog.confirm({
                           title: `Batalkan pesanan ${o.code}?`,
-                          message: `Pesanan ${o.customerName} ditandai batal. Status bisa dilihat lagi di filter “Batal”.`,
+                          message: `Pesanan ${o.customerName} akan ditandai dibatalkan dan tetap dapat dilihat di filter “Dibatalkan”.`,
                           confirmLabel: 'Batalkan pesanan',
                           danger: true,
                         });

@@ -17,13 +17,13 @@ export default function SetPasswordPage() {
         className="w-full max-w-sm space-y-4 rounded-tag border border-line bg-surface p-6"
         onSubmit={async (e) => {
           e.preventDefault();
-          if (pw.length < 8) return setError('Minimal 8 karakter');
+          if (pw.length < 8) return setError('Kata sandi minimal 8 karakter.');
           setBusy(true);
           try {
             await updatePassword(pw);
             router.replace('/panel');
           } catch (err) {
-            setError(err instanceof Error ? err.message : 'Gagal menyimpan');
+            setError(err instanceof Error ? err.message : 'Perubahan belum berhasil disimpan');
           } finally {
             setBusy(false);
           }

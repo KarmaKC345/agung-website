@@ -33,8 +33,8 @@ export default function ImportPage() {
         <section className="rounded-tag border border-line bg-surface p-4">
           <h2 className="font-semibold">Import dari Excel / CSV</h2>
           <p className="mt-1 text-[14px] text-muted">
-            Satu baris = satu harga. Kolom: <code className="text-[13px]">kategori, merek, nama, varian, warna, sku, satuan, isi, harga, stok, deskripsi</code>.
-            Barang dengan nama sama digabung; varian yang tidak ada di file tidak dihapus.
+            Satu baris = satu harga. Kolom: <code className="text-[13px]">kategori, merek, nama, varian, warna, sku, satuan, isi, harga, harga_coret, stok, deskripsi</code>.
+            Produk dengan nama yang sama digabung menjadi satu. Varian yang tidak tercantum di file tidak dihapus.
           </p>
           <button className={`${btnSecondary} mt-3`} onClick={() => adminDownload('/import/template', 'template-barang-new-agung.csv')}>
             Unduh template
@@ -54,10 +54,10 @@ export default function ImportPage() {
                   const token = await getToken();
                   const res = await fetch(`${API_URL}/api/admin/import`, { method: 'POST', body: form, headers: token ? { Authorization: `Bearer ${token}` } : {} });
                   const data = await res.json();
-                  if (!res.ok) throw new Error(data.error ?? 'Import gagal');
+                  if (!res.ok) throw new Error(data.error ?? 'Import belum berhasil');
                   setResult(data);
                 } catch (err) {
-                  setError(err instanceof Error ? err.message : 'Import gagal');
+                  setError(err instanceof Error ? err.message : 'Import belum berhasil');
                 } finally {
                   setBusy(false);
                 }
@@ -67,13 +67,13 @@ export default function ImportPage() {
               <button disabled={!file || busy} className={btnPrimary}>{busy ? 'Mengimpor…' : 'Import'}</button>
             </form>
           ) : (
-            <p className="mt-4 text-[14px] text-muted">Import hanya bisa dilakukan pemilik.</p>
+            <p className="mt-4 text-[14px] text-muted">Import hanya dapat dilakukan oleh pemilik toko.</p>
           )}
           {error && <p className="mt-3 text-danger">{error}</p>}
           {result && (
             <div role="status" className="mt-4 rounded-tag bg-sunken p-3 text-[14px]">
               <p className="font-semibold">
-                {result.products} barang diproses: {result.created} baru, {result.updated} diperbarui, {result.prices} harga.
+                {result.products} produk diproses: {result.created} baru, {result.updated} diperbarui, {result.prices} harga.
               </p>
               {result.errors.length > 0 && (
                 <>
@@ -92,16 +92,16 @@ export default function ImportPage() {
         <section className="space-y-6">
           <div className="rounded-tag border border-line bg-surface p-4">
             <h2 className="font-semibold">Export / cadangan</h2>
-            <p className="mt-1 text-[14px] text-muted">Semua barang dan harga dalam format yang sama dengan import. Bisa dibuka di Excel.</p>
+            <p className="mt-1 text-[14px] text-muted">Seluruh produk dan harga dalam format yang sama dengan file import, dan dapat dibuka di Excel.</p>
             <button className={`${btnSecondary} mt-3`} onClick={() => adminDownload('/export', `barang-new-agung-${new Date().toISOString().slice(0, 10)}.csv`)}>
-              Unduh semua barang (CSV)
+              Unduh semua produk (CSV)
             </button>
           </div>
           <div className="rounded-tag border border-line bg-surface p-4">
-            <h2 className="font-semibold">Dicari pelanggan, tapi belum ada</h2>
-            <p className="mt-1 text-[14px] text-muted">Kata kunci 30 hari terakhir yang tidak menemukan barang. Bahan untuk menambah barang ke website.</p>
+            <h2 className="font-semibold">Dicari pelanggan, belum tersedia di website</h2>
+            <p className="mt-1 text-[14px] text-muted">Kata kunci pencarian dalam 30 hari terakhir yang tidak menemukan produk. Gunakan daftar ini sebagai acuan untuk menambah produk ke website.</p>
             {misses.length === 0 ? (
-              <p className="mt-3 text-[14px] text-muted">Belum ada.</p>
+              <p className="mt-3 text-[14px] text-muted">Belum ada data.</p>
             ) : (
               <ul className="mt-3 flex flex-wrap gap-2">
                 {misses.map((m) => (

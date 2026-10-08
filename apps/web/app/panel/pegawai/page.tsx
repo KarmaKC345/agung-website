@@ -22,7 +22,7 @@ export default function StaffPage() {
       await adminFetch(`/staff/${id}`, { method: 'PATCH', json: patch });
       await load();
     } catch (e) {
-      setMsg({ ok: false, text: e instanceof Error ? e.message : 'Gagal' });
+      setMsg({ ok: false, text: e instanceof Error ? e.message : 'Perubahan belum berhasil disimpan' });
     }
   }
 
@@ -30,7 +30,7 @@ export default function StaffPage() {
     <div className="max-w-2xl">
       <PageTitle>Pegawai</PageTitle>
       <p className="text-[14px] text-muted">
-        Pegawai bisa menambah/mengubah barang, mengubah harga, dan mengurus pesanan. Hanya pemilik yang bisa menghapus barang, mengatur kategori, import, info toko, dan pegawai.
+        Pegawai dapat menambah dan mengubah produk, mengubah harga, serta mengelola pesanan. Hanya pemilik toko yang dapat menghapus produk, mengatur kategori, melakukan import, mengubah info toko, dan mengelola pegawai.
       </p>
 
       <form
@@ -40,11 +40,11 @@ export default function StaffPage() {
           setMsg(null);
           try {
             await adminFetch('/staff', { method: 'POST', json: { email, role } });
-            setMsg({ ok: true, text: `Undangan dikirim ke ${email}. Pegawai mengatur kata sandi dari link di email.` });
+            setMsg({ ok: true, text: `Undangan telah dikirim ke ${email}. Pegawai dapat mengatur kata sandi melalui tautan di email tersebut.` });
             setEmail('');
             await load();
           } catch (err) {
-            setMsg({ ok: false, text: err instanceof Error ? err.message : 'Gagal mengundang' });
+            setMsg({ ok: false, text: err instanceof Error ? err.message : 'Undangan belum berhasil dikirim' });
           }
         }}
       >
@@ -71,7 +71,7 @@ export default function StaffPage() {
                   <option value="owner">Pemilik</option>
                 </select>
                 <button onClick={() => update(s.userId, { active: !s.active })} className="tap text-[13px] font-semibold text-brand-text">
-                  {s.active ? 'Nonaktifkan' : 'Aktifkan lagi'}
+                  {s.active ? 'Nonaktifkan' : 'Aktifkan kembali'}
                 </button>
               </>
             )}

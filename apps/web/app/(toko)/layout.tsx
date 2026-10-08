@@ -44,7 +44,7 @@ export default async function StoreLayout({ children }: { children: React.ReactN
   return (
     <>
       <a href="#isi" className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-50 focus:bg-surface focus:p-2">
-        Langsung ke isi
+        Langsung ke konten utama
       </a>
       <SiteHeader store={store} categories={categories} />
       <main id="isi" className="pb-16 md:pb-0">

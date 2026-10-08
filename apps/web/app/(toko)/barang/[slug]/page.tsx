@@ -21,7 +21,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const min = Math.min(...p.variants.flatMap((v) => v.prices.map((x) => x.price)));
   return {
     title: p.name,
-    description: `${p.name}${p.brand ? ` (${p.brand.name})` : ''} mulai Rp${min.toLocaleString('id-ID')} di Toko New Agung Makassar. ${p.description}`.trim(),
+    description: `${p.name}${p.brand ? ` (${p.brand.name})` : ''} mulai Rp${min.toLocaleString('id-ID')} di Toko New Agung, Makassar. ${p.description}`.trim(),
     alternates: { canonical: `/barang/${p.slug}` },
     openGraph: p.images[0] ? { images: [p.images[0]] } : undefined,
   };
@@ -61,7 +61,7 @@ export default async function ProductPage({ params }: Props) {
     },
   };
 
-  const waHref = waLink(store.whatsapp, `Halo New Agung, saya mau tanya tentang ${product.name}.`);
+  const waHref = waLink(store.whatsapp, `Halo Toko New Agung, saya ingin menanyakan produk ${product.name}.`);
   const anyStock = product.variants.some((v) => v.stockStatus !== 'habis');
 
   return (
@@ -115,7 +115,7 @@ export default async function ProductPage({ params }: Props) {
                     <span aria-hidden>·</span>
                   </>
                 )}
-                <span className={anyStock ? 'text-ok' : 'text-danger'}>{anyStock ? 'Stok ada' : 'Stok habis'}</span>
+                <span className={anyStock ? 'text-ok' : 'text-danger'}>{anyStock ? 'Stok tersedia' : 'Stok habis'}</span>
                 {product.isFeatured && (
                   <span className="ml-1 inline-flex items-center gap-1 rounded-full bg-brand-tint px-2 py-0.5 text-[12px] font-semibold text-brand-text">
                     <ThumbsUp size={12} weight="fill" aria-hidden />
@@ -129,7 +129,7 @@ export default async function ProductPage({ params }: Props) {
           {product.description && (
             <section aria-labelledby="ket">
               <h2 id="ket" className="text-[16px] font-bold">
-                Keterangan
+                Deskripsi produk
               </h2>
               <p className="mt-2 max-w-[65ch] text-[15px] leading-relaxed whitespace-pre-line text-muted">{product.description}</p>
             </section>
@@ -138,12 +138,12 @@ export default async function ProductPage({ params }: Props) {
             <li className="flex gap-3">
               <Storefront size={20} className="mt-0.5 shrink-0 text-ink" aria-hidden />
               <span>
-                <span className="font-semibold text-ink">Ambil di toko</span> Jl. DR. Ratulangi No.52, atau minta diantar. Harga akhir dan stok dikonfirmasi toko saat memesan.
+                <span className="font-semibold text-ink">Ambil di toko</span> di Jl. DR. Ratulangi No.52, Makassar, atau pilih diantar. Harga akhir dan ketersediaan stok dikonfirmasi oleh toko melalui WhatsApp.
               </span>
             </li>
             <li className="flex gap-3">
               <Clock size={20} className="mt-0.5 shrink-0 text-ink" aria-hidden />
-              <span>Harga diperbarui {updatedFmt.format(new Date(product.updatedAt))}.</span>
+              <span>Harga terakhir diperbarui pada {updatedFmt.format(new Date(product.updatedAt))}.</span>
             </li>
           </ul>
         </ProductPurchase>
@@ -152,7 +152,7 @@ export default async function ProductPage({ params }: Props) {
       {related.length > 0 && (
         <section className="mt-12" aria-labelledby="serak">
           <h2 id="serak" className="mb-3 text-[18px] font-bold tracking-[-0.015em] sm:text-[20px]">
-            Barang serupa
+            Produk serupa
           </h2>
           <ProductRow products={related} />
         </section>

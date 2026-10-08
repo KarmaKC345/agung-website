@@ -80,10 +80,10 @@ export function ProductForm({ product }: { product?: ProductDetail }) {
       const token = await getToken();
       const res = await fetch(`${API_URL}/api/admin/uploads`, { method: 'POST', body: form, headers: token ? { Authorization: `Bearer ${token}` } : {} });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error ?? 'Gagal mengunggah');
+      if (!res.ok) throw new Error(data.error ?? 'Foto belum berhasil diunggah');
       setImages((imgs) => [...imgs, ...(data.urls as string[])].slice(0, 5));
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Gagal mengunggah foto');
+      setError(e instanceof Error ? e.message : 'Foto belum berhasil diunggah');
     } finally {
       setUploading(false);
     }
@@ -97,7 +97,7 @@ export function ProductForm({ product }: { product?: ProductDetail }) {
       setBrands((bs) => [...bs, b].sort((a, c) => a.name.localeCompare(c.name)));
       setBrandId(b.id);
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Gagal menambah merek');
+      setError(e instanceof Error ? e.message : 'Merek belum berhasil ditambahkan');
     }
   }
 
@@ -133,14 +133,14 @@ export function ProductForm({ product }: { product?: ProductDetail }) {
     }
     if (body.variants.some((v) => v.prices.some((p) => p.originalPrice !== null && p.originalPrice <= p.price))) {
       setBusy(false);
-      return setError('Harga coret harus lebih besar dari harga jual. Kosongkan bila barang tidak sedang promo.');
+      return setError('Harga coret harus lebih besar dari harga jual. Kosongkan bila produk tidak sedang promo.');
     }
     try {
       if (product) await adminFetch(`/products/${product.id}`, { method: 'PUT', json: body });
       else await adminFetch('/products', { method: 'POST', json: body });
       router.push('/panel/barang');
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Gagal menyimpan');
+      setError(err instanceof Error ? err.message : 'Perubahan belum berhasil disimpan');
     } finally {
       setBusy(false);
     }
@@ -150,8 +150,8 @@ export function ProductForm({ product }: { product?: ProductDetail }) {
     if (!product) return;
     const ok = await dialog.confirm({
       title: `Hapus “${product.name}”?`,
-      message: 'Barang, varian, dan harganya dihapus permanen. Untuk menyembunyikan sementara, matikan “Tampil di website”.',
-      confirmLabel: 'Hapus barang',
+      message: 'Produk, varian, dan harganya dihapus permanen. Untuk menyembunyikan sementara, matikan “Tampil di website”.',
+      confirmLabel: 'Hapus produk',
       danger: true,
     });
     if (!ok) return;
@@ -162,13 +162,13 @@ export function ProductForm({ product }: { product?: ProductDetail }) {
   return (
     <form onSubmit={save} className="max-w-3xl">
       <PageTitle actions={product && <Link href={`/barang/${product.slug}`} target="_blank" className={btnSecondary}>Lihat di website</Link>}>
-        {product ? 'Ubah barang' : 'Tambah barang'}
+        {product ? 'Ubah produk' : 'Tambah produk'}
       </PageTitle>
 
       <section className="space-y-4 rounded-tag border border-line bg-surface p-4">
         <div>
-          <label className="text-[14px] font-semibold" htmlFor="name">Nama barang</label>
-          <input id="name" required maxLength={160} value={name} onChange={(e) => setName(e.target.value)} placeholder="mis. Pentel Energel BLN105 0.5" className={`mt-1 ${inputCls}`} />
+          <label className="text-[14px] font-semibold" htmlFor="name">Nama produk</label>
+          <input id="name" required maxLength={160} value={name} onChange={(e) => setName(e.target.value)} placeholder="Contoh: Pentel Energel BLN105 0.5" className={`mt-1 ${inputCls}`} />
         </div>
         <div className="grid gap-4 sm:grid-cols-2">
           <div>
@@ -196,7 +196,7 @@ export function ProductForm({ product }: { product?: ProductDetail }) {
         </div>
         <div>
           <label className="text-[14px] font-semibold" htmlFor="desc">Keterangan singkat</label>
-          <textarea id="desc" rows={2} maxLength={2000} value={description} onChange={(e) => setDescription(e.target.value)} placeholder="mis. isi 500 lembar per rim" className={`mt-1 ${inputCls} h-auto py-2`} />
+          <textarea id="desc" rows={2} maxLength={2000} value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Contoh: isi 500 lembar per rim" className={`mt-1 ${inputCls} h-auto py-2`} />
         </div>
         <label className="flex min-h-11 items-center gap-2 text-[15px]">
           <input type="checkbox" checked={isActive} onChange={(e) => setIsActive(e.target.checked)} className="size-5" />
@@ -206,7 +206,7 @@ export function ProductForm({ product }: { product?: ProductDetail }) {
           <input type="checkbox" checked={isFeatured} onChange={(e) => setIsFeatured(e.target.checked)} className="mt-0.5 size-5" />
           <span>
             Pilihan toko
-            <span className="block text-[13px] text-muted">Ditonjolkan di beranda, bagian “Pilihan toko”.</span>
+            <span className="block text-[13px] text-muted">Ditampilkan di beranda pada bagian “Pilihan toko”.</span>
           </span>
         </label>
       </section>
@@ -233,13 +233,13 @@ export function ProductForm({ product }: { product?: ProductDetail }) {
             </li>
           )}
         </ul>
-        <p className="mt-2 text-[13px] text-muted">Foto dikecilkan otomatis sebelum diunggah. Latar polos & terang paling bagus.</p>
+        <p className="mt-2 text-[13px] text-muted">Foto dikecilkan otomatis sebelum diunggah. Gunakan latar polos yang terang untuk hasil terbaik.</p>
       </section>
 
       <section className="mt-5 rounded-tag border border-line bg-surface p-4">
         <h2 className="font-semibold">Varian & harga</h2>
         <p className="text-[13px] text-muted">
-          Satu varian per warna/ukuran. Satu barang tanpa pilihan cukup satu varian dengan nama kosong. Isi <b>harga coret</b> (harga normal) bila
+          Buat satu varian untuk setiap warna atau ukuran. Produk tanpa pilihan cukup memiliki satu varian dengan nama kosong. Isi <b>harga coret</b> (harga normal) bila
           sedang promo; website menampilkan harga dicoret dan persen diskonnya.
         </p>
         <div className="mt-4 space-y-4">
@@ -247,7 +247,7 @@ export function ProductForm({ product }: { product?: ProductDetail }) {
             <fieldset key={v.key} className="rounded-tag border border-line p-3">
               <legend className="px-1 text-[13px] text-muted">Varian {vi + 1}</legend>
               <div className="grid gap-3 sm:grid-cols-[1fr_auto_1fr_auto]">
-                <input value={v.label} onChange={(e) => setVariant(v.key, { label: e.target.value })} placeholder="Nama varian (mis. Biru, 58 lembar)" className={inputCls} aria-label="Nama varian" />
+                <input value={v.label} onChange={(e) => setVariant(v.key, { label: e.target.value })} placeholder="Nama varian (contoh: Biru, 58 lembar)" className={inputCls} aria-label="Nama varian" />
                 <label className="flex min-h-11 items-center gap-2 text-[14px]">
                   <input type="checkbox" className="size-5" checked={v.colorHex !== null} onChange={(e) => setVariant(v.key, { colorHex: e.target.checked ? '#1F3FAE' : null })} />
                   Warna
@@ -255,8 +255,8 @@ export function ProductForm({ product }: { product?: ProductDetail }) {
                 </label>
                 <input value={v.sku} onChange={(e) => setVariant(v.key, { sku: e.target.value })} placeholder="Kode kasir (opsional)" className={inputCls} aria-label="Kode kasir" />
                 <select value={v.stockStatus} onChange={(e) => setVariant(v.key, { stockStatus: e.target.value as StockStatus })} className={`${inputCls} w-auto`} aria-label="Stok">
-                  <option value="ada">Ada</option>
-                  <option value="sedikit">Sisa sedikit</option>
+                  <option value="ada">Tersedia</option>
+                  <option value="sedikit">Stok terbatas</option>
                   <option value="habis">Habis</option>
                 </select>
               </div>
@@ -315,7 +315,7 @@ export function ProductForm({ product }: { product?: ProductDetail }) {
         <button disabled={busy} className={btnPrimary}>{busy ? 'Menyimpan…' : 'Simpan'}</button>
         <Link href="/panel/barang" className={btnSecondary}>Batal</Link>
         {product && me.role === 'owner' && (
-          <button type="button" onClick={remove} className="tap ml-auto text-[14px] text-muted underline underline-offset-4 hover:text-danger">Hapus barang</button>
+          <button type="button" onClick={remove} className="tap ml-auto text-[14px] text-muted underline underline-offset-4 hover:text-danger">Hapus produk</button>
         )}
       </div>
     </form>

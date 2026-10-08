@@ -23,7 +23,7 @@ export function Pagination({
         </Link>
       ) : null}
       <span className="px-2 text-muted tabular-nums">
-        {page} dari {pages}
+        Halaman {page} dari {pages}
       </span>
       {page < pages ? (
         <Link href={makeHref(page + 1)} className="btn btn-secondary" rel="next">

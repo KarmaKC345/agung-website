@@ -53,7 +53,7 @@ export function BannerCarousel({ banners }: { banners: PromoBanner[] }) {
   return (
     <section
       aria-roledescription="carousel"
-      aria-label="Promo dan info toko"
+      aria-label="Promo dan informasi toko"
       className="group/banner relative"
       onPointerEnter={() => (paused.current = true)}
       onPointerLeave={() => (paused.current = false)}

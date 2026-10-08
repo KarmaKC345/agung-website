@@ -91,7 +91,7 @@ function Filters({ base, query, categories, brands, activeCategory, hideBrand, i
         <ul className="space-y-0.5">
           <li>
             <Link href="/barang" aria-current={!activeCategory && base === '/barang' ? 'page' : undefined} className="block rounded-[8px] py-1.5 hover:text-brand-text aria-[current=page]:font-semibold aria-[current=page]:text-brand-text">
-              Semua barang
+              Semua produk
             </Link>
           </li>
           {categories.map((c) => {
@@ -135,7 +135,7 @@ function Filters({ base, query, categories, brands, activeCategory, hideBrand, i
         <FilterLink href={toggle('promo', '1')} on={query.promo === '1'}>
           <span className="flex items-center gap-1.5">
             <Tag size={15} weight="fill" className="text-signal-text" aria-hidden />
-            Lagi promo
+            Promo
           </span>
         </FilterLink>
         <FilterLink href={toggle('pilihan', '1')} on={query.pilihan === '1'}>
@@ -159,7 +159,7 @@ function Filters({ base, query, categories, brands, activeCategory, hideBrand, i
           {moreBrands.length > 0 && (
             <details className="group" open={moreBrands.some((b) => b.slug === query.merek)}>
               <summary className="tap cursor-pointer list-none py-1.5 font-semibold text-brand-text [&::-webkit-details-marker]:hidden">
-                <span className="group-open:hidden">Lihat {moreBrands.length} merek lain</span>
+                <span className="group-open:hidden">Tampilkan {moreBrands.length} merek lainnya</span>
                 <span className="hidden group-open:inline">Sembunyikan</span>
               </summary>
               {moreBrands.map((b) => (
@@ -188,7 +188,7 @@ function Filters({ base, query, categories, brands, activeCategory, hideBrand, i
             <span className="border-r border-line px-2.5 text-[13px] font-semibold text-muted">Rp</span>
             <input name="max" inputMode="numeric" defaultValue={query.max} placeholder="Harga maksimum" aria-label="Harga maksimum" className="h-full w-full min-w-0 bg-transparent px-2.5 outline-none" />
           </label>
-          <button className="btn btn-secondary w-full">Terapkan harga</button>
+          <button className="btn btn-secondary w-full">Terapkan</button>
         </form>
       </section>
     </div>
@@ -199,11 +199,11 @@ function Filters({ base, query, categories, brands, activeCategory, hideBrand, i
 function ActiveFilters({ base, query, brands }: { base: string; query: Query; brands: Brand[] }) {
   const without = (...keys: string[]) => hrefWith(base, Object.fromEntries(Object.entries(query).filter(([k]) => !keys.includes(k))));
   const chips: { label: string; href: string }[] = [];
-  if (query.promo) chips.push({ label: 'Lagi promo', href: without('promo') });
+  if (query.promo) chips.push({ label: 'Promo', href: without('promo') });
   if (query.pilihan) chips.push({ label: 'Pilihan toko', href: without('pilihan') });
   if (query.merek) chips.push({ label: brands.find((b) => b.slug === query.merek)?.name ?? query.merek, href: without('merek') });
   if (query.min || query.max) {
-    const label = query.min && query.max ? `${formatRupiah(+query.min)} - ${formatRupiah(+query.max)}` : query.min ? `Mulai ${formatRupiah(+query.min)}` : `Sampai ${formatRupiah(+query.max!)}`;
+    const label = query.min && query.max ? `${formatRupiah(+query.min)} - ${formatRupiah(+query.max)}` : query.min ? `Mulai ${formatRupiah(+query.min)}` : `Hingga ${formatRupiah(+query.max!)}`;
     chips.push({ label, href: without('min', 'max') });
   }
   if (!chips.length) return null;
@@ -220,7 +220,7 @@ function ActiveFilters({ base, query, brands }: { base: string; query: Query; br
       {chips.length > 1 && (
         <li>
           <Link href={without('promo', 'pilihan', 'merek', 'min', 'max')} scroll={false} className="tap text-[13px] font-semibold text-brand-text hover:underline">
-            Hapus semua
+            Hapus semua filter
           </Link>
         </li>
       )}
@@ -239,7 +239,7 @@ export function Catalog(props: CatalogProps) {
 
   return (
     <div className="mt-4 lg:grid lg:grid-cols-[232px_minmax(0,1fr)] lg:gap-6">
-      <aside aria-label="Filter barang" className="hidden lg:block">
+      <aside aria-label="Filter produk" className="hidden lg:block">
         <div className="card p-4">
           <Filters {...props} idPrefix="f" />
         </div>

@@ -73,7 +73,7 @@ function parsePrice(v: string | undefined): number | null {
   return digits ? Number(digits) : null;
 }
 
-const STOCK: Record<string, StockStatus> = { ada: 'ada', sedikit: 'sedikit', habis: 'habis', kosong: 'habis' };
+const STOCK: Record<string, StockStatus> = { ada: 'ada', tersedia: 'ada', sedikit: 'sedikit', terbatas: 'sedikit', habis: 'habis', kosong: 'habis' };
 
 async function findOrCreate(c: DbClient, table: 'categories' | 'brands', name: string, cache: Map<string, string>): Promise<string> {
   const key = name.toLowerCase();

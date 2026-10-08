@@ -196,9 +196,9 @@ tampilan barang seperti Tokopedia, Shopee, Lazada, dan HnD Computer.
 |---|---|
 | Banner promo | Carousel di atas beranda, dikelola di Panel → Banner beranda: foto, judul, keterangan, halaman tujuan (harus halaman di situs ini), warna, jadwal mulai/selesai (WITA), tampil/sembunyi. Bila kosong, tampil satu banner foto toko. |
 | Harga coret (promo) | Per satuan harga (`original_price`). Harus lebih besar dari harga jual (dicek di database). Dilepas otomatis bila harga dinaikkan melewatinya (ubah harga, ubah massal, import). Kolom import `harga_coret`. |
-| Kartu barang | Foto penuh, badge persen diskon, nama 2 baris, harga, harga coret + persen, "Dibeli Nx", tombol `+` untuk barang satu varian. |
-| Paling sering dibeli | Jumlah pesanan per barang dalam 180 hari terakhir yang **sudah diproses toko** (disiapkan/siap/selesai). Bagian ini disembunyikan selama angkanya belum ada. Urutan katalog `terlaris`. |
-| Baru masuk | Urutan `terbaru`. |
+| Kartu barang | Foto penuh, badge persen diskon, nama 2 baris, harga, harga coret + persen, "Dipesan N kali", tombol `+` untuk barang satu varian. |
+| Produk terlaris | Jumlah pesanan per barang dalam 180 hari terakhir yang **sudah diproses toko** (disiapkan/siap/selesai). Bagian ini disembunyikan selama angkanya belum ada. Urutan katalog `terlaris`. |
+| Produk terbaru | Urutan `terbaru`. |
 | Pilihan toko | Centang "Pilihan toko" di form barang (`products.is_featured`). |
 | Katalog | Kolom filter: kategori, penawaran (promo, pilihan toko), merek, rentang harga; tab urutan: terbaru, terlaris, diskon terbesar, harga terendah/tertinggi (+ paling sesuai di pencarian); chip filter aktif. Di HP: lembar "Filter". |
 | Detail barang | Tiga kolom: foto, info, kotak "Atur jumlah" (subtotal, + Keranjang, Beli langsung). Di HP: bilah beli di bawah layar. |
@@ -303,8 +303,8 @@ Angka harga: `font-variant-numeric: tabular-nums`.
 - **Status buka:** pil kecil "● Buka · tutup 22.00".
 - **Daftar pesanan:** *bottom sheet* bergaya nota (garis putus-putus, total di bawah,
   tombol hijau WhatsApp).
-- **Beranda (v3, lihat 5.8 dan `DESIGN.md`):** banner promo → ikon kategori → "Lagi promo" →
-  "Paling sering dibeli" → "Baru masuk rak" → "Pilihan toko" → merek → info toko ringkas.
+- **Beranda (v3, lihat 5.8 dan `DESIGN.md`):** banner promo → ikon kategori → "Promo spesial" →
+  "Produk terlaris" → "Produk terbaru" → "Pilihan toko" → merek → info toko ringkas.
 
 ### 6.4 Gerak
 
