@@ -123,8 +123,9 @@ export default async function HomePage() {
             Lihat semua
           </Link>
         </div>
-        <ul className="grid grid-cols-4 gap-y-1 sm:grid-cols-6 lg:grid-cols-[repeat(auto-fit,minmax(96px,1fr))]">
-          <li>
+        {/* HP: satu baris berisi 4 kategori yang bisa digeser; kategori ke-5 sedikit terlihat sebagai petunjuk geser */}
+        <ul className="scrollbar-none -mx-3 grid snap-x auto-cols-[23%] grid-flow-col overflow-x-auto scroll-px-3 px-3 sm:mx-0 sm:auto-cols-auto sm:grid-flow-row sm:grid-cols-6 sm:gap-y-1 sm:overflow-visible sm:px-0 lg:grid-cols-[repeat(auto-fit,minmax(96px,1fr))]">
+          <li className="snap-start">
             <Link href="/barang?promo=1" className="flex flex-col items-center gap-1.5 rounded-tag px-1 py-2 text-center hover:bg-sunken">
               <span className="grid size-12 place-items-center rounded-full bg-signal-tint text-signal-text sm:size-14">
                 <Tag size={26} weight="duotone" aria-hidden />
@@ -133,12 +134,12 @@ export default async function HomePage() {
             </Link>
           </li>
           {categories.map((c) => (
-            <li key={c.id}>
+            <li key={c.id} className="snap-start">
               <Link href={`/kategori/${c.slug}`} className="flex flex-col items-center gap-1.5 rounded-tag px-1 py-2 text-center hover:bg-sunken">
                 <span className="grid size-12 place-items-center rounded-full bg-brand-tint text-brand-text sm:size-14">
                   <CategoryIcon slug={c.slug} size={26} weight="duotone" aria-hidden />
                 </span>
-                <span className="line-clamp-2 text-[12px] leading-tight font-medium sm:text-[13px]">{c.name}</span>
+                <span className="line-clamp-3 text-[12px] leading-tight font-medium sm:line-clamp-2 sm:text-[13px]">{c.name}</span>
               </Link>
             </li>
           ))}

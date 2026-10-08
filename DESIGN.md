@@ -83,8 +83,8 @@ elevation:
   popover: "0 12px 32px -16px rgb(shadow-tint / .35)"   # saran pencarian, dialog
 motion:
   control: "150ms cubic-bezier(0.16,1,0.3,1): warna, garis, bayangan; tekan scale(0.98)"
-  banner: "berganti tiap 6 detik (scroll-snap + scrollTo smooth); berhenti saat disorot/difokus/tab tersembunyi; mati untuk reduced-motion"
-  reduced-motion: "semua durasi 0, banner tidak berganti sendiri"
+  banner: "berputar otomatis tanpa henti tiap 5 detik, selalu maju (banner pertama disalin di ujung); berhenti hanya saat disentuh, disorot mouse, atau difokus; reduced-motion: berganti tanpa animasi geser"
+  reduced-motion: "semua durasi 0; banner tetap berganti, tanpa animasi geser"
 components:
   buttons:        { css: ".btn .btn-primary .btn-secondary .btn-wa .btn-lg" }
   chip:           { css: ".chip" }
@@ -225,7 +225,7 @@ Kontainer 1280px (`max-w-7xl`) dengan gutter 16px. Breakpoint: 640, 768, 1024, d
 **Beranda**, dari atas ke bawah:
 
 1. **Banner.** Rasio 16:8 (HP), 16:6 (≥640), 16:5 (≥1024). Isinya dari panel "Banner beranda", dengan foto toko bila kosong. Teks selalu di kiri di atas scrim gradien.
-2. **Kartu "Kategori".** Ikon bulat `brand-tint` dengan nama kategori. "Promo spesial" ada di urutan pertama dengan ikon bulat `signal-tint`.
+2. **Kartu "Kategori".** Ikon bulat `brand-tint` dengan nama kategori. Di HP satu baris berisi 4 kategori yang bisa digeser ke kanan (kategori ke-5 sedikit terlihat sebagai petunjuk); di ≥640px berupa grid. "Promo spesial" ada di urutan pertama dengan ikon bulat `signal-tint`.
 3. **"Promo spesial".** Bidang `signal-tint` beradius 20px, diurutkan dari diskon terbesar.
 4. **"Produk terlaris".** Hanya tampil bila ada barang dengan angka dibeli lebih dari 0.
 5. **"Produk terbaru"** dan **"Pilihan toko"** (barang yang ditandai pemilik).
@@ -273,8 +273,10 @@ Foto di kartu barang menempel penuh ke tepi kartu, tanpa radius sendiri. Kartu *
 
 - **Kontrol.** 150ms; tombol mengecil `scale(0.98)` saat ditekan.
 - **Banner.**
-  - Geser dengan jari (scroll-snap), dengan tombol panah (muncul saat disorot, ≥768px), atau dengan titik (24×24px, tidak saling tumpuk).
-  - Berganti tiap 6 detik, kecuali saat disorot atau difokus, saat tab tidak terlihat, atau bila `prefers-reduced-motion` aktif.
+  - Berputar otomatis tanpa henti, 5 detik per banner, selalu maju: setelah banner terakhir langsung ke banner pertama (salinan banner pertama di ujung, lalu posisi dikembalikan tanpa terlihat).
+  - Geser dengan jari (scroll-snap), tombol panah (muncul saat disorot, ≥768px), atau titik (24×24px, tidak saling tumpuk).
+  - Berhenti sementara hanya saat disentuh, disorot mouse, atau difokus keyboard, dan saat tab tidak terlihat. Dengan `prefers-reduced-motion`, banner tetap berganti tanpa animasi geser.
+  - Teks di HP kecil (judul 15px, keterangan 1 baris, lebar 60%) supaya foto tetap terlihat.
 - **Tombol "+" di kartu.** Berubah menjadi centang hijau selama 1,4 detik, dan diumumkan lewat `role="status"`.
 - **Lembar filter HP.** Tertutup sendiri saat filter dipilih, harga diterapkan, latar diklik, atau Esc ditekan.
 - **Fokus.** `:focus-visible` 2px `brand-text` dengan offset 2px.
