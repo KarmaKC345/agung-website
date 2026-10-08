@@ -1,5 +1,4 @@
 import { Clock, MapPin, Phone, WhatsappLogo } from '@phosphor-icons/react/ssr';
-import Link from 'next/link';
 import { DAY_LABEL, DAY_ORDER, formatPhone, formatTime, summarizeHours, waLink, type StoreInfo } from '@newagung/shared';
 import { LogoMark } from './Logo';
 import { MapEmbed } from './MapEmbed';
@@ -72,9 +71,6 @@ export function SiteFooter({ store }: { store: StoreInfo }) {
       <div className="border-t border-line">
         <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-x-6 gap-y-2 px-4 py-5 text-[13px] text-muted">
           <span>© {new Date().getFullYear()} {store.name}. Harga akhir dikonfirmasi oleh toko saat pemesanan.</span>
-          <Link href="/panel" className="tap hover:text-ink">
-            Panel toko
-          </Link>
         </div>
       </div>
     </footer>
