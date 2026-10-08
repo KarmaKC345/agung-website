@@ -3,7 +3,7 @@
 import { Check, Minus, Plus, WhatsappLogo } from '@phosphor-icons/react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { formatRupiah, STOCK_LABEL, type ProductDetail } from '@newagung/shared';
 import { useShop } from '@/lib/cart';
 import { Price } from './Price';
@@ -61,6 +61,16 @@ export function ProductPurchase({
   const [unit, setUnit] = useState(() => (variant?.prices.find((p) => p.originalPrice) ?? variant?.prices[0])?.unit ?? 'pcs');
   const [qty, setQty] = useState(1);
   const [added, setAdded] = useState<string | null>(null);
+  // HP: tombol beli tampil di halaman; bilah bawah baru muncul setelah tombol itu tergulir keluar layar
+  const inlineActions = useRef<HTMLDivElement>(null);
+  const [inlineVisible, setInlineVisible] = useState(true);
+  useEffect(() => {
+    const el = inlineActions.current;
+    if (!el) return;
+    const io = new IntersectionObserver(([e]) => setInlineVisible(e!.isIntersecting), { rootMargin: '0px 0px -72px 0px' });
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
   const add = useShop((s) => s.add);
 
   const price = useMemo(() => variant?.prices.find((p) => p.unit === unit) ?? variant?.prices[0], [variant, unit]);
@@ -212,17 +222,47 @@ export function ProductPurchase({
           </fieldset>
         )}
 
-        {/* Jumlah di HP (di layar lebar ada di kotak kanan) */}
-        {!out && (
-          <div className="mt-5 lg:hidden">
-            <p className="text-[14px] font-semibold">Jumlah</p>
-            <div className="mt-2 flex items-center gap-3">
-              <Stepper qty={qty} setQty={setQty} />
-              <span className={`text-[14px] font-medium ${stockCls}`}>{STOCK_LABEL[variant.stockStatus]}</span>
-            </div>
-            <div className="mt-3">{subtotal}</div>
-          </div>
-        )}
+        {/* Jumlah & tombol beli di HP (di layar lebar ada di kotak kanan) */}
+        <div ref={inlineActions} className="mt-5 lg:hidden">
+          {out ? (
+            <p className="rounded-tag bg-sunken p-3 text-[14px]">
+              <span className="font-semibold text-danger">Stok sedang habis.</span> Hubungi kami untuk menanyakan jadwal stok berikutnya.
+            </p>
+          ) : (
+            <>
+              <p className="text-[14px] font-semibold">Jumlah</p>
+              <div className="mt-2 flex items-center gap-3">
+                <Stepper qty={qty} setQty={setQty} />
+                <span className={`text-[14px] font-medium ${stockCls}`}>{STOCK_LABEL[variant.stockStatus]}</span>
+              </div>
+              <div className="mt-3">{subtotal}</div>
+              <div className="mt-4 grid grid-cols-2 gap-2">
+                <button type="button" onClick={buyNow} className="btn border-brand bg-surface px-3 text-brand-text hover:bg-brand-tint">
+                  Beli langsung
+                </button>
+                <button type="button" onClick={addToCart} className="btn btn-primary px-3">
+                  <Plus size={18} weight="bold" aria-hidden />
+                  Keranjang
+                </button>
+              </div>
+            </>
+          )}
+          <a href={waHref} target="_blank" rel="noopener" className="mt-3 flex min-h-11 items-center justify-center gap-1.5 text-[14px] font-semibold text-wa-text hover:underline">
+            <WhatsappLogo size={18} weight="bold" aria-hidden />
+            Tanya via WhatsApp
+          </a>
+          {added && inlineVisible && (
+            <p role="status" className="mt-1 flex items-start gap-1.5 rounded-tag bg-sunken p-2.5 text-[13px]">
+              <Check size={16} weight="bold" className="mt-0.5 shrink-0 text-ok" aria-hidden />
+              <span>
+                {added} berhasil ditambahkan ke keranjang.{' '}
+                <Link href="/keranjang" className="font-semibold text-brand-text underline underline-offset-4">
+                  Lihat keranjang
+                </Link>
+              </span>
+            </p>
+          )}
+        </div>
 
         <div className="mt-6">{children}</div>
       </div>
@@ -278,9 +318,15 @@ export function ProductPurchase({
         </div>
       </aside>
 
-      {/* Tombol beli menempel di bawah layar (HP & tablet) */}
-      <div className="fixed inset-x-0 bottom-0 z-30 border-t border-line bg-surface/95 pb-[env(safe-area-inset-bottom)] backdrop-blur-md lg:hidden">
-        {added && (
+      {/* Tombol beli menempel di bawah layar (HP & tablet), muncul setelah tombol di halaman tergulir keluar */}
+      <div
+        aria-hidden={inlineVisible || undefined}
+        inert={inlineVisible}
+        className={`fixed inset-x-0 bottom-0 z-30 border-t border-line bg-surface/95 pb-[env(safe-area-inset-bottom)] backdrop-blur-md transition-[transform,opacity] duration-200 lg:hidden ${
+          inlineVisible ? 'pointer-events-none translate-y-full opacity-0' : 'translate-y-0 opacity-100'
+        }`}
+      >
+        {added && !inlineVisible && (
           <p role="status" className="border-b border-line px-4 py-2 text-[13px]">
             {added} berhasil ditambahkan ke keranjang.{' '}
             <Link href="/keranjang" className="font-semibold text-brand-text underline underline-offset-4">

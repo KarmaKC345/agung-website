@@ -253,7 +253,7 @@ Semua filter berupa tautan atau form GET, jadi tetap jalan tanpa JavaScript. Nil
 - **Kolom 1 (340px / 400px).** Foto yang menempel.
 - **Kolom 2.** Nama, merek, "Dipesan N kali", stok, dan badge "Pilihan toko". Lalu harga besar, persen dan harga coret, pilihan varian, dan "Beli per" (tiap satuan menampilkan harga, harga per pcs bila lebih hemat, dan badge persen bila promo). Terakhir keterangan dan info ambil di toko.
 - **Kolom 3 (280-300px), "Atur jumlah".** Stepper, stok, subtotal, "+ Keranjang" (utama), "Beli langsung" (garis biru; masuk keranjang lalu membuka keranjang), dan "Tanya dulu via WhatsApp".
-- **Di HP dan tablet.** Jumlah dan subtotal ada di kolom info, dan bilah bawah berisi WhatsApp, "Beli langsung", dan "+ Keranjang".
+- **Di HP dan tablet.** Jumlah, subtotal, "Beli langsung", "+ Keranjang", dan "Tanya via WhatsApp" tampil di kolom info. Setelah tombol itu tergulir keluar layar, bilah bawah (WhatsApp, "Beli langsung", "+ Keranjang") muncul, jadi tombol beli selalu terlihat dan tidak pernah dobel.
 - Satuan awal adalah satuan yang sedang promo, supaya harga sama dengan di kartu.
 
 **Keranjang dan footer** tidak berubah dari v2: nota yang menempel, time picker jam ambil, dan peta.
