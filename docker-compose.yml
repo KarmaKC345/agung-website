@@ -64,7 +64,7 @@ services:
 
   # Link sementara (staging) supaya client bisa melihat website dari HP/laptopnya sendiri.
   # Hanya jalan bila diminta:  docker compose --profile staging up -d
-  # Lihat link-nya:           docker compose logs tunnel   (cari https://....trycloudflare.com)
+  # Lihat link-nya:           docker compose --profile staging logs tunnel   (cari https://....trycloudflare.com)
   # Link berganti setiap kali tunnel dijalankan ulang, dan hanya aktif selama komputer ini menyala.
   tunnel:
     image: cloudflare/cloudflared:2024.12.2

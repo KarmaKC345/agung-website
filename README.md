@@ -124,21 +124,22 @@ Untuk meminta masukan client sebelum website online, buka website di komputer in
 link sementara Cloudflare. Gratis, tanpa akun, tanpa domain, dan tanpa membuka port router.
 
 ```bash
+git pull
 docker compose --profile staging up -d --build
-docker compose logs tunnel
+docker compose --profile staging logs tunnel
 ```
 
 Cari baris berisi `https://....trycloudflare.com`, lalu kirim link itu ke client. Di Windows
 (PowerShell/CMD) bisa langsung disaring:
 
 ```bash
-docker compose logs tunnel | findstr trycloudflare
+docker compose --profile staging logs tunnel | findstr trycloudflare
 ```
 
 - Link hanya aktif selama komputer ini menyala dan Docker berjalan.
 - Link **berganti** setiap kali tunnel dijalankan ulang (mis. setelah komputer restart).
-  Jalankan `docker compose logs tunnel` lagi untuk melihat link yang baru.
-- Menghentikan link saja (website lokal tetap jalan): `docker compose stop tunnel`.
+  Jalankan `docker compose --profile staging logs tunnel` lagi untuk melihat link yang baru.
+- Menghentikan link saja (website lokal tetap jalan): `docker compose --profile staging stop tunnel`.
 - Pesanan percobaan dari client masuk ke WhatsApp toko dan ke panel seperti pesanan biasa.
   Batalkan dari panel setelah dicoba.
 - Panel tetap bisa dibuka client di `<link>/panel` bila Anda memberinya akun.
