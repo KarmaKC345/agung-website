@@ -9,6 +9,7 @@ import { FavoriteButton } from '@/components/FavoriteButton';
 import { ProductRow, soldLabel } from '@/components/ProductCard';
 import { ProductImage } from '@/components/ProductImage';
 import { ProductPurchase } from '@/components/ProductPurchase';
+import { ShareButton } from '@/components/ShareButton';
 import { getProduct, getProducts, getStore } from '@/lib/api';
 import { SITE_URL } from '@/lib/config';
 
@@ -87,13 +88,16 @@ export default async function ProductPage({ params }: Props) {
             ) : (
               <ProductImage src={null} name={product.name} categorySlug={product.category?.slug} sizes="400px" />
             )}
-            <FavoriteButton productId={product.id} name={product.name} className="absolute top-3 right-3" />
+            <div className="absolute top-3 right-3 flex items-center gap-1.5 z-10">
+              <ShareButton title={product.name} />
+              <FavoriteButton productId={product.id} name={product.name} />
+            </div>
           </div>
           {product.images.length > 1 && (
-            <ul className="mt-2 grid grid-cols-5 gap-2">
-              {product.images.slice(1).map((src) => (
-                <li key={src} className="card relative aspect-square overflow-hidden bg-white">
-                  <Image src={src} alt="" fill sizes="80px" className="object-contain p-1.5" />
+            <ul className="mt-2.5 flex gap-2 overflow-x-auto scrollbar-none pb-1 sm:grid sm:grid-cols-5 sm:overflow-visible">
+              {product.images.slice(1).map((src, i) => (
+                <li key={src} className="card relative size-14 shrink-0 overflow-hidden bg-white sm:size-auto sm:aspect-square">
+                  <Image src={src} alt={`${product.name} (foto ${i + 2})`} fill sizes="80px" className="object-contain p-1.5" />
                 </li>
               ))}
             </ul>

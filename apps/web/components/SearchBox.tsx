@@ -1,6 +1,6 @@
 'use client';
 
-import { MagnifyingGlass } from '@phosphor-icons/react';
+import { MagnifyingGlass, X } from '@phosphor-icons/react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useId, useRef, useState } from 'react';
 import { API_URL } from '@/lib/config';
@@ -138,9 +138,24 @@ export function SearchBox({ large = false }: { large?: boolean }) {
             }
           }}
         />
-        <kbd className="hidden sm:inline-flex items-center rounded border border-line bg-sunken px-1.5 py-0.5 text-[11px] font-mono text-muted select-none" title="Pintasan keyboard: tekan / untuk mencari">
-          /
-        </kbd>
+        {q ? (
+          <button
+            type="button"
+            onClick={() => {
+              setQ('');
+              setItems([]);
+              inputRef.current?.focus();
+            }}
+            aria-label="Hapus kata kunci pencarian"
+            className="tap grid size-7 shrink-0 place-items-center rounded-full text-muted hover:bg-sunken hover:text-ink"
+          >
+            <X size={15} weight="bold" aria-hidden />
+          </button>
+        ) : (
+          <kbd className="hidden sm:inline-flex items-center rounded border border-line bg-sunken px-1.5 py-0.5 text-[11px] font-mono text-muted select-none" title="Pintasan keyboard: tekan / untuk mencari">
+            /
+          </kbd>
+        )}
         {large && (
           <button type="submit" className="btn btn-primary hidden h-9 min-h-0 shrink-0 px-5 text-sm sm:inline-flex">
             Cari

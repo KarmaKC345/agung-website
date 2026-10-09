@@ -3,6 +3,7 @@ import { WhatsappLogo } from '@phosphor-icons/react/ssr';
 import Link from 'next/link';
 import { waLink } from '@newagung/shared';
 import { Catalog } from '@/components/Catalog';
+import { ProductGrid } from '@/components/ProductCard';
 import { getBrands, getCategories, getProducts, getStore } from '@/lib/api';
 import { currentQuery, toListParams, type CatalogSearch } from '@/lib/catalog-params';
 
@@ -27,7 +28,13 @@ export default async function SearchPage({ searchParams }: Props) {
     );
   }
 
-  const [result, store, categories, brands] = await Promise.all([getProducts({ ...list, q, pageSize: 30 }), getStore(), getCategories(), getBrands()]);
+  const [result, store, categories, brands, popular] = await Promise.all([
+    getProducts({ ...list, q, pageSize: 30 }),
+    getStore(),
+    getCategories(),
+    getBrands(),
+    getProducts({ sort: 'terlaris', pageSize: 6 }),
+  ]);
   const filtered = Boolean(list.brand || list.promo || list.featured || list.minPrice || list.maxPrice);
 
   const askStore = (
@@ -77,7 +84,17 @@ export default async function SearchPage({ searchParams }: Props) {
             Hasil pencarian “{q}” <span className="text-[15px] font-normal text-muted tabular-nums">{result.total} produk</span>
           </h1>
         }
-        empty={askStore}
+        empty={
+          <div className="space-y-8">
+            {askStore}
+            {popular.items.length > 0 && (
+              <div>
+                <h2 className="mb-3 text-[18px] font-bold text-ink">Produk terlaris toko</h2>
+                <ProductGrid products={popular.items} />
+              </div>
+            )}
+          </div>
+        }
       />
     </div>
   );

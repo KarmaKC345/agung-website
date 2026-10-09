@@ -13,7 +13,14 @@ function Stepper({ qty, setQty, size = 'md' }: { qty: number; setQty: (fn: (q: n
   const h = size === 'sm' ? 'h-10' : 'h-11';
   return (
     <div className={`flex ${h} w-fit items-center rounded-tag border border-field bg-surface`}>
-      <button type="button" className="grid h-full w-10 place-items-center rounded-l-tag hover:bg-sunken disabled:opacity-40" disabled={qty <= 1} onClick={() => setQty((q) => Math.max(1, q - 1))} aria-label="Kurangi jumlah">
+      <button
+        type="button"
+        className="grid h-full w-10 place-items-center rounded-l-tag hover:bg-sunken active:scale-90 transition-transform disabled:opacity-40 disabled:pointer-events-none"
+        disabled={qty <= 1}
+        aria-disabled={qty <= 1}
+        onClick={() => setQty((q) => Math.max(1, q - 1))}
+        aria-label="Kurangi jumlah"
+      >
         <Minus size={16} weight="bold" aria-hidden />
       </button>
       <input
@@ -29,7 +36,12 @@ function Stepper({ qty, setQty, size = 'md' }: { qty: number; setQty: (fn: (q: n
         aria-label="Jumlah"
         className="price h-full w-12 bg-transparent text-center text-[16px] [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none"
       />
-      <button type="button" className="grid h-full w-10 place-items-center rounded-r-tag hover:bg-sunken" onClick={() => setQty((q) => Math.min(9999, q + 1))} aria-label="Tambah jumlah">
+      <button
+        type="button"
+        className="grid h-full w-10 place-items-center rounded-r-tag hover:bg-sunken active:scale-90 transition-transform"
+        onClick={() => setQty((q) => Math.min(9999, q + 1))}
+        aria-label="Tambah jumlah"
+      >
         <Plus size={16} weight="bold" aria-hidden />
       </button>
     </div>

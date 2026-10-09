@@ -59,9 +59,9 @@ export function ProductCard({ product, priority }: { product: ProductSummary; pr
         </h3>
 
         <p className="mt-1.5 flex flex-wrap items-baseline gap-x-1">
-          {product.priceVaries && <span className="text-[11px] text-muted">Mulai</span>}
+          {product.priceVaries && <span className="text-[12px] text-muted">Mulai</span>}
           <Price value={product.price} className="text-[16px] sm:text-[17px]" />
-          <span className="text-[11px] text-muted">/{product.unit}</span>
+          <span className="text-[12px] text-muted">/{product.unit}</span>
         </p>
         {promo && (
           <p className="mt-0.5 flex items-center gap-1.5 text-[12px] leading-none">

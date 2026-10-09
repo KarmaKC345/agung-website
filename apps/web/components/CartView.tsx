@@ -22,6 +22,8 @@ export function CartView({ hours, timezone }: { hours: WeeklyHours; timezone: st
   const [error, setError] = useState<string | null>(null);
   const [problems, setProblems] = useState<Map<string, Problem['reason']>>(new Map());
   const [sent, setSent] = useState<Sent | null>(null);
+  const [nameTouched, setNameTouched] = useState(false);
+  const nameError = nameTouched && !customer.name.trim();
   // rentang jam ambil = jam buka hari ini (WITA); cadangan 05.00-22.00
   const today = useMemo(() => hoursToday(hours, timezone), [hours, timezone]);
   const window_ = today ?? { open: '05:00', close: '22:00' };
@@ -218,9 +220,20 @@ export function CartView({ hours, timezone }: { hours: WeeklyHours; timezone: st
           maxLength={80}
           autoComplete="name"
           value={customer.name}
-          onChange={(e) => setCustomer({ name: e.target.value })}
-          className="mt-1 h-11 w-full rounded-tag border border-field bg-surface px-3"
+          onBlur={() => setNameTouched(true)}
+          onChange={(e) => {
+            setCustomer({ name: e.target.value });
+            if (nameTouched) setNameTouched(false);
+          }}
+          aria-invalid={nameError || undefined}
+          aria-describedby={nameError ? 'nama-error' : undefined}
+          className={`mt-1 h-11 w-full rounded-tag border bg-surface px-3 ${nameError ? 'border-danger focus:border-danger' : 'border-field'}`}
         />
+        {nameError && (
+          <p id="nama-error" role="alert" className="mt-1 text-[12px] font-medium text-danger">
+            Nama pemesan wajib diisi.
+          </p>
+        )}
 
         <fieldset className="mt-4">
           <legend className="text-[14px] font-semibold">Cara menerima pesanan</legend>

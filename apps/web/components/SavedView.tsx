@@ -31,9 +31,15 @@ function Favorites() {
   if (!items) return <div className="h-40" aria-busy />;
   if (!items.length) {
     return (
-      <p className="card rounded-[var(--radius-media)] p-10 text-center text-muted">
-        Belum ada produk favorit. Tekan ikon simpan pada foto produk untuk menambahkannya ke daftar ini.
-      </p>
+      <div className="card flex flex-col items-center rounded-[var(--radius-media)] px-6 py-12 text-center">
+        <p className="text-[17px] font-semibold text-ink">Belum ada produk favorit</p>
+        <p className="mt-1.5 max-w-md text-[14px] text-muted">
+          Tekan ikon simpan pada foto produk di etalase untuk menyimpannya ke daftar ini.
+        </p>
+        <Link href="/barang" className="btn btn-primary mt-5">
+          Lihat katalog produk
+        </Link>
+      </div>
     );
   }
   return (
