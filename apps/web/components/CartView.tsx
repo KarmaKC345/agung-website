@@ -25,6 +25,19 @@ export function CartView({ hours, timezone }: { hours: WeeklyHours; timezone: st
   // rentang jam ambil = jam buka hari ini (WITA); cadangan 05.00-22.00
   const today = useMemo(() => hoursToday(hours, timezone), [hours, timezone]);
   const window_ = today ?? { open: '05:00', close: '22:00' };
+  const timeSlots = useMemo(() => {
+    const [openH = 5, openM = 0] = (window_.open || '05:00').split(':').map(Number);
+    const [closeH = 22, closeM = 0] = (window_.close || '22:00').split(':').map(Number);
+    const start = openH * 60 + openM;
+    const end = closeH * 60 + closeM;
+    const slots: string[] = [];
+    for (let m = start; m <= end; m += 30) {
+      const hh = String(Math.floor(m / 60)).padStart(2, '0');
+      const mm = String(m % 60).padStart(2, '0');
+      slots.push(`${hh}:${mm}`);
+    }
+    return slots;
+  }, [window_.open, window_.close]);
   const summary = summarizeHours(hours);
   const hoursInfo = summary
     ? `Jam buka: ${summary.charAt(0).toLowerCase()}${summary.slice(1)} WITA.`
@@ -236,17 +249,20 @@ export function CartView({ hours, timezone }: { hours: WeeklyHours; timezone: st
               Jam pengambilan (opsional)
             </label>
             <div className="mt-1 flex items-center gap-2">
-              <input
+              <select
                 id="jam-ambil"
-                type="time"
-                min={window_.open}
-                max={window_.close}
-                step={900}
                 value={pickupTime}
                 onChange={(e) => setCustomer({ pickupTime: e.target.value })}
                 aria-describedby="jam-ambil-info"
-                className="h-11 min-w-0 flex-1 rounded-tag border border-field bg-surface px-3 tabular-nums"
-              />
+                className="h-11 min-w-0 flex-1 rounded-tag border border-field bg-surface px-3 text-[14px]"
+              >
+                <option value="">Pilih jam (bebas / kapan saja)</option>
+                {timeSlots.map((slot) => (
+                  <option key={slot} value={slot}>
+                    {formatTime(slot)} WITA
+                  </option>
+                ))}
+              </select>
               {pickupTime && (
                 <button
                   type="button"
