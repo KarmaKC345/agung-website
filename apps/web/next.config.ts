@@ -25,6 +25,9 @@ const config: NextConfig = {
   outputFileTracingRoot: path.resolve(process.cwd(), '../..'),
   images: {
     formats: ['image/avif', 'image/webp'],
+    // ponytail: di Vercel mode services, /_next/image 404 sehingga semua foto hilang.
+    // Foto sudah .webp kecil, jadi disajikan langsung. Hapus bila optimizer Vercel sudah jalan.
+    unoptimized: !!process.env.VERCEL,
     remotePatterns: [
       ...(publicApiUrl ? [pattern(publicApiUrl, '/uploads/**')] : []),
       ...(supabaseUrl ? [pattern(supabaseUrl, '/storage/v1/object/public/**')] : []),
