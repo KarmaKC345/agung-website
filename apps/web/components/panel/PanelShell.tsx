@@ -5,6 +5,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import { createContext, useContext, useEffect, useState } from 'react';
 import type { StaffRole } from '@newagung/shared';
 import { adminFetch, ApiError, signOut } from '@/lib/admin';
+import { CenteredLoading } from '../CenteredLoading';
 import { LogoMark } from '../Logo';
 import { DialogProvider } from './Dialog';
 
@@ -64,7 +65,7 @@ export function PanelShell({ children }: { children: React.ReactNode }) {
       </div>
     );
   }
-  if (!me) return <div className="p-8 text-muted">Memuat panel…</div>;
+  if (!me) return <CenteredLoading text="Memeriksa akses panel…" />;
 
   const isActive = (href: string) => (href === '/panel' ? path === '/panel' : path.startsWith(href));
   const nav = NAV.filter((n) => !n.owner || me.role === 'owner');

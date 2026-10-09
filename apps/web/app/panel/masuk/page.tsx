@@ -4,6 +4,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { Suspense, useEffect, useState } from 'react';
 import { btnPrimary, btnSecondary, inputCls } from '@/components/panel/PanelShell';
 import { LogoMark } from '@/components/Logo';
+import { CenteredLoading } from '@/components/CenteredLoading';
 import { sendReset, signIn } from '@/lib/admin';
 import { API_URL, HAS_SUPABASE } from '@/lib/config';
 
@@ -32,22 +33,23 @@ function SupabaseLogin({ next }: { next: string }) {
   }
 
   return (
-    <form
-      className="mt-6 space-y-4"
-      onSubmit={async (e) => {
-        e.preventDefault();
-        setBusy(true);
-        setMsg(null);
-        try {
-          await signIn(email, password);
-          router.replace(next);
-        } catch (err) {
-          setMsg({ kind: 'error', text: err instanceof Error ? err.message : 'Belum berhasil masuk. Periksa kembali email dan kata sandi Anda.' });
-        } finally {
-          setBusy(false);
-        }
-      }}
-    >
+    <>
+      {busy && <CenteredLoading text="Sedang memproses…" fullscreen />}
+      <form
+        className="mt-6 space-y-4"
+        onSubmit={async (e) => {
+          e.preventDefault();
+          setBusy(true);
+          setMsg(null);
+          try {
+            await signIn(email, password);
+            router.replace(next);
+          } catch (err) {
+            setMsg({ kind: 'error', text: err instanceof Error ? err.message : 'Belum berhasil masuk. Periksa kembali email dan kata sandi Anda.' });
+            setBusy(false);
+          }
+        }}
+      >
       <div>
         <label htmlFor="email" className="text-[14px] font-semibold">
           Email
@@ -83,6 +85,7 @@ function SupabaseLogin({ next }: { next: string }) {
         </button>
       </div>
     </form>
+    </>
   );
 }
 
@@ -90,28 +93,33 @@ function SupabaseLogin({ next }: { next: string }) {
 function DevLogin({ next }: { next: string }) {
   const router = useRouter();
   const [password, setPassword] = useState('');
+  const [busy, setBusy] = useState(false);
   return (
-    <form
-      className="mt-6 space-y-4"
-      onSubmit={async (e) => {
-        e.preventDefault();
-        await signIn('', password);
-        router.replace(next);
-      }}
-    >
-      <p className="rounded-tag bg-sunken p-3 text-[13px] text-muted">
-        Mode pengembangan lokal. Kata sandi adalah nilai <code>DEV_AUTH_TOKEN</code> di <code>apps/api/.env</code> (bawaan <code>dev-owner</code>).
-      </p>
-      <div>
-        <label htmlFor="password" className="text-[14px] font-semibold">
-          Kata sandi
-        </label>
-        <input id="password" type="password" required value={password} onChange={(e) => setPassword(e.target.value)} className={`mt-1 ${inputCls}`} />
-      </div>
-      <button type="submit" className={`${btnPrimary} w-full`}>
-        Masuk
-      </button>
-    </form>
+    <>
+      {busy && <CenteredLoading text="Sedang masuk ke panel…" fullscreen />}
+      <form
+        className="mt-6 space-y-4"
+        onSubmit={async (e) => {
+          e.preventDefault();
+          setBusy(true);
+          await signIn('', password);
+          router.replace(next);
+        }}
+      >
+        <p className="rounded-tag bg-sunken p-3 text-[13px] text-muted">
+          Mode pengembangan lokal. Kata sandi adalah nilai <code>DEV_AUTH_TOKEN</code> di <code>apps/api/.env</code> (bawaan <code>dev-owner</code>).
+        </p>
+        <div>
+          <label htmlFor="password" className="text-[14px] font-semibold">
+            Kata sandi
+          </label>
+          <input id="password" type="password" required value={password} onChange={(e) => setPassword(e.target.value)} className={`mt-1 ${inputCls}`} />
+        </div>
+        <button type="submit" disabled={busy} className={`${btnPrimary} w-full`}>
+          Masuk
+        </button>
+      </form>
+    </>
   );
 }
 

@@ -1,7 +1,9 @@
 import '@fontsource-variable/plus-jakarta-sans';
 import '@fontsource/ibm-plex-mono/500.css';
 import './globals.css';
+import { Suspense } from 'react';
 import type { Metadata, Viewport } from 'next';
+import { NavigationProgressBar } from '@/components/NavigationProgressBar';
 import { SITE_URL } from '@/lib/config';
 
 export const metadata: Metadata = {
@@ -25,7 +27,12 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="id">
-      <body className="min-h-dvh antialiased">{children}</body>
+      <body className="min-h-dvh antialiased">
+        <Suspense fallback={null}>
+          <NavigationProgressBar />
+        </Suspense>
+        {children}
+      </body>
     </html>
   );
 }
