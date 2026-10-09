@@ -1,6 +1,7 @@
 {
   "name": "newagung",
   "private": true,
+  "type": "module",
   "packageManager": "pnpm@10.28.0",
   "scripts": {
     "dev": "pnpm --parallel --filter @newagung/api --filter @newagung/web dev",
