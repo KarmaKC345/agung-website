@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { formatRupiah, STOCK_LABEL, type ProductDetail } from '@newagung/shared';
 import { useShop } from '@/lib/cart';
+import { useToast } from '@/lib/toast';
 import { Price } from './Price';
 
 function Stepper({ qty, setQty, size = 'md' }: { qty: number; setQty: (fn: (q: number) => number) => void; size?: 'md' | 'sm' }) {
@@ -104,6 +105,7 @@ export function ProductPurchase({
       },
       qty,
     );
+    useToast.getState().show({ name: product.name, unit: price!.unit, qty });
     const msg = `${qty} ${price!.unit}${variant!.label ? ` ${variant!.label}` : ''}`;
     setAdded(msg);
     return msg;

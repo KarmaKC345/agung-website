@@ -1,6 +1,8 @@
 import { connection } from 'next/server';
 import { BottomNav } from '@/components/BottomNav';
+import { CartToast } from '@/components/CartToast';
 import { RealtimeListener } from '@/components/RealtimeListener';
+import { ScrollToTop } from '@/components/ScrollToTop';
 import { SiteFooter } from '@/components/SiteFooter';
 import { SiteHeader } from '@/components/SiteHeader';
 import { getCategories, getStore } from '@/lib/api';
@@ -52,6 +54,8 @@ export default async function StoreLayout({ children }: { children: React.ReactN
         {children}
       </main>
       <RealtimeListener />
+      <CartToast />
+      <ScrollToTop />
       <SiteFooter store={store} />
       <BottomNav />
       <script

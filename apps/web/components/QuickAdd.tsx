@@ -4,6 +4,7 @@ import { Check, Plus } from '@phosphor-icons/react';
 import { useState } from 'react';
 import type { ProductSummary } from '@newagung/shared';
 import { useShop } from '@/lib/cart';
+import { useToast } from '@/lib/toast';
 
 /** Tombol + di kartu barang: hanya untuk barang tanpa pilihan varian */
 export function QuickAdd({ product }: { product: ProductSummary }) {
@@ -27,6 +28,7 @@ export function QuickAdd({ product }: { product: ProductSummary }) {
           },
           1,
         );
+        useToast.getState().show({ name: product.name, unit: q.unit, qty: 1 });
         setAdded(true);
         setTimeout(() => setAdded(false), 1400);
       }}

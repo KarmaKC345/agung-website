@@ -1,6 +1,6 @@
 'use client';
 
-import { Basket, CheckCircle, Minus, Package, Plus, Trash, WhatsappLogo } from '@phosphor-icons/react';
+import { Basket, ChatCircleDots, CheckCircle, CreditCard, Minus, Package, Plus, Storefront, Trash, WhatsappLogo } from '@phosphor-icons/react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useMemo, useState } from 'react';
@@ -307,10 +307,31 @@ export function CartView({ hours, timezone }: { hours: WeeklyHours; timezone: st
           </p>
         )}
 
+        <div className="mt-5 space-y-2.5 rounded-tag bg-sunken/60 p-3 text-[12px] text-muted">
+          <div className="flex items-start gap-2.5">
+            <Storefront size={16} weight="bold" className="mt-0.5 shrink-0 text-brand" aria-hidden />
+            <p>
+              <strong className="font-semibold text-ink">Ambil di toko:</strong> Siap disiapkan di Jl. DR. Ratulangi No.52, Makassar.
+            </p>
+          </div>
+          <div className="flex items-start gap-2.5">
+            <CreditCard size={16} weight="bold" className="mt-0.5 shrink-0 text-brand" aria-hidden />
+            <p>
+              <strong className="font-semibold text-ink">Pembayaran fleksibel:</strong> Tunai, QRIS, atau transfer saat barang diambil/diterima.
+            </p>
+          </div>
+          <div className="flex items-start gap-2.5">
+            <ChatCircleDots size={16} weight="bold" className="mt-0.5 shrink-0 text-wa-text" aria-hidden />
+            <p>
+              <strong className="font-semibold text-ink">Konfirmasi cepat:</strong> Ketersediaan stok fisik dicek langsung oleh tim via WhatsApp.
+            </p>
+          </div>
+        </div>
+
         <button
           type="submit"
           disabled={busy}
-          className="btn btn-wa btn-lg mt-6 w-full"
+          className="btn btn-wa btn-lg mt-4 w-full"
         >
           <WhatsappLogo size={22} weight="bold" aria-hidden />
           {busy ? 'Menyimpan pesanan…' : 'Kirim pesanan via WhatsApp'}

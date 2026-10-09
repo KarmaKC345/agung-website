@@ -27,6 +27,24 @@ export function SearchBox({ large = false }: { large?: boolean }) {
   const [active, setActive] = useState(-1);
   const listId = useId();
   const boxRef = useRef<HTMLFormElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    function handleKeyDown(e: KeyboardEvent) {
+      const target = e.target as HTMLElement;
+      const isInput = target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable;
+      if (
+        (e.key === '/' && !isInput) ||
+        ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k')
+      ) {
+        e.preventDefault();
+        inputRef.current?.focus();
+        setOpen(true);
+      }
+    }
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
   useEffect(() => {
     setQ(params.get('q') ?? '');
@@ -90,6 +108,7 @@ export function SearchBox({ large = false }: { large?: boolean }) {
       >
         <MagnifyingGlass size={18} weight="bold" className="shrink-0 text-muted" aria-hidden />
         <input
+          ref={inputRef}
           id={`${listId}-input`}
           type="search"
           value={q}
@@ -119,6 +138,9 @@ export function SearchBox({ large = false }: { large?: boolean }) {
             }
           }}
         />
+        <kbd className="hidden sm:inline-flex items-center rounded border border-line bg-sunken px-1.5 py-0.5 text-[11px] font-mono text-muted select-none" title="Pintasan keyboard: tekan / untuk mencari">
+          /
+        </kbd>
         {large && (
           <button type="submit" className="btn btn-primary hidden h-9 min-h-0 shrink-0 px-5 text-sm sm:inline-flex">
             Cari
