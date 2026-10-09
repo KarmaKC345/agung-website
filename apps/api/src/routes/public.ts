@@ -12,7 +12,7 @@ export function publicRoutes({ db, env }: Ctx): Router {
   const r = Router();
 
   r.use((req, res, next) => {
-    if (req.method === 'GET') res.set('Cache-Control', 'public, max-age=30');
+    if (req.method === 'GET') res.set('Cache-Control', 'no-cache');
     next();
   });
 

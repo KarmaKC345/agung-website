@@ -1,5 +1,6 @@
 import { connection } from 'next/server';
 import { BottomNav } from '@/components/BottomNav';
+import { RealtimeListener } from '@/components/RealtimeListener';
 import { SiteFooter } from '@/components/SiteFooter';
 import { SiteHeader } from '@/components/SiteHeader';
 import { getCategories, getStore } from '@/lib/api';
@@ -50,6 +51,7 @@ export default async function StoreLayout({ children }: { children: React.ReactN
       <main id="isi">
         {children}
       </main>
+      <RealtimeListener />
       <SiteFooter store={store} />
       <BottomNav />
       <script

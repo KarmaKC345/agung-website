@@ -8,7 +8,11 @@ async function get<T>(path: string, tags: string[], revalidate = REVALIDATE): Pr
   const baseUrl = (process.env.API_INTERNAL_URL || SERVER_API_URL).replace(/\/$/, '');
   const cleanPath = path.startsWith('/') ? path.slice(1) : path;
   const url = new URL(`api/${cleanPath}`, baseUrl.endsWith('/') ? baseUrl : `${baseUrl}/`);
-  const res = await fetch(url, { next: { revalidate, tags } });
+  // ponytail: selalu ambil data terbaru (harga/foto/stok langsung tampil saat refresh).
+  // Cache tag + revalidate di bawah dibiarkan untuk dipakai lagi bila trafik besar:
+  // ganti ke { next: { revalidate, tags } } dan isi WEB_URL agar API memicu /api/revalidate.
+  void revalidate; void tags;
+  const res = await fetch(url, { cache: 'no-store' });
   if (res.status === 404) return null;
   if (!res.ok) throw new Error(`API ${path} → ${res.status}`);
   return (await res.json()) as T;
