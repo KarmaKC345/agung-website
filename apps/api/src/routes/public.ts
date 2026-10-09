@@ -92,5 +92,17 @@ export function publicRoutes({ db, env }: Ctx): Router {
     res.json(await currentPrices(db, items));
   });
 
+  r.post('/orders/statuses', async (req, res) => {
+    const { codes } = z.object({ codes: z.array(z.string().max(40)).max(100) }).parse(req.body);
+    if (!codes.length) return res.json({});
+    const { rows } = await db.query<{ code: string; status: string }>(
+      'select code, status from orders where code = any($1::text[])',
+      [codes],
+    );
+    const map: Record<string, string> = {};
+    for (const r of rows) map[r.code] = r.status;
+    res.json(map);
+  });
+
   return r;
 }
