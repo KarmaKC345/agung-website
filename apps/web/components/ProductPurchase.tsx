@@ -117,7 +117,7 @@ export function ProductPurchase({
       },
       qty,
     );
-    useToast.getState().show({ name: product.name, unit: price!.unit, qty });
+    useToast.getState().show({ title: product.name, cart: { qty, unit: price!.unit } });
     const msg = `${qty} ${price!.unit}${variant!.label ? ` ${variant!.label}` : ''}`;
     setAdded(msg);
     return msg;

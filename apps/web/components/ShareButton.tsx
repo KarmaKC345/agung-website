@@ -20,7 +20,10 @@ export function ShareButton({ title, className = '' }: { title: string; classNam
     try {
       await navigator.clipboard.writeText(url);
       setCopied(true);
-      useToast.getState().show({ name: 'Tautan produk disalin', unit: '', qty: 1 });
+      useToast.getState().show({
+        title: 'Tautan produk disalin',
+        description: 'Tautan siap ditempel ke chat atau media sosial',
+      });
       setTimeout(() => setCopied(false), 2000);
     } catch {
       // Abaikan bila clipboard diblokir

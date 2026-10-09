@@ -28,7 +28,7 @@ export function QuickAdd({ product }: { product: ProductSummary }) {
           },
           1,
         );
-        useToast.getState().show({ name: product.name, unit: q.unit, qty: 1 });
+        useToast.getState().show({ title: product.name, cart: { qty: 1, unit: q.unit } });
         setAdded(true);
         setTimeout(() => setAdded(false), 1400);
       }}

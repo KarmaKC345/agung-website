@@ -2,24 +2,30 @@
 
 import { create } from 'zustand';
 
-interface ToastItem {
+export interface ToastInput {
+  title: string;
+  description?: string;
+  cart?: {
+    qty: number;
+    unit: string;
+  };
+}
+
+export interface ToastItem extends ToastInput {
   id: string;
-  name: string;
-  unit: string;
-  qty: number;
 }
 
 interface ToastState {
   item: ToastItem | null;
-  show: (item: Omit<ToastItem, 'id'>) => void;
+  show: (input: ToastInput) => void;
   hide: () => void;
 }
 
 export const useToast = create<ToastState>((set) => ({
   item: null,
-  show: (item) => {
+  show: (input) => {
     const id = Math.random().toString(36).slice(2);
-    set({ item: { ...item, id } });
+    set({ item: { ...input, id } });
   },
   hide: () => set({ item: null }),
 }));

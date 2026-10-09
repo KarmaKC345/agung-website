@@ -10,7 +10,7 @@ export function CartToast() {
 
   useEffect(() => {
     if (!item) return;
-    const t = setTimeout(hide, 3500);
+    const t = setTimeout(hide, 3200);
     return () => clearTimeout(t);
   }, [item, hide]);
 
@@ -25,19 +25,25 @@ export function CartToast() {
       <div className="flex items-center gap-3 rounded-tag border border-line-strong/30 bg-ink px-3.5 py-3 text-white shadow-2xl backdrop-blur-md">
         <CheckCircle size={22} weight="fill" className="shrink-0 text-ok" aria-hidden />
         <div className="min-w-0 flex-1 text-[13px]">
-          <p className="truncate font-semibold text-white">{item.name}</p>
-          <p className="text-[11px] text-gray-300">
-            +{item.qty} {item.unit} ditambahkan ke keranjang
-          </p>
+          <p className="truncate font-semibold text-white">{item.title}</p>
+          {item.cart ? (
+            <p className="text-[11px] text-gray-300">
+              +{item.cart.qty} {item.cart.unit} ditambahkan ke keranjang
+            </p>
+          ) : item.description ? (
+            <p className="truncate text-[11px] text-gray-300">{item.description}</p>
+          ) : null}
         </div>
-        <Link
-          href="/keranjang"
-          onClick={hide}
-          className="flex shrink-0 items-center gap-1.5 rounded-[8px] bg-brand px-3 py-1.5 text-[12px] font-semibold text-white hover:bg-brand-hover active:scale-95"
-        >
-          <ShoppingBag size={14} weight="bold" aria-hidden />
-          Keranjang
-        </Link>
+        {item.cart && (
+          <Link
+            href="/keranjang"
+            onClick={hide}
+            className="flex shrink-0 items-center gap-1.5 rounded-[8px] bg-brand px-3 py-1.5 text-[12px] font-semibold text-white hover:bg-brand-hover active:scale-95"
+          >
+            <ShoppingBag size={14} weight="bold" aria-hidden />
+            Keranjang
+          </Link>
+        )}
         <button
           type="button"
           onClick={hide}
