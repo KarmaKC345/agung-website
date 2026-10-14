@@ -1,5 +1,6 @@
 export type StockStatus = 'ada' | 'sedikit' | 'habis';
 export type Fulfilment = 'ambil' | 'antar';
+export type PaymentMethod = 'wa' | 'dana';
 export type OrderStatus = 'baru' | 'disiapkan' | 'siap' | 'selesai' | 'batal';
 export type StaffRole = 'owner' | 'staff';
 export type DayKey = 'mon' | 'tue' | 'wed' | 'thu' | 'fri' | 'sat' | 'sun';
@@ -125,6 +126,8 @@ export interface OrderView {
   status: OrderStatus;
   estimatedTotal: number;
   createdAt: string;
+  paymentMethod: PaymentMethod;
+  paymentStatus: 'none' | 'pending' | 'paid' | 'failed' | 'expired';
   items: OrderItemView[];
 }
 

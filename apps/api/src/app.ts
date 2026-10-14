@@ -39,7 +39,8 @@ export function createApp(opts: { db: Db; env: Env; log?: Logger; revalidate?: R
       credentials: false,
     }),
   );
-  app.use(express.json({ limit: '200kb' }));
+  // rawBody dibutuhkan untuk verifikasi tanda tangan webhook DANA
+  app.use(express.json({ limit: '200kb', verify: (req, _res, buf) => ((req as { rawBody?: string }).rawBody = buf.toString('utf8')) }));
   app.use(pinoHttp({ logger: log, autoLogging: opts.env.NODE_ENV !== 'test' }));
 
   app.use('/uploads', express.static(UPLOAD_DIR, { maxAge: '365d', immutable: true }));

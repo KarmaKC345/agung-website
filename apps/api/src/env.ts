@@ -18,6 +18,15 @@ const schema = z.object({
   SITE_URL: z.string().default(''),
   REVALIDATE_SECRET: z.string().default(''),
   DEV_AUTH_TOKEN: z.string().default(''),
+  /** DANA Payment Gateway (kosong = opsi bayar DANA disembunyikan) */
+  DANA_ENV: z.enum(['sandbox', 'production']).default('sandbox'),
+  DANA_PARTNER_ID: z.string().default(''),
+  DANA_MERCHANT_ID: z.string().default(''),
+  /** private key RSA (PEM). Baris baru boleh ditulis sebagai \n */
+  DANA_PRIVATE_KEY: z.string().default(''),
+  /** public key DANA untuk verifikasi webhook */
+  DANA_PUBLIC_KEY: z.string().default(''),
+  DANA_ORIGIN: z.string().default(''),
   /** Folder berisi migrations/ dan seed.sql */
   SUPABASE_DIR: z.string().default(''),
   /** Jalankan migrasi yang belum jalan saat API menyala (default: ya) */

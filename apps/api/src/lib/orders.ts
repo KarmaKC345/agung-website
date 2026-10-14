@@ -100,9 +100,9 @@ export async function createOrder(db: Db, input: OrderInput): Promise<CreatedOrd
     const { rows: codeRows } = await c.query<{ code: string }>('select next_order_code($1) as code', [store.timezone]);
     const code = codeRows[0]!.code;
     const { rows: orderRows } = await c.query<{ id: string }>(
-      `insert into orders (code, customer_name, fulfilment, pickup_note, estimated_total)
-       values ($1, $2, $3, $4, $5) returning id`,
-      [code, input.customerName, input.fulfilment, input.pickupNote, total],
+      `insert into orders (code, customer_name, fulfilment, pickup_note, estimated_total, payment_method, payment_status)
+       values ($1, $2, $3, $4, $5, $6, $7) returning id`,
+      [code, input.customerName, input.fulfilment, input.pickupNote, total, input.paymentMethod, input.paymentMethod === 'dana' ? 'pending' : 'none'],
     );
     const orderId = orderRows[0]!.id;
     await c.query(
@@ -154,6 +154,7 @@ export async function listOrders(
   const { rows } = await db.query<OrderView & { total: number }>(
     `select o.id, o.code, o.customer_name as "customerName", o.fulfilment, o.pickup_note as "pickupNote",
             o.status, o.estimated_total as "estimatedTotal", o.created_at as "createdAt",
+            o.payment_method as "paymentMethod", o.payment_status as "paymentStatus",
             coalesce((select json_agg(json_build_object('variantId', i.variant_id, 'name', i.name_snapshot,
                        'unit', i.unit_snapshot, 'price', i.price_snapshot, 'qty', i.qty) order by i.name_snapshot)
                       from order_items i where i.order_id = o.id), '[]') as items,

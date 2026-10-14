@@ -2,7 +2,7 @@
 
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
-import type { Fulfilment } from '@newagung/shared';
+import type { Fulfilment, PaymentMethod } from '@newagung/shared';
 
 export interface CartLine {
   variantId: string;
@@ -20,12 +20,14 @@ export interface PastOrder {
   code: string;
   createdAt: string;
   total: number;
+  paymentMethod?: PaymentMethod;
   lines: CartLine[];
 }
 
 interface Customer {
   name: string;
   fulfilment: Fulfilment;
+  paymentMethod: PaymentMethod;
   /** jam ambil 'HH:MM' (dipilih lewat time picker), kosong = kapan saja */
   pickupTime: string;
   /** catatan bebas untuk pesanan diantar */
@@ -56,7 +58,7 @@ export const useShop = create<ShopState>()(
       lines: [],
       favorites: [],
       history: [],
-      customer: { name: '', fulfilment: 'ambil', pickupTime: '', pickupNote: '' },
+      customer: { name: '', fulfilment: 'ambil', paymentMethod: 'wa', pickupTime: '', pickupNote: '' },
       add: (line, qty) =>
         set((s) => {
           const existing = s.lines.find((l) => same(l, line.variantId, line.unit));

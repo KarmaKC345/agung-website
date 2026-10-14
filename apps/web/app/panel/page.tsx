@@ -102,6 +102,11 @@ export default function OrdersPage() {
               <div className="flex flex-wrap items-center gap-2">
                 <span className="font-mono text-[16px] font-medium">{o.code}</span>
                 <span className={`rounded-full px-2 py-0.5 text-[12px] font-semibold ${STATUS_STYLE[o.status]}`}>{ORDER_STATUS_LABEL[o.status]}</span>
+                {o.paymentMethod === 'dana' && (
+                  <span className={`rounded-full px-2 py-0.5 text-[12px] font-semibold ${o.paymentStatus === 'paid' ? 'bg-ok text-white' : 'bg-sunken text-muted'}`}>
+                    DANA · {{ paid: 'Lunas', pending: 'Belum dibayar', failed: 'Gagal', expired: 'Kedaluwarsa', none: '' }[o.paymentStatus]}
+                  </span>
+                )}
                 <span className="ml-auto text-[13px] text-muted">{timeFmt.format(new Date(o.createdAt))}</span>
               </div>
               <p className="mt-2 text-[15px]">

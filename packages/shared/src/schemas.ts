@@ -12,6 +12,7 @@ const time = z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/, 'Format jam HH:MM');
 
 export const stockStatusSchema = z.enum(['ada', 'sedikit', 'habis']);
 export const fulfilmentSchema = z.enum(['ambil', 'antar']);
+export const paymentMethodSchema = z.enum(['wa', 'dana']).default('wa');
 export const orderStatusSchema = z.enum(['baru', 'disiapkan', 'siap', 'selesai', 'batal']);
 export const staffRoleSchema = z.enum(['owner', 'staff']);
 
@@ -22,6 +23,7 @@ export const staffRoleSchema = z.enum(['owner', 'staff']);
 export const orderInputSchema = z.object({
   customerName: z.string().trim().min(1, 'Nama wajib diisi').max(80),
   fulfilment: fulfilmentSchema,
+  paymentMethod: paymentMethodSchema,
   pickupNote: z.string().trim().max(200).default(''),
   items: z
     .array(

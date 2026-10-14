@@ -1,9 +1,9 @@
 'use client';
 
-import { Basket, ChatCircleDots, CheckCircle, CreditCard, Minus, Package, Plus, Storefront, Trash, WhatsappLogo } from '@phosphor-icons/react';
+import { Basket, ChatCircleDots, CheckCircle, CreditCard, Minus, Package, Plus, Storefront, Trash, Wallet, WhatsappLogo } from '@phosphor-icons/react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { formatRupiah, formatTime, hoursToday, summarizeHours, type Fulfilment, type WeeklyHours } from '@newagung/shared';
 import { cartTotal, useShop, type CartLine } from '@/lib/cart';
 import { API_URL } from '@/lib/config';
@@ -47,6 +47,15 @@ export function CartView({ hours, timezone }: { hours: WeeklyHours; timezone: st
       ? `Hari ini buka pukul ${formatTime(today.open)}-${formatTime(today.close)} WITA.`
       : 'Hari ini toko tutup.';
   const pickupTime = customer.pickupTime ?? '';
+  const [danaReady, setDanaReady] = useState(false);
+  useEffect(() => {
+    fetch(`${API_URL}/api/payments/config`)
+      .then((r) => (r.ok ? r.json() : { dana: false }))
+      .then((c: { dana: boolean }) => setDanaReady(c.dana))
+      .catch(() => {});
+  }, []);
+  // simpanan lama tanpa paymentMethod, atau DANA dimatikan toko = WA
+  const payDana = danaReady && customer.paymentMethod === 'dana';
 
   if (!hydrated) return <div className="h-64" aria-busy />;
 
@@ -109,6 +118,7 @@ export function CartView({ hours, timezone }: { hours: WeeklyHours; timezone: st
         body: JSON.stringify({
           customerName: customer.name.trim(),
           fulfilment: customer.fulfilment,
+          paymentMethod: payDana ? 'dana' : 'wa',
           pickupNote: customer.fulfilment === 'ambil' ? (pickupTime ? `pukul ${formatTime(pickupTime)}` : '') : customer.pickupNote.trim(),
           items: lines.map((l) => ({ variantId: l.variantId, unit: l.unit, qty: l.qty })),
           website: String(form.get('website') ?? ''),
@@ -129,8 +139,12 @@ export function CartView({ hours, timezone }: { hours: WeeklyHours; timezone: st
         const srv = (data.items as { variantId: string; unit: string; price: number }[]).find((i) => key(i) === key(l));
         return srv ? { ...l, price: srv.price } : l;
       });
-      recordOrder({ code: data.code, createdAt: new Date().toISOString(), total: data.total, lines: priced });
+      recordOrder({ code: data.code, createdAt: new Date().toISOString(), total: data.total, paymentMethod: payDana ? 'dana' : 'wa', lines: priced });
       clear();
+      if (data.payUrl) {
+        window.location.href = data.payUrl; // halaman bayar DANA
+        return;
+      }
       setSent({ code: data.code, waUrl: data.waUrl, total: data.total });
       window.location.href = data.waUrl;
     } catch {
@@ -208,7 +222,9 @@ export function CartView({ hours, timezone }: { hours: WeeklyHours; timezone: st
           <span className="text-muted">Total</span>
           <Price value={total} className="text-[30px]" />
         </div>
-        <p className="mt-1 text-[13px] text-muted">{lines.length} jenis produk. Harga akhir dikonfirmasi oleh toko melalui WhatsApp.</p>
+        <p className="mt-1 text-[13px] text-muted">
+          {lines.length} jenis produk. {payDana ? 'Dibayar langsung lewat DANA.' : 'Harga akhir dikonfirmasi oleh toko melalui WhatsApp.'}
+        </p>
         <hr className="receipt-rule my-5" />
 
         <label className="block text-[14px] font-semibold" htmlFor="nama">
@@ -306,6 +322,32 @@ export function CartView({ hours, timezone }: { hours: WeeklyHours; timezone: st
           </>
         )}
 
+        {danaReady && (
+          <fieldset className="mt-4">
+            <legend className="text-[14px] font-semibold">Cara membayar</legend>
+            <div className="mt-1 grid gap-2">
+              {(
+                [
+                  ['dana', 'Bayar sekarang dengan DANA', 'Langsung lunas, pesanan otomatis diproses toko'],
+                  ['wa', 'Bayar di toko / via WhatsApp', 'Tunai, QRIS, atau transfer saat barang diterima'],
+                ] as const
+              ).map(([v, label, hint]) => (
+                <label
+                  key={v}
+                  className="flex cursor-pointer items-center gap-3 rounded-tag border border-field p-3 has-[:checked]:border-brand has-[:checked]:bg-brand-tint has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-brand-text"
+                >
+                  <input type="radio" name="payment" value={v} checked={(payDana ? 'dana' : 'wa') === v} onChange={() => setCustomer({ paymentMethod: v })} className="size-4 accent-[var(--color-brand)]" />
+                  {v === 'dana' ? <Wallet size={22} weight="bold" className="shrink-0 text-[#108EE9]" aria-hidden /> : <WhatsappLogo size={22} weight="bold" className="shrink-0 text-wa-text" aria-hidden />}
+                  <span className="min-w-0">
+                    <span className="block text-[14px] font-semibold">{label}</span>
+                    <span className="block text-[12px] text-muted">{hint}</span>
+                  </span>
+                </label>
+              ))}
+            </div>
+          </fieldset>
+        )}
+
         {/* jebakan bot: disembunyikan dari pengguna */}
         <div aria-hidden className="absolute -left-[9999px]">
           <label>
@@ -341,15 +383,23 @@ export function CartView({ hours, timezone }: { hours: WeeklyHours; timezone: st
           </div>
         </div>
 
-        <button
-          type="submit"
-          disabled={busy}
-          className="btn btn-wa btn-lg mt-4 w-full"
-        >
-          <WhatsappLogo size={22} weight="bold" aria-hidden />
-          {busy ? 'Menyimpan pesanan…' : 'Kirim pesanan via WhatsApp'}
-        </button>
-        <p className="mt-2 text-center text-[12px] text-muted">WhatsApp akan terbuka dengan rincian pesanan Anda. Tekan Kirim untuk menyelesaikan pesanan.</p>
+        {payDana ? (
+          <>
+            <button type="submit" disabled={busy} className="btn btn-primary btn-lg mt-4 w-full">
+              <Wallet size={22} weight="bold" aria-hidden />
+              {busy ? 'Membuka halaman bayar…' : `Bayar ${formatRupiah(total)} dengan DANA`}
+            </button>
+            <p className="mt-2 text-center text-[12px] text-muted">Anda akan diarahkan ke halaman pembayaran DANA yang aman.</p>
+          </>
+        ) : (
+          <>
+            <button type="submit" disabled={busy} className="btn btn-wa btn-lg mt-4 w-full">
+              <WhatsappLogo size={22} weight="bold" aria-hidden />
+              {busy ? 'Menyimpan pesanan…' : 'Kirim pesanan via WhatsApp'}
+            </button>
+            <p className="mt-2 text-center text-[12px] text-muted">WhatsApp akan terbuka dengan rincian pesanan Anda. Tekan Kirim untuk menyelesaikan pesanan.</p>
+          </>
+        )}
       </form>
     </div>
   );
