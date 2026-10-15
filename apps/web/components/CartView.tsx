@@ -219,6 +219,19 @@ export function CartView({ hours, timezone }: { hours: WeeklyHours; timezone: st
       return;
     }
 
+    if (isDelivery && !customer.phone?.trim()) {
+      setError('Nomor WhatsApp / HP wajib diisi agar kurir dapat menghubungi Anda.');
+      return;
+    }
+
+    const noteParts = [
+      customer.phone ? `HP: ${customer.phone.trim()}` : null,
+      customer.fulfilment === 'ambil'
+        ? pickupTime ? `pukul ${formatTime(pickupTime)}` : null
+        : customer.pickupNote?.trim() || null,
+    ].filter(Boolean);
+    const finalPickupNote = noteParts.join(' · ');
+
     setBusy(true);
     setError(null);
     setProblems(new Map());
@@ -230,7 +243,7 @@ export function CartView({ hours, timezone }: { hours: WeeklyHours; timezone: st
           customerName: customer.name.trim(),
           fulfilment: customer.fulfilment,
           paymentMethod: payDana ? 'dana' : 'wa',
-          pickupNote: customer.fulfilment === 'ambil' ? (pickupTime ? `pukul ${formatTime(pickupTime)}` : '') : customer.pickupNote.trim(),
+          pickupNote: finalPickupNote,
           deliveryAddress: isDelivery ? customer.deliveryAddress?.trim() : '',
           deliveryLat: isDelivery ? customer.deliveryLat : null,
           deliveryLng: isDelivery ? customer.deliveryLng : null,
@@ -377,6 +390,26 @@ export function CartView({ hours, timezone }: { hours: WeeklyHours; timezone: st
                     Nama pemesan wajib diisi.
                   </p>
                 )}
+              </div>
+
+              <div>
+                <label className="block text-[13px] font-semibold text-ink" htmlFor="telepon">
+                  Nomor WhatsApp / HP {isDelivery ? <span className="text-danger">*</span> : <span className="text-muted font-normal">(Opsional)</span>}
+                </label>
+                <input
+                  id="telepon"
+                  type="tel"
+                  required={isDelivery}
+                  maxLength={25}
+                  autoComplete="tel"
+                  placeholder="Contoh: 081234567890"
+                  value={customer.phone || ''}
+                  onChange={(e) => setCustomer({ phone: e.target.value })}
+                  className="mt-1.5 h-11 w-full rounded-tag border border-field bg-surface px-3.5 text-[14px] outline-none focus:border-brand-text"
+                />
+                <p className="mt-1 text-[11px] text-muted">
+                  Untuk konfirmasi pesanan dan panggilan kurir GoSend/Grab saat paket tiba.
+                </p>
               </div>
 
               {customer.fulfilment === 'ambil' ? (

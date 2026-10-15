@@ -247,7 +247,7 @@ function OrderCard({
         <div className="flex items-center gap-2">
           {order.code && (
             <a
-              href={`https://wa.me/?text=${encodeURIComponent(`Halo Toko New Agung, saya ingin cek status pesanan saya dengan kode ${order.code}`)}`}
+              href={`https://wa.me/6282348485101?text=${encodeURIComponent(`Halo Toko New Agung, saya ingin cek status pesanan saya dengan kode ${order.code}`)}`}
               target="_blank"
               rel="noopener"
               className="btn btn-secondary text-[13px] px-3 py-1.5 h-10"

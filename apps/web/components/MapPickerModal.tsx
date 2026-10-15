@@ -1,6 +1,6 @@
 'use client';
 
-import { ArrowLeft, Crosshair, MapPin } from '@phosphor-icons/react';
+import { ArrowLeft, Crosshair, MapPin, Minus, Plus } from '@phosphor-icons/react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import 'leaflet/dist/leaflet.css';
 import { API_URL } from '@/lib/config';
@@ -33,6 +33,20 @@ export function MapPickerModal({
   const [fullAddress, setFullAddress] = useState(initialAddress || 'Mengambil alamat…');
   const [loadingAddress, setLoadingAddress] = useState(false);
   const [gpsLoading, setGpsLoading] = useState(false);
+
+  // Kunci scroll halaman belakang dan dukung tombol Escape
+  useEffect(() => {
+    const orig = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.body.style.overflow = orig;
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [onClose]);
 
   // Reverse geocoding ketika koordinat peta bergeser
   const updateAddress = useCallback(async (lat: number, lng: number) => {
@@ -81,6 +95,13 @@ export function MapPickerModal({
         attribution: '&copy; OpenStreetMap',
       }).addTo(map);
 
+      // Invalidate size setelah DOM modal selesai merender agar tile tidak abu-abu
+      setTimeout(() => {
+        if (active && mapInstanceRef.current) {
+          mapInstanceRef.current.invalidateSize();
+        }
+      }, 200);
+
       map.on('move', () => {
         const center = map.getCenter();
         setCurrentLat(center.lat);
@@ -126,6 +147,13 @@ export function MapPickerModal({
     );
   }
 
+  function handleZoom(delta: number) {
+    if (mapInstanceRef.current) {
+      const z = mapInstanceRef.current.getZoom();
+      mapInstanceRef.current.setZoom(z + delta);
+    }
+  }
+
   function handleConfirm() {
     onConfirm({
       lat: currentLat,
@@ -141,7 +169,7 @@ export function MapPickerModal({
       role="dialog"
       aria-modal="true"
       aria-label="Tentukan titik di peta"
-      className="fixed inset-0 z-50 flex flex-col bg-surface sm:inset-auto sm:top-1/2 sm:left-1/2 sm:h-[88vh] sm:w-[560px] sm:-translate-x-1/2 sm:-translate-y-1/2 sm:rounded-[20px] sm:shadow-2xl sm:border sm:border-line overflow-hidden"
+      className="fixed inset-0 z-50 flex h-dvh w-full flex-col bg-surface sm:inset-auto sm:top-1/2 sm:left-1/2 sm:h-[88vh] sm:w-[560px] sm:-translate-x-1/2 sm:-translate-y-1/2 sm:rounded-[20px] sm:shadow-2xl sm:border sm:border-line overflow-hidden"
     >
       {/* Header Bar ala Shopee/Tokopedia */}
       <div className="flex h-14 shrink-0 items-center justify-between border-b border-line bg-surface px-4 z-20">
@@ -197,20 +225,42 @@ export function MapPickerModal({
           </div>
         </div>
 
-        {/* Floating GPS Button (Bottom Right) */}
-        <button
-          type="button"
-          onClick={handleUseGPS}
-          disabled={gpsLoading}
-          aria-label="Pusatkan ke lokasi saya"
-          className="tap absolute right-4 bottom-5 z-10 grid size-12 place-items-center rounded-full border border-line bg-surface text-ink shadow-lg hover:bg-sunken disabled:opacity-50"
-        >
-          <Crosshair size={22} weight="bold" className={gpsLoading ? 'animate-spin text-brand' : ''} />
-        </button>
+        {/* Floating Zoom & GPS Controls (Bottom Right) */}
+        <div className="absolute right-4 bottom-5 z-10 flex flex-col items-center gap-2">
+          <div className="flex flex-col overflow-hidden rounded-full border border-line bg-surface shadow-lg">
+            <button
+              type="button"
+              onClick={() => handleZoom(1)}
+              aria-label="Perbesar peta"
+              className="tap grid size-10 place-items-center text-ink hover:bg-sunken"
+            >
+              <Plus size={18} weight="bold" />
+            </button>
+            <div className="h-px w-full bg-line" />
+            <button
+              type="button"
+              onClick={() => handleZoom(-1)}
+              aria-label="Perkecil peta"
+              className="tap grid size-10 place-items-center text-ink hover:bg-sunken"
+            >
+              <Minus size={18} weight="bold" />
+            </button>
+          </div>
+
+          <button
+            type="button"
+            onClick={handleUseGPS}
+            disabled={gpsLoading}
+            aria-label="Pusatkan ke lokasi saya"
+            className="tap grid size-11 place-items-center rounded-full border border-line bg-surface text-ink shadow-lg hover:bg-sunken disabled:opacity-50"
+          >
+            <Crosshair size={22} weight="bold" className={gpsLoading ? 'animate-spin text-brand' : ''} />
+          </button>
+        </div>
       </div>
 
       {/* Footer Confirmation Button */}
-      <div className="shrink-0 border-t border-line bg-surface p-4 z-20">
+      <div className="shrink-0 border-t border-line bg-surface p-4 pb-[max(1rem,env(safe-area-inset-bottom))] z-20">
         <button
           type="button"
           onClick={handleConfirm}

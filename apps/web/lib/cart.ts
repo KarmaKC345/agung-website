@@ -30,6 +30,7 @@ export interface PastOrder {
 
 interface Customer {
   name: string;
+  phone: string;
   fulfilment: Fulfilment;
   paymentMethod: PaymentMethod;
   deliveryAddress: string;
@@ -70,6 +71,7 @@ export const useShop = create<ShopState>()(
       history: [],
       customer: {
         name: '',
+        phone: '',
         fulfilment: 'ambil',
         paymentMethod: 'wa',
         deliveryAddress: '',
