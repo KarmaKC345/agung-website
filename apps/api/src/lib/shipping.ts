@@ -116,7 +116,7 @@ export function calculateInstantRates(
   // GrabExpress: Rp 7.000 base + Rp 2.300/km (min Rp 9.000), dibulatkan ke Rp 500
   const grabPrice = Math.max(9000, Math.round((7000 + distKm * 2300) / 500) * 500);
 
-  return [
+  const rates: ShippingRate[] = [
     {
       courierCode: 'gojek',
       courierName: 'GoSend',
@@ -133,15 +133,21 @@ export function calculateInstantRates(
       duration: `1 - 2 jam (${kmStr} km)`,
       isFallback: false,
     },
-    {
+  ];
+
+  // Kurir Toko Makassar hanya melayani pengantaran untuk jarak maksimal 5 km
+  if (distKm <= 5) {
+    rates.push({
       courierCode: 'toko',
       courierName: 'Kurir Toko Makassar',
-      serviceName: 'Flat Makassar',
+      serviceName: 'Flat Makassar (≤ 5 km)',
       price: flatCost,
       duration: 'Hari yang sama',
       isFallback: true,
-    },
-  ];
+    });
+  }
+
+  return rates;
 }
 
 export async function fetchShippingRates(
@@ -231,7 +237,8 @@ export async function fetchShippingRates(
           });
 
           rates.sort((a, b) => a.price - b.price);
-          return [...rates, fallback];
+          const distKm = haversineKm(originLat, originLng, params.lat, params.lng);
+          return distKm <= 5 ? [...rates, fallback] : rates;
         }
       } else {
         const errText = await res.text().catch(() => '');

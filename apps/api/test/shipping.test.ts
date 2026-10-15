@@ -40,4 +40,14 @@ describe('shipping rates', () => {
     const env = loadEnv({ DATABASE_URL: 'x', SHIPPING_FLAT_COST: '20000' } as NodeJS.ProcessEnv);
     expect(fallbackRate(env).price).toBe(20000);
   });
+
+  it('excludes Kurir Toko when destination distance is greater than 5 km', async () => {
+    const env = loadEnv({ DATABASE_URL: 'x', BITESHIP_API_KEY: '', SHIPPING_FLAT_COST: '15000' } as NodeJS.ProcessEnv);
+    // BTP / Daya Makassar is ~12 km away from Ratulangi
+    const rates = await fetchShippingRates(env, store, { lat: -5.11, lng: 119.51 });
+    const couriers = rates.map((r) => r.courierCode);
+    expect(couriers).toContain('gojek');
+    expect(couriers).toContain('grab');
+    expect(couriers).not.toContain('toko');
+  });
 });
