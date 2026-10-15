@@ -7,7 +7,7 @@ import { notFound, HttpError } from '../errors';
 import { getProduct, listBanners, listBrands, listCategories, listProducts, productSummariesByIds, recordSearchMiss, suggest } from '../lib/catalog';
 import { createDanaPayment, danaEnabled, parseDanaNotify, queryDanaPayment, type PaymentStatus } from '../lib/dana';
 import { createOrder, currentPrices } from '../lib/orders';
-import { fetchShippingRates } from '../lib/shipping';
+import { fetchShippingRates, reverseGeocode } from '../lib/shipping';
 import { getStore } from '../lib/store';
 
 export function publicRoutes({ db, env }: Ctx): Router {
@@ -114,6 +114,16 @@ export function publicRoutes({ db, env }: Ctx): Router {
     const store = await getStore(db);
     const rates = await fetchShippingRates(env, store, parsed);
     res.json({ rates });
+  });
+
+  r.get('/shipping/reverse-geocode', async (req, res) => {
+    const schema = z.object({
+      lat: z.coerce.number(),
+      lng: z.coerce.number(),
+    });
+    const { lat, lng } = schema.parse(req.query);
+    const result = await reverseGeocode(lat, lng);
+    res.json(result);
   });
 
   async function savePayment(code: string, status: PaymentStatus) {

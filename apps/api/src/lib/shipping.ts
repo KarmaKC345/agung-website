@@ -12,6 +12,68 @@ export interface GetRatesParams {
   totalValue?: number;
 }
 
+export interface GeocodeAddress {
+  building: string;
+  road: string;
+  area: string;
+  fullAddress: string;
+}
+
+export async function reverseGeocode(lat: number, lng: number): Promise<GeocodeAddress> {
+  try {
+    const res = await fetch(
+      `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1`,
+      {
+        headers: {
+          'User-Agent': 'TokoNewAgungMakassar/1.0',
+          'Accept-Language': 'id',
+        },
+      },
+    );
+    if (!res.ok) throw new Error();
+    const data = (await res.json()) as {
+      name?: string;
+      display_name?: string;
+      address?: Record<string, string>;
+    };
+
+    const addr = data.address || {};
+    const building =
+      data.name ||
+      addr.building ||
+      addr.amenity ||
+      addr.shop ||
+      addr.office ||
+      addr.residential ||
+      addr.neighbourhood ||
+      '';
+
+    const road = addr.road || addr.pedestrian || addr.footway || '';
+    const suburb = addr.suburb || addr.village || addr.hamlet || '';
+    const district = addr.city_district || addr.district || '';
+    const city = addr.city || addr.town || 'Makassar';
+
+    const mainTitle = building || road || 'Lokasi Terpilih';
+    const detailParts = [building, road, suburb, district, city].filter(Boolean);
+    const uniqueParts = Array.from(new Set(detailParts));
+    const fullAddress = uniqueParts.join(', ');
+
+    return {
+      building: mainTitle,
+      road,
+      area: [suburb, district, city].filter(Boolean).join(', '),
+      fullAddress: fullAddress || data.display_name || 'Makassar, Sulawesi Selatan',
+    };
+  } catch {
+    return {
+      building: 'Lokasi Terpilih',
+      road: '',
+      area: 'Makassar',
+      fullAddress: 'Makassar, Sulawesi Selatan',
+    };
+  }
+}
+
 export function fallbackRate(env: Env): ShippingRate {
   return {
     courierCode: 'toko',
