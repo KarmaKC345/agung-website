@@ -106,14 +106,15 @@ export function calculateInstantRates(
   destLng: number,
   flatCost: number,
 ): ShippingRate[] {
-  const distKm = Math.max(1, haversineKm(originLat, originLng, destLat, destLng));
+  const distKm = Math.max(0.5, haversineKm(originLat, originLng, destLat, destLng));
   const kmStr = distKm.toFixed(1);
 
-  // GoSend Instant (Gojek): Rp 18.000 (0-4 km), selanjutnya +Rp 2.500/km
-  const gosendPrice = Math.round((18000 + (distKm > 4 ? Math.ceil(distKm - 4) * 2500 : 0)) / 500) * 500;
+  // Tarif dinamis per km (Makassar):
+  // GoSend: Rp 8.000 base + Rp 2.500/km (min Rp 10.000), dibulatkan ke Rp 500
+  const gosendPrice = Math.max(10000, Math.round((8000 + distKm * 2500) / 500) * 500);
 
-  // GrabExpress Instant (Grab): Rp 16.000 (0-4 km), selanjutnya +Rp 2.300/km
-  const grabPrice = Math.round((16000 + (distKm > 4 ? Math.ceil(distKm - 4) * 2300 : 0)) / 500) * 500;
+  // GrabExpress: Rp 7.000 base + Rp 2.300/km (min Rp 9.000), dibulatkan ke Rp 500
+  const grabPrice = Math.max(9000, Math.round((7000 + distKm * 2300) / 500) * 500);
 
   return [
     {

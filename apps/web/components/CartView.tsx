@@ -127,7 +127,11 @@ export function CartView({ hours, timezone }: { hours: WeeklyHours; timezone: st
             const match = data.rates.find(
               (r) => r.courierName === customer.shippingCourier && r.serviceName === customer.shippingService,
             );
-            if (!match) {
+            if (match) {
+              setCustomer({
+                shippingCost: match.price,
+              });
+            } else {
               const def = data.rates[0]!;
               setCustomer({
                 shippingCourier: def.courierName,
