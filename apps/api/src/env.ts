@@ -27,6 +27,11 @@ const schema = z.object({
   /** public key DANA untuk verifikasi webhook */
   DANA_PUBLIC_KEY: z.string().default(''),
   DANA_ORIGIN: z.string().default(''),
+  /** Biteship API Key (opsional; bila kosong fallback ke kurir toko flat) */
+  BITESHIP_API_KEY: z.string().default(''),
+  BITESHIP_ENV: z.enum(['sandbox', 'production']).default('sandbox'),
+  /** Tarif flat kurir toko Makassar sebagai fallback (default: 15.000) */
+  SHIPPING_FLAT_COST: z.coerce.number().int().default(15000),
   /** Folder berisi migrations/ dan seed.sql */
   SUPABASE_DIR: z.string().default(''),
   /** Jalankan migrasi yang belum jalan saat API menyala (default: ya) */

@@ -20,11 +20,27 @@ export const staffRoleSchema = z.enum(['owner', 'staff']);
 // Publik
 // ----------------------------------------------------------------------------
 
+export const shippingRateSchema = z.object({
+  courierCode: z.string(),
+  courierName: z.string(),
+  serviceName: z.string(),
+  price: z.number().int().min(0),
+  duration: z.string().optional(),
+  isFallback: z.boolean().optional(),
+});
+export type ShippingRateSchema = z.infer<typeof shippingRateSchema>;
+
 export const orderInputSchema = z.object({
   customerName: z.string().trim().min(1, 'Nama wajib diisi').max(80),
   fulfilment: fulfilmentSchema,
   paymentMethod: paymentMethodSchema,
   pickupNote: z.string().trim().max(200).default(''),
+  deliveryAddress: z.string().trim().max(300).optional().default(''),
+  deliveryLat: z.number().nullable().optional(),
+  deliveryLng: z.number().nullable().optional(),
+  shippingCourier: z.string().trim().max(60).optional().default(''),
+  shippingService: z.string().trim().max(60).optional().default(''),
+  shippingCost: z.number().int().min(0).optional().default(0),
   items: z
     .array(
       z.object({

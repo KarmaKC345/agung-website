@@ -5,6 +5,15 @@ export type OrderStatus = 'baru' | 'disiapkan' | 'siap' | 'selesai' | 'batal';
 export type StaffRole = 'owner' | 'staff';
 export type DayKey = 'mon' | 'tue' | 'wed' | 'thu' | 'fri' | 'sat' | 'sun';
 
+export interface ShippingRate {
+  courierCode: string;
+  courierName: string;
+  serviceName: string;
+  price: number;
+  duration?: string;
+  isFallback?: boolean;
+}
+
 export interface Category {
   id: string;
   parentId: string | null;
@@ -128,6 +137,12 @@ export interface OrderView {
   createdAt: string;
   paymentMethod: PaymentMethod;
   paymentStatus: 'none' | 'pending' | 'paid' | 'failed' | 'expired';
+  shippingCourier?: string | null;
+  shippingService?: string | null;
+  shippingCost?: number;
+  deliveryAddress?: string | null;
+  deliveryLat?: number | null;
+  deliveryLng?: number | null;
   items: OrderItemView[];
 }
 

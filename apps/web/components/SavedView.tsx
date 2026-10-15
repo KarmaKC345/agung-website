@@ -233,8 +233,15 @@ function OrderCard({
       {/* Footer Transaksi: Total & Tombol Aksi */}
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <span className="text-[12px] text-muted">Total Belanja</span>
+          <span className="text-[12px] text-muted">
+            Total Belanja {order.shippingCost ? `(termasuk ongkir ${formatRupiah(order.shippingCost)})` : ''}
+          </span>
           <p className="price text-[18px] font-bold text-ink sm:text-[20px]">{formatRupiah(order.total)}</p>
+          {order.deliveryAddress && (
+            <p className="mt-0.5 line-clamp-1 max-w-xs text-[11px] text-muted">
+              📍 {order.deliveryAddress}
+            </p>
+          )}
         </div>
 
         <div className="flex items-center gap-2">

@@ -111,6 +111,16 @@ export default function OrdersPage() {
               </div>
               <p className="mt-2 text-[15px]">
                 <b>{o.customerName}</b> · {o.fulfilment === 'ambil' ? 'Ambil di toko' : 'Diantar'}
+                {o.shippingCourier && (
+                  <span className="font-semibold text-brand-text">
+                    {' '}({o.shippingCourier} {o.shippingService || ''} · {formatRupiah(o.shippingCost || 0)})
+                  </span>
+                )}
+                {o.deliveryAddress && (
+                  <span className="block mt-1 text-[13px] text-muted">
+                    📍 Alamat: {o.deliveryAddress}
+                  </span>
+                )}
                 {o.pickupNote && <span className="text-muted"> · {o.pickupNote}</span>}
               </p>
               <ul className="mt-3 space-y-1 text-[14px]">

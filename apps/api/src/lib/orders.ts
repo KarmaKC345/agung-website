@@ -94,15 +94,36 @@ export async function createOrder(db: Db, input: OrderInput): Promise<CreatedOrd
   }
 
   const store = await getStore(db);
-  const total = orderTotal(lines);
+  const itemsSubtotal = orderTotal(lines);
+  const shippingCost = input.fulfilment === 'antar' ? Math.max(0, input.shippingCost ?? 0) : 0;
+  const total = itemsSubtotal + shippingCost;
 
   const code = await withTx(db, async (c) => {
     const { rows: codeRows } = await c.query<{ code: string }>('select next_order_code($1) as code', [store.timezone]);
     const code = codeRows[0]!.code;
     const { rows: orderRows } = await c.query<{ id: string }>(
-      `insert into orders (code, customer_name, fulfilment, pickup_note, estimated_total, payment_method, payment_status)
-       values ($1, $2, $3, $4, $5, $6, $7) returning id`,
-      [code, input.customerName, input.fulfilment, input.pickupNote, total, input.paymentMethod, input.paymentMethod === 'dana' ? 'pending' : 'none'],
+      `insert into orders (
+         code, customer_name, fulfilment, pickup_note, estimated_total,
+         payment_method, payment_status,
+         shipping_courier, shipping_service, shipping_cost,
+         delivery_address, delivery_lat, delivery_lng
+       )
+       values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13) returning id`,
+      [
+        code,
+        input.customerName,
+        input.fulfilment,
+        input.pickupNote,
+        total,
+        input.paymentMethod,
+        input.paymentMethod === 'dana' ? 'pending' : 'none',
+        input.shippingCourier || null,
+        input.shippingService || null,
+        shippingCost,
+        input.deliveryAddress || null,
+        input.deliveryLat || null,
+        input.deliveryLng || null,
+      ],
     );
     const orderId = orderRows[0]!.id;
     await c.query(
@@ -126,6 +147,11 @@ export async function createOrder(db: Db, input: OrderInput): Promise<CreatedOrd
     customerName: input.customerName,
     fulfilment: input.fulfilment,
     pickupNote: input.pickupNote,
+    paymentMethod: input.paymentMethod,
+    shippingCourier: input.shippingCourier,
+    shippingService: input.shippingService,
+    shippingCost,
+    deliveryAddress: input.deliveryAddress,
     lines,
   });
 
@@ -155,6 +181,9 @@ export async function listOrders(
     `select o.id, o.code, o.customer_name as "customerName", o.fulfilment, o.pickup_note as "pickupNote",
             o.status, o.estimated_total as "estimatedTotal", o.created_at as "createdAt",
             o.payment_method as "paymentMethod", o.payment_status as "paymentStatus",
+            o.shipping_courier as "shippingCourier", o.shipping_service as "shippingService",
+            o.shipping_cost as "shippingCost", o.delivery_address as "deliveryAddress",
+            o.delivery_lat as "deliveryLat", o.delivery_lng as "deliveryLng",
             coalesce((select json_agg(json_build_object('variantId', i.variant_id, 'name', i.name_snapshot,
                        'unit', i.unit_snapshot, 'price', i.price_snapshot, 'qty', i.qty) order by i.name_snapshot)
                       from order_items i where i.order_id = o.id), '[]') as items,

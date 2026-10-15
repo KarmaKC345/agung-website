@@ -21,6 +21,10 @@ export interface PastOrder {
   createdAt: string;
   total: number;
   paymentMethod?: PaymentMethod;
+  shippingCourier?: string;
+  shippingService?: string;
+  shippingCost?: number;
+  deliveryAddress?: string;
   lines: CartLine[];
 }
 
@@ -28,6 +32,12 @@ interface Customer {
   name: string;
   fulfilment: Fulfilment;
   paymentMethod: PaymentMethod;
+  deliveryAddress: string;
+  deliveryLat: number | null;
+  deliveryLng: number | null;
+  shippingCourier: string;
+  shippingService: string;
+  shippingCost: number;
   /** jam ambil 'HH:MM' (dipilih lewat time picker), kosong = kapan saja */
   pickupTime: string;
   /** catatan bebas untuk pesanan diantar */
@@ -58,7 +68,19 @@ export const useShop = create<ShopState>()(
       lines: [],
       favorites: [],
       history: [],
-      customer: { name: '', fulfilment: 'ambil', paymentMethod: 'wa', pickupTime: '', pickupNote: '' },
+      customer: {
+        name: '',
+        fulfilment: 'ambil',
+        paymentMethod: 'wa',
+        deliveryAddress: '',
+        deliveryLat: null,
+        deliveryLng: null,
+        shippingCourier: '',
+        shippingService: '',
+        shippingCost: 0,
+        pickupTime: '',
+        pickupNote: '',
+      },
       add: (line, qty) =>
         set((s) => {
           const existing = s.lines.find((l) => same(l, line.variantId, line.unit));

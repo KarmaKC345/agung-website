@@ -7,6 +7,7 @@ import { notFound, HttpError } from '../errors';
 import { getProduct, listBanners, listBrands, listCategories, listProducts, productSummariesByIds, recordSearchMiss, suggest } from '../lib/catalog';
 import { createDanaPayment, danaEnabled, parseDanaNotify, queryDanaPayment, type PaymentStatus } from '../lib/dana';
 import { createOrder, currentPrices } from '../lib/orders';
+import { fetchShippingRates } from '../lib/shipping';
 import { getStore } from '../lib/store';
 
 export function publicRoutes({ db, env }: Ctx): Router {
@@ -100,6 +101,19 @@ export function publicRoutes({ db, env }: Ctx): Router {
 
   r.get('/payments/config', (_req, res) => {
     res.json({ dana: danaEnabled(env), sandbox: env.DANA_ENV === 'sandbox' });
+  });
+
+  r.post('/shipping/rates', async (req, res) => {
+    const schema = z.object({
+      lat: z.number().nullable().optional(),
+      lng: z.number().nullable().optional(),
+      totalWeightGram: z.number().int().min(1).optional(),
+      totalValue: z.number().int().min(0).optional(),
+    });
+    const parsed = schema.parse(req.body);
+    const store = await getStore(db);
+    const rates = await fetchShippingRates(env, store, parsed);
+    res.json({ rates });
   });
 
   async function savePayment(code: string, status: PaymentStatus) {

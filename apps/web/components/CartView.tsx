@@ -1,10 +1,33 @@
 'use client';
 
-import { Basket, ChatCircleDots, CheckCircle, CreditCard, Minus, Package, Plus, Storefront, Trash, Wallet, WhatsappLogo } from '@phosphor-icons/react';
+import {
+  Basket,
+  ChatCircleDots,
+  CheckCircle,
+  CreditCard,
+  Crosshair,
+  MapPin,
+  Minus,
+  Package,
+  Plus,
+  Storefront,
+  Trash,
+  Truck,
+  Wallet,
+  WhatsappLogo,
+} from '@phosphor-icons/react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useEffect, useMemo, useState } from 'react';
-import { formatRupiah, formatTime, hoursToday, summarizeHours, type Fulfilment, type WeeklyHours } from '@newagung/shared';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import {
+  formatRupiah,
+  formatTime,
+  hoursToday,
+  summarizeHours,
+  type Fulfilment,
+  type ShippingRate,
+  type WeeklyHours,
+} from '@newagung/shared';
 import { cartTotal, useShop, type CartLine } from '@/lib/cart';
 import { API_URL } from '@/lib/config';
 import { useHydrated } from '@/lib/use-hydrated';
@@ -24,6 +47,13 @@ export function CartView({ hours, timezone }: { hours: WeeklyHours; timezone: st
   const [sent, setSent] = useState<Sent | null>(null);
   const [nameTouched, setNameTouched] = useState(false);
   const nameError = nameTouched && !customer.name.trim();
+
+  // Pengiriman (Biteship Gojek/Grab + Fallback Kurir Toko)
+  const [rates, setRates] = useState<ShippingRate[]>([]);
+  const [loadingRates, setLoadingRates] = useState(false);
+  const [gpsLoading, setGpsLoading] = useState(false);
+  const [gpsError, setGpsError] = useState<string | null>(null);
+
   // rentang jam ambil = jam buka hari ini (WITA); cadangan 05.00-22.00
   const today = useMemo(() => hoursToday(hours, timezone), [hours, timezone]);
   const window_ = today ?? { open: '05:00', close: '22:00' };
@@ -48,14 +78,89 @@ export function CartView({ hours, timezone }: { hours: WeeklyHours; timezone: st
       : 'Hari ini toko tutup.';
   const pickupTime = customer.pickupTime ?? '';
   const [danaReady, setDanaReady] = useState(false);
+
   useEffect(() => {
     fetch(`${API_URL}/api/payments/config`)
       .then((r) => (r.ok ? r.json() : { dana: false }))
       .then((c: { dana: boolean }) => setDanaReady(c.dana))
       .catch(() => {});
   }, []);
-  // simpanan lama tanpa paymentMethod, atau DANA dimatikan toko = WA
+
+  const itemsTotal = cartTotal(lines);
+  const isDelivery = customer.fulfilment === 'antar';
+  const shippingCost = isDelivery ? (customer.shippingCost ?? 0) : 0;
+  const grandTotal = itemsTotal + shippingCost;
   const payDana = danaReady && customer.paymentMethod === 'dana';
+
+  // Request ongkir ke backend (Biteship / Fallback Kurir Toko)
+  const fetchRates = useCallback(
+    async (lat?: number | null, lng?: number | null) => {
+      setLoadingRates(true);
+      try {
+        const res = await fetch(`${API_URL}/api/shipping/rates`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            lat: lat !== undefined ? lat : customer.deliveryLat,
+            lng: lng !== undefined ? lng : customer.deliveryLng,
+            totalValue: itemsTotal,
+          }),
+        });
+        if (res.ok) {
+          const data = (await res.json()) as { rates: ShippingRate[] };
+          if (Array.isArray(data.rates) && data.rates.length > 0) {
+            setRates(data.rates);
+            // Pilih kurir pertama jika belum ada atau yang terpilih tidak cocok
+            const currentMatch = data.rates.find(
+              (r) => r.courierName === customer.shippingCourier && r.serviceName === customer.shippingService,
+            );
+            if (!currentMatch) {
+              const defaultRate = data.rates[0]!;
+              setCustomer({
+                shippingCourier: defaultRate.courierName,
+                shippingService: defaultRate.serviceName,
+                shippingCost: defaultRate.price,
+              });
+            }
+          }
+        }
+      } catch {
+        // Fallback lokal bila jaringan gagal
+      } finally {
+        setLoadingRates(false);
+      }
+    },
+    [customer.deliveryLat, customer.deliveryLng, customer.shippingCourier, customer.shippingService, itemsTotal, setCustomer],
+  );
+
+  useEffect(() => {
+    if (isDelivery) {
+      void fetchRates(customer.deliveryLat, customer.deliveryLng);
+    }
+  }, [isDelivery, fetchRates, customer.deliveryLat, customer.deliveryLng]);
+
+  function requestLocation() {
+    if (typeof window === 'undefined' || !navigator.geolocation) {
+      setGpsError('Browser tidak mendukung deteksi lokasi GPS.');
+      return;
+    }
+    setGpsLoading(true);
+    setGpsError(null);
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        setGpsLoading(false);
+        const lat = pos.coords.latitude;
+        const lng = pos.coords.longitude;
+        setCustomer({ deliveryLat: lat, deliveryLng: lng });
+        void fetchRates(lat, lng);
+      },
+      () => {
+        setGpsLoading(false);
+        setGpsError('Izin lokasi tidak diberikan. Menggunakan tarif Kurir Toko Makassar.');
+      },
+      { timeout: 10000, enableHighAccuracy: true },
+    );
+  }
 
   if (!hydrated) return <div className="h-64" aria-busy />;
 
@@ -99,8 +204,6 @@ export function CartView({ hours, timezone }: { hours: WeeklyHours; timezone: st
     );
   }
 
-  const total = cartTotal(lines);
-
   async function submit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const form = new FormData(e.currentTarget);
@@ -108,6 +211,11 @@ export function CartView({ hours, timezone }: { hours: WeeklyHours; timezone: st
       setError(`Jam pengambilan harus di antara pukul ${formatTime(window_.open)} dan ${formatTime(window_.close)}.`);
       return;
     }
+    if (isDelivery && !customer.deliveryAddress?.trim() && !customer.pickupNote?.trim()) {
+      setError('Alamat pengantaran wajib diisi.');
+      return;
+    }
+
     setBusy(true);
     setError(null);
     setProblems(new Map());
@@ -120,6 +228,12 @@ export function CartView({ hours, timezone }: { hours: WeeklyHours; timezone: st
           fulfilment: customer.fulfilment,
           paymentMethod: payDana ? 'dana' : 'wa',
           pickupNote: customer.fulfilment === 'ambil' ? (pickupTime ? `pukul ${formatTime(pickupTime)}` : '') : customer.pickupNote.trim(),
+          deliveryAddress: isDelivery ? (customer.deliveryAddress?.trim() || customer.pickupNote?.trim() || '') : '',
+          deliveryLat: isDelivery ? customer.deliveryLat : null,
+          deliveryLng: isDelivery ? customer.deliveryLng : null,
+          shippingCourier: isDelivery ? customer.shippingCourier : '',
+          shippingService: isDelivery ? customer.shippingService : '',
+          shippingCost: isDelivery ? shippingCost : 0,
           items: lines.map((l) => ({ variantId: l.variantId, unit: l.unit, qty: l.qty })),
           website: String(form.get('website') ?? ''),
         }),
@@ -139,7 +253,17 @@ export function CartView({ hours, timezone }: { hours: WeeklyHours; timezone: st
         const srv = (data.items as { variantId: string; unit: string; price: number }[]).find((i) => key(i) === key(l));
         return srv ? { ...l, price: srv.price } : l;
       });
-      recordOrder({ code: data.code, createdAt: new Date().toISOString(), total: data.total, paymentMethod: payDana ? 'dana' : 'wa', lines: priced });
+      recordOrder({
+        code: data.code,
+        createdAt: new Date().toISOString(),
+        total: data.total,
+        paymentMethod: payDana ? 'dana' : 'wa',
+        shippingCourier: isDelivery ? customer.shippingCourier : undefined,
+        shippingService: isDelivery ? customer.shippingService : undefined,
+        shippingCost: isDelivery ? shippingCost : 0,
+        deliveryAddress: isDelivery ? customer.deliveryAddress : undefined,
+        lines: priced,
+      });
       clear();
       if (data.payUrl) {
         window.location.href = data.payUrl; // halaman bayar DANA
@@ -220,11 +344,25 @@ export function CartView({ hours, timezone }: { hours: WeeklyHours; timezone: st
       <form onSubmit={submit} className="card h-fit rounded-[var(--radius-media)] p-5 sm:p-6 lg:sticky lg:top-24">
         <div className="flex items-baseline justify-between">
           <span className="text-muted">Total</span>
-          <Price value={total} className="text-[30px]" />
+          <Price value={grandTotal} className="text-[30px]" />
         </div>
         <p className="mt-1 text-[13px] text-muted">
           {lines.length} jenis produk. {payDana ? 'Dibayar langsung lewat DANA.' : 'Harga akhir dikonfirmasi oleh toko melalui WhatsApp.'}
         </p>
+
+        {isDelivery && (
+          <div className="mt-3 space-y-1 rounded-tag bg-sunken/60 p-3 text-[13px]">
+            <div className="flex justify-between text-muted">
+              <span>Subtotal barang</span>
+              <span>{formatRupiah(itemsTotal)}</span>
+            </div>
+            <div className="flex justify-between font-medium text-ink">
+              <span>Ongkir ({customer.shippingCourier || 'Kurir'})</span>
+              <span>{formatRupiah(shippingCost)}</span>
+            </div>
+          </div>
+        )}
+
         <hr className="receipt-rule my-5" />
 
         <label className="block text-[14px] font-semibold" htmlFor="nama">
@@ -270,7 +408,6 @@ export function CartView({ hours, timezone }: { hours: WeeklyHours; timezone: st
             ))}
           </div>
         </fieldset>
-        {customer.fulfilment === 'antar' && <p className="mt-2 text-[13px] text-muted">Alamat dan ongkos kirim dikonfirmasi melalui WhatsApp.</p>}
 
         {customer.fulfilment === 'ambil' ? (
           <>
@@ -307,19 +444,120 @@ export function CartView({ hours, timezone }: { hours: WeeklyHours; timezone: st
             </p>
           </>
         ) : (
-          <>
-            <label className="mt-4 block text-[14px] font-semibold" htmlFor="catatan">
-              Catatan (opsional)
-            </label>
-            <input
-              id="catatan"
-              maxLength={200}
-              placeholder="Contoh: alamat pengantaran atau patokan lokasi"
-              value={customer.pickupNote}
-              onChange={(e) => setCustomer({ pickupNote: e.target.value })}
-              className="mt-1 h-11 w-full rounded-tag border border-field bg-surface px-3"
-            />
-          </>
+          <div className="mt-4 space-y-3">
+            <div>
+              <label className="block text-[14px] font-semibold" htmlFor="alamat-antar">
+                Alamat pengantaran lengkap
+              </label>
+              <textarea
+                id="alamat-antar"
+                required
+                rows={2}
+                maxLength={300}
+                placeholder="Contoh: Jl. A. P. Pettarani No. 10, Blok A3, Makassar"
+                value={customer.deliveryAddress || ''}
+                onChange={(e) => setCustomer({ deliveryAddress: e.target.value })}
+                className="mt-1 w-full rounded-tag border border-field bg-surface p-3 text-[14px] placeholder:text-muted focus:border-brand-text outline-none"
+              />
+            </div>
+
+            <div className="flex flex-wrap items-center gap-2">
+              <button
+                type="button"
+                onClick={requestLocation}
+                disabled={gpsLoading}
+                className="tap flex items-center gap-1.5 rounded-full border border-line bg-surface px-3 py-1.5 text-[12px] font-semibold text-brand-text hover:bg-sunken disabled:opacity-50"
+              >
+                <Crosshair size={15} weight="bold" className={gpsLoading ? 'animate-spin' : ''} aria-hidden />
+                {gpsLoading
+                  ? 'Mencari lokasi…'
+                  : customer.deliveryLat && customer.deliveryLng
+                    ? '✓ Titik GPS tersimpan (perbarui)'
+                    : '📍 Gunakan titik GPS (cek tarif Gojek/Grab)'}
+              </button>
+              {customer.deliveryLat && customer.deliveryLng && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setCustomer({ deliveryLat: null, deliveryLng: null });
+                    void fetchRates(null, null);
+                  }}
+                  className="tap text-[12px] text-muted underline hover:text-ink"
+                >
+                  Hapus titik
+                </button>
+              )}
+            </div>
+            {gpsError && <p className="text-[12px] text-warn">{gpsError}</p>}
+
+            <div>
+              <label className="block text-[14px] font-semibold" htmlFor="catatan-antar">
+                Catatan lokasi / patokan (opsional)
+              </label>
+              <input
+                id="catatan-antar"
+                maxLength={200}
+                placeholder="Contoh: Pagar hitam depan masjid / titip di sekuriti"
+                value={customer.pickupNote}
+                onChange={(e) => setCustomer({ pickupNote: e.target.value })}
+                className="mt-1 h-11 w-full rounded-tag border border-field bg-surface px-3 text-[14px]"
+              />
+            </div>
+
+            <div className="pt-1">
+              <div className="flex items-center justify-between">
+                <span className="text-[14px] font-semibold">Pilih kurir pengantaran</span>
+                {loadingRates && <span className="text-[12px] text-muted animate-pulse">Memeriksa tarif…</span>}
+              </div>
+
+              <div className="mt-2 grid gap-2">
+                {rates.map((r) => {
+                  const isSelected =
+                    customer.shippingCourier === r.courierName &&
+                    customer.shippingService === r.serviceName;
+                  return (
+                    <label
+                      key={`${r.courierCode}-${r.serviceName}`}
+                      className={`flex cursor-pointer items-center justify-between rounded-tag border p-3 transition-colors ${
+                        isSelected
+                          ? 'border-brand bg-brand-tint'
+                          : 'border-field bg-surface hover:border-line-strong'
+                      }`}
+                    >
+                      <div className="flex items-center gap-2.5 min-w-0">
+                        <input
+                          type="radio"
+                          name="shipping_courier"
+                          checked={isSelected}
+                          onChange={() =>
+                            setCustomer({
+                              shippingCourier: r.courierName,
+                              shippingService: r.serviceName,
+                              shippingCost: r.price,
+                            })
+                          }
+                          className="size-4 accent-[var(--color-brand)]"
+                        />
+                        <div className="min-w-0">
+                          <div className="flex items-center gap-1.5">
+                            <Truck size={16} weight="bold" className="shrink-0 text-brand" aria-hidden />
+                            <span className="font-semibold text-[14px] text-ink">{r.courierName}</span>
+                            <span className="rounded bg-sunken px-1.5 py-0.5 text-[11px] font-medium text-muted">
+                              {r.serviceName}
+                            </span>
+                          </div>
+                          {r.duration && <p className="text-[12px] text-muted">Estimasi: {r.duration}</p>}
+                        </div>
+                      </div>
+                      <span className="price font-bold text-[14px] text-ink shrink-0 ml-2">
+                        {formatRupiah(r.price)}
+                      </span>
+                    </label>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
         )}
 
         {danaReady && (
@@ -366,13 +604,13 @@ export function CartView({ hours, timezone }: { hours: WeeklyHours; timezone: st
           <div className="flex items-start gap-2.5">
             <Storefront size={16} weight="bold" className="mt-0.5 shrink-0 text-brand" aria-hidden />
             <p>
-              <strong className="font-semibold text-ink">Ambil di toko:</strong> Siap disiapkan di Jl. DR. Ratulangi No.52, Makassar.
+              <strong className="font-semibold text-ink">Lokasi Toko:</strong> Jl. DR. Ratulangi No.52, Makassar.
             </p>
           </div>
           <div className="flex items-start gap-2.5">
             <CreditCard size={16} weight="bold" className="mt-0.5 shrink-0 text-brand" aria-hidden />
             <p>
-              <strong className="font-semibold text-ink">Pembayaran fleksibel:</strong> Tunai, QRIS, atau transfer saat barang diambil/diterima.
+              <strong className="font-semibold text-ink">Pembayaran fleksibel:</strong> DANA instan, atau tunai/transfer saat barang diambil/diterima.
             </p>
           </div>
           <div className="flex items-start gap-2.5">
@@ -387,7 +625,7 @@ export function CartView({ hours, timezone }: { hours: WeeklyHours; timezone: st
           <>
             <button type="submit" disabled={busy} className="btn btn-primary btn-lg mt-4 w-full">
               <Wallet size={22} weight="bold" aria-hidden />
-              {busy ? 'Membuka halaman bayar…' : `Bayar ${formatRupiah(total)} dengan DANA`}
+              {busy ? 'Membuka halaman bayar…' : `Bayar ${formatRupiah(grandTotal)} dengan DANA`}
             </button>
             <p className="mt-2 text-center text-[12px] text-muted">Anda akan diarahkan ke halaman pembayaran DANA yang aman.</p>
           </>
