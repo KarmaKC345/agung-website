@@ -8,8 +8,10 @@ import {
   Crosshair,
   MapPin,
   Minus,
+  Motorcycle,
   Package,
   Plus,
+  ShieldCheck,
   Storefront,
   Trash,
   Truck,
@@ -46,15 +48,15 @@ export function CartView({ hours, timezone }: { hours: WeeklyHours; timezone: st
   const [problems, setProblems] = useState<Map<string, Problem['reason']>>(new Map());
   const [sent, setSent] = useState<Sent | null>(null);
   const [nameTouched, setNameTouched] = useState(false);
-  const nameError = nameTouched && !customer.name.trim();
+  const [addressTouched, setAddressTouched] = useState(false);
 
-  // Pengiriman (Biteship Gojek/Grab + Fallback Kurir Toko)
+  // Kurir pengiriman (Gojek / Grab / Kurir Toko)
   const [rates, setRates] = useState<ShippingRate[]>([]);
   const [loadingRates, setLoadingRates] = useState(false);
   const [gpsLoading, setGpsLoading] = useState(false);
   const [gpsError, setGpsError] = useState<string | null>(null);
 
-  // rentang jam ambil = jam buka hari ini (WITA); cadangan 05.00-22.00
+  // Rentang jam ambil di toko
   const today = useMemo(() => hoursToday(hours, timezone), [hours, timezone]);
   const window_ = today ?? { open: '05:00', close: '22:00' };
   const timeSlots = useMemo(() => {
@@ -70,6 +72,7 @@ export function CartView({ hours, timezone }: { hours: WeeklyHours; timezone: st
     }
     return slots;
   }, [window_.open, window_.close]);
+
   const summary = summarizeHours(hours);
   const hoursInfo = summary
     ? `Jam buka: ${summary.charAt(0).toLowerCase()}${summary.slice(1)} WITA.`
@@ -92,7 +95,10 @@ export function CartView({ hours, timezone }: { hours: WeeklyHours; timezone: st
   const grandTotal = itemsTotal + shippingCost;
   const payDana = danaReady && customer.paymentMethod === 'dana';
 
-  // Request ongkir ke backend (Biteship / Fallback Kurir Toko)
+  const nameError = nameTouched && !customer.name.trim();
+  const addressError = addressTouched && isDelivery && !customer.deliveryAddress?.trim();
+
+  // Fetch tarif kurir dari backend
   const fetchRates = useCallback(
     async (lat?: number | null, lng?: number | null) => {
       setLoadingRates(true);
@@ -110,22 +116,22 @@ export function CartView({ hours, timezone }: { hours: WeeklyHours; timezone: st
           const data = (await res.json()) as { rates: ShippingRate[] };
           if (Array.isArray(data.rates) && data.rates.length > 0) {
             setRates(data.rates);
-            // Pilih kurir pertama jika belum ada atau yang terpilih tidak cocok
-            const currentMatch = data.rates.find(
+            // Pilih kurir pertama jika belum ada pilihan atau kurir lama tidak ada
+            const match = data.rates.find(
               (r) => r.courierName === customer.shippingCourier && r.serviceName === customer.shippingService,
             );
-            if (!currentMatch) {
-              const defaultRate = data.rates[0]!;
+            if (!match) {
+              const def = data.rates[0]!;
               setCustomer({
-                shippingCourier: defaultRate.courierName,
-                shippingService: defaultRate.serviceName,
-                shippingCost: defaultRate.price,
+                shippingCourier: def.courierName,
+                shippingService: def.serviceName,
+                shippingCost: def.price,
               });
             }
           }
         }
       } catch {
-        // Fallback lokal bila jaringan gagal
+        // Fallback tetap aktif
       } finally {
         setLoadingRates(false);
       }
@@ -141,7 +147,7 @@ export function CartView({ hours, timezone }: { hours: WeeklyHours; timezone: st
 
   function requestLocation() {
     if (typeof window === 'undefined' || !navigator.geolocation) {
-      setGpsError('Browser tidak mendukung deteksi lokasi GPS.');
+      setGpsError('Browser tidak mendukung pendeteksi lokasi GPS.');
       return;
     }
     setGpsLoading(true);
@@ -156,7 +162,7 @@ export function CartView({ hours, timezone }: { hours: WeeklyHours; timezone: st
       },
       () => {
         setGpsLoading(false);
-        setGpsError('Izin lokasi tidak diberikan. Menggunakan tarif Kurir Toko Makassar.');
+        setGpsError('Izin lokasi tidak diberikan. Menampilkan opsi Kurir Toko.');
       },
       { timeout: 10000, enableHighAccuracy: true },
     );
@@ -167,7 +173,7 @@ export function CartView({ hours, timezone }: { hours: WeeklyHours; timezone: st
   if (sent) {
     return (
       <div className="card mx-auto max-w-lg rounded-[var(--radius-media)] p-6 sm:p-8">
-        <CheckCircle size={40} weight="fill" className="text-ok" aria-hidden />
+        <CheckCircle size={44} weight="fill" className="text-ok" aria-hidden />
         <p className="mt-4 text-[14px] font-medium text-muted">Kode pesanan</p>
         <p className="mt-1 font-mono text-[26px] font-medium tracking-tight">{sent.code}</p>
         <p className="mt-4 leading-relaxed">
@@ -207,12 +213,21 @@ export function CartView({ hours, timezone }: { hours: WeeklyHours; timezone: st
   async function submit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const form = new FormData(e.currentTarget);
+
+    if (!customer.name.trim()) {
+      setNameTouched(true);
+      setError('Nama pemesan wajib diisi.');
+      return;
+    }
+
     if (customer.fulfilment === 'ambil' && pickupTime && (pickupTime < window_.open || pickupTime > window_.close)) {
       setError(`Jam pengambilan harus di antara pukul ${formatTime(window_.open)} dan ${formatTime(window_.close)}.`);
       return;
     }
-    if (isDelivery && !customer.deliveryAddress?.trim() && !customer.pickupNote?.trim()) {
-      setError('Alamat pengantaran wajib diisi.');
+
+    if (isDelivery && !customer.deliveryAddress?.trim()) {
+      setAddressTouched(true);
+      setError('Alamat pengantaran lengkap wajib diisi untuk pesanan diantar.');
       return;
     }
 
@@ -228,7 +243,7 @@ export function CartView({ hours, timezone }: { hours: WeeklyHours; timezone: st
           fulfilment: customer.fulfilment,
           paymentMethod: payDana ? 'dana' : 'wa',
           pickupNote: customer.fulfilment === 'ambil' ? (pickupTime ? `pukul ${formatTime(pickupTime)}` : '') : customer.pickupNote.trim(),
-          deliveryAddress: isDelivery ? (customer.deliveryAddress?.trim() || customer.pickupNote?.trim() || '') : '',
+          deliveryAddress: isDelivery ? customer.deliveryAddress?.trim() : '',
           deliveryLat: isDelivery ? customer.deliveryLat : null,
           deliveryLng: isDelivery ? customer.deliveryLng : null,
           shippingCourier: isDelivery ? customer.shippingCourier : '',
@@ -238,6 +253,7 @@ export function CartView({ hours, timezone }: { hours: WeeklyHours; timezone: st
           website: String(form.get('website') ?? ''),
         }),
       });
+
       const data = await res.json();
       if (res.status === 409 && data?.details?.problems) {
         setProblems(new Map((data.details.problems as Problem[]).map((p) => [key(p), p.reason])));
@@ -248,11 +264,13 @@ export function CartView({ hours, timezone }: { hours: WeeklyHours; timezone: st
         setError(data?.error ?? 'Pesanan belum berhasil dikirim. Silakan coba kembali.');
         return;
       }
-      // pakai harga dari server untuk riwayat
+
+      // Pakai harga dari server untuk riwayat
       const priced: CartLine[] = lines.map((l) => {
         const srv = (data.items as { variantId: string; unit: string; price: number }[]).find((i) => key(i) === key(l));
         return srv ? { ...l, price: srv.price } : l;
       });
+
       recordOrder({
         code: data.code,
         createdAt: new Date().toISOString(),
@@ -264,9 +282,11 @@ export function CartView({ hours, timezone }: { hours: WeeklyHours; timezone: st
         deliveryAddress: isDelivery ? customer.deliveryAddress : undefined,
         lines: priced,
       });
+
       clear();
+
       if (data.payUrl) {
-        window.location.href = data.payUrl; // halaman bayar DANA
+        window.location.href = data.payUrl;
         return;
       }
       setSent({ code: data.code, waUrl: data.waUrl, total: data.total });
@@ -279,314 +299,444 @@ export function CartView({ hours, timezone }: { hours: WeeklyHours; timezone: st
   }
 
   return (
-    <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_380px]">
-      <ul className="card h-fit divide-y divide-line overflow-hidden">
-        {lines.map((l) => {
-          const problem = problems.get(key(l));
-          return (
-            <li key={key(l)} className={`flex gap-3 p-3 sm:gap-4 sm:p-4 ${problem ? 'bg-danger/5' : ''}`}>
-              <Link href={`/barang/${l.slug}`} tabIndex={-1} aria-hidden className="relative grid size-16 shrink-0 place-items-center overflow-hidden rounded-[10px] bg-sunken sm:size-20">
-                {l.image ? <Image src={l.image} alt="" fill sizes="80px" className="object-contain p-1.5" /> : <Package size={26} weight="thin" className="text-muted" />}
-              </Link>
-              <div className="min-w-0 flex-1">
-                <div className="flex items-start justify-between gap-3">
-                  <div className="min-w-0">
-                    <Link href={`/barang/${l.slug}`} className="font-medium hover:underline">
-                      {l.name}
-                    </Link>
-                    <p className="text-[13px] text-muted">
-                      {l.variantLabel && <>{l.variantLabel} · </>}
-                      {formatRupiah(l.price)}/{l.unit}
-                    </p>
-                  </div>
-                  <Price value={l.price * l.qty} className="shrink-0 pt-0.5 text-[18px]" />
-                </div>
-                {problem && (
-                  <p className="mt-1 text-[13px] font-semibold text-danger">
-                    {problem === 'habis' ? 'Stok habis' : 'Satuan ini sudah tidak tersedia'}
-                  </p>
-                )}
-                <div className="mt-2 flex items-center gap-3">
-                  <div className="flex h-12 items-center rounded-tag border border-field">
-                    <button type="button" className="grid h-full w-11 place-items-center rounded-l-tag hover:bg-sunken" onClick={() => setQty(l.variantId, l.unit, l.qty - 1)} aria-label={`Kurangi ${l.name}`}>
-                      <Minus size={16} weight="bold" aria-hidden />
-                    </button>
-                    <input
-                      type="number"
-                      inputMode="numeric"
-                      value={l.qty}
-                      min={1}
-                      onChange={(e) => setQty(l.variantId, l.unit, Number(e.target.value) || 1)}
-                      aria-label={`Jumlah ${l.name}`}
-                      className="price h-full w-12 bg-transparent text-center text-[17px] [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none"
-                    />
-                    <button type="button" className="grid h-full w-11 place-items-center rounded-r-tag hover:bg-sunken" onClick={() => setQty(l.variantId, l.unit, l.qty + 1)} aria-label={`Tambah ${l.name}`}>
-                      <Plus size={16} weight="bold" aria-hidden />
-                    </button>
-                  </div>
-                  <span className="text-[13px] text-muted">{l.unit}</span>
-                  <button
-                    type="button"
-                    onClick={() => remove(l.variantId, l.unit)}
-                    aria-label={`Hapus ${l.name} dari keranjang`}
-                    className="tap ml-auto -mr-2 grid size-10 place-items-center rounded-[10px] text-muted hover:bg-sunken hover:text-danger"
-                  >
-                    <Trash size={20} aria-hidden />
-                  </button>
-                </div>
-              </div>
-            </li>
-          );
-        })}
-      </ul>
-
-      {/* Nota & formulir */}
-      <form onSubmit={submit} className="card h-fit rounded-[var(--radius-media)] p-5 sm:p-6 lg:sticky lg:top-24">
-        <div className="flex items-baseline justify-between">
-          <span className="text-muted">Total</span>
-          <Price value={grandTotal} className="text-[30px]" />
-        </div>
-        <p className="mt-1 text-[13px] text-muted">
-          {lines.length} jenis produk. {payDana ? 'Dibayar langsung lewat DANA.' : 'Harga akhir dikonfirmasi oleh toko melalui WhatsApp.'}
-        </p>
-
-        {isDelivery && (
-          <div className="mt-3 space-y-1 rounded-tag bg-sunken/60 p-3 text-[13px]">
-            <div className="flex justify-between text-muted">
-              <span>Subtotal barang</span>
-              <span>{formatRupiah(itemsTotal)}</span>
+    <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_400px]">
+      {/* Kolom Kiri: Alur Checkout Tokopedia/Shopee Style */}
+      <form id="checkout-form" onSubmit={submit} className="space-y-6">
+        {/* Section 1: Cara Terima & Alamat Pengiriman */}
+        <div className="card rounded-[var(--radius-media)] p-5 sm:p-6">
+          <div className="flex items-center justify-between border-b border-line pb-3">
+            <div className="flex items-center gap-2">
+              <MapPin size={20} weight="bold" className="text-brand shrink-0" aria-hidden />
+              <h2 className="text-[16px] font-bold text-ink">Cara Menerima Pesanan</h2>
             </div>
-            <div className="flex justify-between font-medium text-ink">
-              <span>Ongkir ({customer.shippingCourier || 'Kurir'})</span>
-              <span>{formatRupiah(shippingCost)}</span>
-            </div>
+            <span className="rounded-full bg-brand-tint px-2.5 py-0.5 text-[11px] font-semibold text-brand-text">
+              Toko New Agung Makassar
+            </span>
           </div>
-        )}
 
-        <hr className="receipt-rule my-5" />
-
-        <label className="block text-[14px] font-semibold" htmlFor="nama">
-          Nama pemesan
-        </label>
-        <input
-          id="nama"
-          required
-          maxLength={80}
-          autoComplete="name"
-          value={customer.name}
-          onBlur={() => setNameTouched(true)}
-          onChange={(e) => {
-            setCustomer({ name: e.target.value });
-            if (nameTouched) setNameTouched(false);
-          }}
-          aria-invalid={nameError || undefined}
-          aria-describedby={nameError ? 'nama-error' : undefined}
-          className={`mt-1 h-11 w-full rounded-tag border bg-surface px-3 ${nameError ? 'border-danger focus:border-danger' : 'border-field'}`}
-        />
-        {nameError && (
-          <p id="nama-error" role="alert" className="mt-1 text-[12px] font-medium text-danger">
-            Nama pemesan wajib diisi.
-          </p>
-        )}
-
-        <fieldset className="mt-4">
-          <legend className="text-[14px] font-semibold">Cara menerima pesanan</legend>
-          <div className="mt-1 grid grid-cols-2 gap-2">
+          <div className="mt-4 grid grid-cols-2 gap-2">
             {(
               [
-                ['ambil', 'Ambil di toko'],
-                ['antar', 'Diantar'],
-              ] as [Fulfilment, string][]
-            ).map(([v, label]) => (
+                ['ambil', 'Ambil di Toko', 'Ambil sendiri di toko'],
+                ['antar', 'Diantar ke Lokasi', 'Gojek / Grab / Kurir'],
+              ] as [Fulfilment, string, string][]
+            ).map(([v, label, sub]) => (
               <label
                 key={v}
-                className="flex h-11 cursor-pointer items-center justify-center rounded-tag border border-field text-[14px] font-medium has-[:checked]:border-brand has-[:checked]:bg-brand has-[:checked]:text-white has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-brand-text"
+                className="flex cursor-pointer flex-col rounded-tag border p-3 transition-all has-[:checked]:border-brand has-[:checked]:bg-brand-tint has-[:checked]:shadow-xs has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-brand-text"
               >
-                <input type="radio" name="fulfilment" value={v} checked={customer.fulfilment === v} onChange={() => setCustomer({ fulfilment: v })} className="sr-only" />
-                {label}
+                <div className="flex items-center justify-between">
+                  <span className="text-[14px] font-bold text-ink">{label}</span>
+                  <input
+                    type="radio"
+                    name="fulfilment"
+                    value={v}
+                    checked={customer.fulfilment === v}
+                    onChange={() => setCustomer({ fulfilment: v })}
+                    className="size-4 accent-[var(--color-brand)]"
+                  />
+                </div>
+                <span className="mt-0.5 text-[12px] text-muted">{sub}</span>
               </label>
             ))}
           </div>
-        </fieldset>
 
-        {customer.fulfilment === 'ambil' ? (
-          <>
-            <label className="mt-4 block text-[14px] font-semibold" htmlFor="jam-ambil">
-              Jam pengambilan (opsional)
-            </label>
-            <div className="mt-1 flex items-center gap-2">
-              <select
-                id="jam-ambil"
-                value={pickupTime}
-                onChange={(e) => setCustomer({ pickupTime: e.target.value })}
-                aria-describedby="jam-ambil-info"
-                className="h-11 min-w-0 flex-1 rounded-tag border border-field bg-surface px-3 text-[14px]"
-              >
-                <option value="">Pilih jam (bebas / kapan saja)</option>
-                {timeSlots.map((slot) => (
-                  <option key={slot} value={slot}>
-                    {formatTime(slot)} WITA
-                  </option>
-                ))}
-              </select>
-              {pickupTime && (
-                <button
-                  type="button"
-                  onClick={() => setCustomer({ pickupTime: '' })}
-                  className="tap shrink-0 text-[13px] font-medium text-muted underline underline-offset-4 hover:text-ink"
-                >
-                  Hapus
-                </button>
-              )}
-            </div>
-            <p id="jam-ambil-info" className="mt-1 text-[12px] text-muted">
-              {hoursInfo} Boleh dikosongkan.
-            </p>
-          </>
-        ) : (
-          <div className="mt-4 space-y-3">
+          {/* Form Penerima & Alamat */}
+          <div className="mt-5 space-y-4 pt-2 border-t border-line/60">
             <div>
-              <label className="block text-[14px] font-semibold" htmlFor="alamat-antar">
-                Alamat pengantaran lengkap
-              </label>
-              <textarea
-                id="alamat-antar"
-                required
-                rows={2}
-                maxLength={300}
-                placeholder="Contoh: Jl. A. P. Pettarani No. 10, Blok A3, Makassar"
-                value={customer.deliveryAddress || ''}
-                onChange={(e) => setCustomer({ deliveryAddress: e.target.value })}
-                className="mt-1 w-full rounded-tag border border-field bg-surface p-3 text-[14px] placeholder:text-muted focus:border-brand-text outline-none"
-              />
-            </div>
-
-            <div className="flex flex-wrap items-center gap-2">
-              <button
-                type="button"
-                onClick={requestLocation}
-                disabled={gpsLoading}
-                className="tap flex items-center gap-1.5 rounded-full border border-line bg-surface px-3 py-1.5 text-[12px] font-semibold text-brand-text hover:bg-sunken disabled:opacity-50"
-              >
-                <Crosshair size={15} weight="bold" className={gpsLoading ? 'animate-spin' : ''} aria-hidden />
-                {gpsLoading
-                  ? 'Mencari lokasi…'
-                  : customer.deliveryLat && customer.deliveryLng
-                    ? '✓ Titik GPS tersimpan (perbarui)'
-                    : '📍 Gunakan titik GPS (cek tarif Gojek/Grab)'}
-              </button>
-              {customer.deliveryLat && customer.deliveryLng && (
-                <button
-                  type="button"
-                  onClick={() => {
-                    setCustomer({ deliveryLat: null, deliveryLng: null });
-                    void fetchRates(null, null);
-                  }}
-                  className="tap text-[12px] text-muted underline hover:text-ink"
-                >
-                  Hapus titik
-                </button>
-              )}
-            </div>
-            {gpsError && <p className="text-[12px] text-warn">{gpsError}</p>}
-
-            <div>
-              <label className="block text-[14px] font-semibold" htmlFor="catatan-antar">
-                Catatan lokasi / patokan (opsional)
+              <label className="block text-[13px] font-semibold text-ink" htmlFor="nama">
+                Nama Penerima / Pemesan <span className="text-danger">*</span>
               </label>
               <input
-                id="catatan-antar"
-                maxLength={200}
-                placeholder="Contoh: Pagar hitam depan masjid / titip di sekuriti"
-                value={customer.pickupNote}
-                onChange={(e) => setCustomer({ pickupNote: e.target.value })}
-                className="mt-1 h-11 w-full rounded-tag border border-field bg-surface px-3 text-[14px]"
+                id="nama"
+                required
+                maxLength={80}
+                autoComplete="name"
+                placeholder="Contoh: Budi Santoso"
+                value={customer.name}
+                onBlur={() => setNameTouched(true)}
+                onChange={(e) => {
+                  setCustomer({ name: e.target.value });
+                  if (nameTouched) setNameTouched(false);
+                }}
+                aria-invalid={nameError || undefined}
+                className={`mt-1.5 h-11 w-full rounded-tag border bg-surface px-3.5 text-[14px] ${
+                  nameError ? 'border-danger focus:border-danger' : 'border-field focus:border-brand-text'
+                } outline-none`}
               />
+              {nameError && (
+                <p role="alert" className="mt-1 text-[12px] font-medium text-danger">
+                  Nama pemesan wajib diisi.
+                </p>
+              )}
             </div>
 
-            <div className="pt-1">
-              <div className="flex items-center justify-between">
-                <span className="text-[14px] font-semibold">Pilih kurir pengantaran</span>
-                {loadingRates && <span className="text-[12px] text-muted animate-pulse">Memeriksa tarif…</span>}
-              </div>
-
-              <div className="mt-2 grid gap-2">
-                {rates.map((r) => {
-                  const isSelected =
-                    customer.shippingCourier === r.courierName &&
-                    customer.shippingService === r.serviceName;
-                  return (
-                    <label
-                      key={`${r.courierCode}-${r.serviceName}`}
-                      className={`flex cursor-pointer items-center justify-between rounded-tag border p-3 transition-colors ${
-                        isSelected
-                          ? 'border-brand bg-brand-tint'
-                          : 'border-field bg-surface hover:border-line-strong'
-                      }`}
+            {customer.fulfilment === 'ambil' ? (
+              <div>
+                <label className="block text-[13px] font-semibold text-ink" htmlFor="jam-ambil">
+                  Jam Pengambilan di Toko (Opsional)
+                </label>
+                <div className="mt-1.5 flex items-center gap-2">
+                  <select
+                    id="jam-ambil"
+                    value={pickupTime}
+                    onChange={(e) => setCustomer({ pickupTime: e.target.value })}
+                    className="h-11 min-w-0 flex-1 rounded-tag border border-field bg-surface px-3 text-[14px] outline-none focus:border-brand-text"
+                  >
+                    <option value="">Kapan saja (saat toko buka)</option>
+                    {timeSlots.map((slot) => (
+                      <option key={slot} value={slot}>
+                        Pukul {formatTime(slot)} WITA
+                      </option>
+                    ))}
+                  </select>
+                  {pickupTime && (
+                    <button
+                      type="button"
+                      onClick={() => setCustomer({ pickupTime: '' })}
+                      className="tap shrink-0 text-[13px] font-medium text-muted underline hover:text-ink"
                     >
-                      <div className="flex items-center gap-2.5 min-w-0">
-                        <input
-                          type="radio"
-                          name="shipping_courier"
-                          checked={isSelected}
-                          onChange={() =>
-                            setCustomer({
-                              shippingCourier: r.courierName,
-                              shippingService: r.serviceName,
-                              shippingCost: r.price,
-                            })
-                          }
-                          className="size-4 accent-[var(--color-brand)]"
-                        />
-                        <div className="min-w-0">
-                          <div className="flex items-center gap-1.5">
-                            <Truck size={16} weight="bold" className="shrink-0 text-brand" aria-hidden />
-                            <span className="font-semibold text-[14px] text-ink">{r.courierName}</span>
-                            <span className="rounded bg-sunken px-1.5 py-0.5 text-[11px] font-medium text-muted">
-                              {r.serviceName}
-                            </span>
-                          </div>
-                          {r.duration && <p className="text-[12px] text-muted">Estimasi: {r.duration}</p>}
-                        </div>
-                      </div>
-                      <span className="price font-bold text-[14px] text-ink shrink-0 ml-2">
-                        {formatRupiah(r.price)}
-                      </span>
-                    </label>
-                  );
-                })}
+                      Reset
+                    </button>
+                  )}
+                </div>
+                <p className="mt-1.5 text-[12px] text-muted">{hoursInfo}</p>
               </div>
+            ) : (
+              <div className="space-y-3">
+                <div>
+                  <div className="flex items-center justify-between">
+                    <label className="block text-[13px] font-semibold text-ink" htmlFor="alamat-antar">
+                      Alamat Pengantaran Lengkap <span className="text-danger">*</span>
+                    </label>
+                    <button
+                      type="button"
+                      onClick={requestLocation}
+                      disabled={gpsLoading}
+                      className="tap inline-flex items-center gap-1.5 text-[12px] font-semibold text-brand-text hover:underline disabled:opacity-50"
+                    >
+                      <Crosshair size={14} weight="bold" className={gpsLoading ? 'animate-spin' : ''} aria-hidden />
+                      {gpsLoading
+                        ? 'Mendeteksi…'
+                        : customer.deliveryLat && customer.deliveryLng
+                          ? 'Perbarui Titik GPS'
+                          : 'Pilih Titik GPS Saya'}
+                    </button>
+                  </div>
+                  <textarea
+                    id="alamat-antar"
+                    required
+                    rows={2}
+                    maxLength={300}
+                    placeholder="Nama jalan, nomor rumah/kantor, RT/RW, kelurahan, kecamatan di Makassar"
+                    value={customer.deliveryAddress || ''}
+                    onBlur={() => setAddressTouched(true)}
+                    onChange={(e) => {
+                      setCustomer({ deliveryAddress: e.target.value });
+                      if (addressTouched) setAddressTouched(false);
+                    }}
+                    aria-invalid={addressError || undefined}
+                    className={`mt-1.5 w-full rounded-tag border bg-surface p-3 text-[14px] placeholder:text-muted ${
+                      addressError ? 'border-danger focus:border-danger' : 'border-field focus:border-brand-text'
+                    } outline-none`}
+                  />
+                  {addressError && (
+                    <p role="alert" className="mt-1 text-[12px] font-medium text-danger">
+                      Alamat pengantaran wajib diisi.
+                    </p>
+                  )}
+
+                  {customer.deliveryLat && customer.deliveryLng ? (
+                    <div className="mt-1.5 flex items-center justify-between rounded bg-ok/10 px-2.5 py-1 text-[11px] text-ok">
+                      <span>✓ Titik koordinat GPS terhubung ({customer.deliveryLat.toFixed(4)}, {customer.deliveryLng.toFixed(4)})</span>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setCustomer({ deliveryLat: null, deliveryLng: null });
+                          void fetchRates(null, null);
+                        }}
+                        className="font-medium underline hover:text-ink"
+                      >
+                        Hapus
+                      </button>
+                    </div>
+                  ) : (
+                    <p className="mt-1 text-[11px] text-muted">
+                      💡 Klik <b>Pilih Titik GPS Saya</b> di atas agar ongkir GoSend & GrabExpress otomatis terhitung akurat sesuai jarak.
+                    </p>
+                  )}
+                  {gpsError && <p className="mt-1 text-[12px] text-warn">{gpsError}</p>}
+                </div>
+
+                <div>
+                  <label className="block text-[13px] font-semibold text-ink" htmlFor="catatan-antar">
+                    Catatan untuk Kurir (Patokan Lokasi)
+                  </label>
+                  <input
+                    id="catatan-antar"
+                    maxLength={200}
+                    placeholder="Contoh: Pagar abu-abu seberang minimarket / titip ke resepsionis"
+                    value={customer.pickupNote}
+                    onChange={(e) => setCustomer({ pickupNote: e.target.value })}
+                    className="mt-1.5 h-11 w-full rounded-tag border border-field bg-surface px-3.5 text-[14px] outline-none focus:border-brand-text"
+                  />
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Section 2: Pilihan Kurir Pengiriman (Tokopedia / Shopee Delivery Card Style) */}
+        {isDelivery && (
+          <div className="card rounded-[var(--radius-media)] p-5 sm:p-6">
+            <div className="flex items-center justify-between border-b border-line pb-3">
+              <div className="flex items-center gap-2">
+                <Truck size={20} weight="bold" className="text-brand shrink-0" aria-hidden />
+                <h2 className="text-[16px] font-bold text-ink">Pilihan Kurir Pengiriman</h2>
+              </div>
+              {loadingRates && (
+                <span className="flex items-center gap-1 text-[12px] font-medium text-brand-text animate-pulse">
+                  Menghitung tarif…
+                </span>
+              )}
             </div>
+
+            <div className="mt-4 space-y-2.5">
+              {rates.map((r) => {
+                const isSelected =
+                  customer.shippingCourier === r.courierName &&
+                  customer.shippingService === r.serviceName;
+
+                const isGojek = r.courierCode === 'gojek';
+                const isGrab = r.courierCode === 'grab';
+
+                const badgeBg = isGojek
+                  ? 'bg-[#00880C] text-white'
+                  : isGrab
+                    ? 'bg-[#00B14F] text-white'
+                    : 'bg-brand text-white';
+
+                return (
+                  <label
+                    key={`${r.courierCode}-${r.serviceName}`}
+                    className={`flex cursor-pointer items-center justify-between rounded-tag border p-3.5 transition-all ${
+                      isSelected
+                        ? 'border-brand bg-brand-tint shadow-xs'
+                        : 'border-field bg-surface hover:border-line-strong'
+                    }`}
+                  >
+                    <div className="flex items-center gap-3 min-w-0">
+                      <input
+                        type="radio"
+                        name="shipping_option"
+                        checked={isSelected}
+                        onChange={() =>
+                          setCustomer({
+                            shippingCourier: r.courierName,
+                            shippingService: r.serviceName,
+                            shippingCost: r.price,
+                          })
+                        }
+                        className="size-4.5 accent-[var(--color-brand)]"
+                      />
+                      <div className="min-w-0">
+                        <div className="flex flex-wrap items-center gap-1.5">
+                          <span className={`rounded px-1.5 py-0.5 text-[10px] font-bold tracking-wider uppercase ${badgeBg}`}>
+                            {isGojek ? 'GOSEND' : isGrab ? 'GRAB' : 'KURIR TOKO'}
+                          </span>
+                          <span className="font-bold text-[14px] text-ink">{r.courierName}</span>
+                          <span className="text-[12px] text-muted">({r.serviceName})</span>
+                        </div>
+                        {r.duration && (
+                          <p className="mt-0.5 flex items-center gap-1 text-[12px] text-muted">
+                            <Motorcycle size={13} aria-hidden /> Estimasi tiba: {r.duration}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="text-right shrink-0 ml-3">
+                      <p className="price text-[15px] font-bold text-ink">{formatRupiah(r.price)}</p>
+                      {r.isFallback && (
+                        <span className="text-[10px] text-muted">Tarif Flat</span>
+                      )}
+                    </div>
+                  </label>
+                );
+              })}
+            </div>
+
+            <p className="mt-3 text-[12px] text-muted">
+              Kurir mengambil paket langsung dari Toko New Agung Jl. DR. Ratulangi No.52 Makassar dan mengantarkan ke alamat tujuan Anda.
+            </p>
           </div>
         )}
 
-        {danaReady && (
-          <fieldset className="mt-4">
-            <legend className="text-[14px] font-semibold">Cara membayar</legend>
-            <div className="mt-1 grid gap-2">
-              {(
-                [
-                  ['dana', 'Bayar sekarang dengan DANA', 'Langsung lunas, pesanan otomatis diproses toko'],
-                  ['wa', 'Bayar di toko / via WhatsApp', 'Tunai, QRIS, atau transfer saat barang diterima'],
-                ] as const
-              ).map(([v, label, hint]) => (
-                <label
-                  key={v}
-                  className="flex cursor-pointer items-center gap-3 rounded-tag border border-field p-3 has-[:checked]:border-brand has-[:checked]:bg-brand-tint has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-brand-text"
-                >
-                  <input type="radio" name="payment" value={v} checked={(payDana ? 'dana' : 'wa') === v} onChange={() => setCustomer({ paymentMethod: v })} className="size-4 accent-[var(--color-brand)]" />
-                  {v === 'dana' ? <Wallet size={22} weight="bold" className="shrink-0 text-[#108EE9]" aria-hidden /> : <WhatsappLogo size={22} weight="bold" className="shrink-0 text-wa-text" aria-hidden />}
-                  <span className="min-w-0">
-                    <span className="block text-[14px] font-semibold">{label}</span>
-                    <span className="block text-[12px] text-muted">{hint}</span>
-                  </span>
-                </label>
-              ))}
-            </div>
-          </fieldset>
-        )}
+        {/* Section 3: Daftar Barang Belanjaan */}
+        <div className="card rounded-[var(--radius-media)] p-5 sm:p-6">
+          <div className="flex items-center justify-between border-b border-line pb-3">
+            <h2 className="text-[16px] font-bold text-ink">Daftar Produk ({lines.length} jenis)</h2>
+            <Link href="/barang" className="text-[13px] font-semibold text-brand-text hover:underline">
+              + Tambah Barang
+            </Link>
+          </div>
 
-        {/* jebakan bot: disembunyikan dari pengguna */}
+          <ul className="mt-3 divide-y divide-line">
+            {lines.map((l) => {
+              const problem = problems.get(key(l));
+              return (
+                <li key={key(l)} className={`flex gap-3.5 py-3.5 ${problem ? 'bg-danger/5 p-2 rounded' : ''}`}>
+                  <Link
+                    href={`/barang/${l.slug}`}
+                    tabIndex={-1}
+                    aria-hidden
+                    className="relative grid size-16 shrink-0 place-items-center overflow-hidden rounded-[8px] border border-line bg-white"
+                  >
+                    {l.image ? (
+                      <Image src={l.image} alt="" fill sizes="64px" className="object-contain p-1" />
+                    ) : (
+                      <Package size={22} weight="thin" className="text-muted" />
+                    )}
+                  </Link>
+
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <Link href={`/barang/${l.slug}`} className="line-clamp-2 text-[14px] font-semibold text-ink hover:underline">
+                          {l.name}
+                        </Link>
+                        <p className="mt-0.5 text-[12px] text-muted">
+                          {l.variantLabel && <span>{l.variantLabel} · </span>}
+                          {formatRupiah(l.price)} / {l.unit}
+                        </p>
+                      </div>
+                      <Price value={l.price * l.qty} className="text-[15px] font-bold text-ink shrink-0" />
+                    </div>
+
+                    {problem && (
+                      <p className="mt-1 text-[12px] font-semibold text-danger">
+                        {problem === 'habis' ? 'Stok produk ini habis' : 'Satuan ini tidak lagi tersedia'}
+                      </p>
+                    )}
+
+                    <div className="mt-2.5 flex items-center justify-between">
+                      <div className="flex h-9 items-center rounded-tag border border-field bg-surface">
+                        <button
+                          type="button"
+                          className="grid h-full w-8 place-items-center rounded-l-tag hover:bg-sunken"
+                          onClick={() => setQty(l.variantId, l.unit, l.qty - 1)}
+                          aria-label={`Kurangi ${l.name}`}
+                        >
+                          <Minus size={14} weight="bold" />
+                        </button>
+                        <input
+                          type="number"
+                          inputMode="numeric"
+                          value={l.qty}
+                          min={1}
+                          onChange={(e) => setQty(l.variantId, l.unit, Number(e.target.value) || 1)}
+                          aria-label={`Jumlah ${l.name}`}
+                          className="price h-full w-10 bg-transparent text-center text-[14px] [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none"
+                        />
+                        <button
+                          type="button"
+                          className="grid h-full w-8 place-items-center rounded-r-tag hover:bg-sunken"
+                          onClick={() => setQty(l.variantId, l.unit, l.qty + 1)}
+                          aria-label={`Tambah ${l.name}`}
+                        >
+                          <Plus size={14} weight="bold" />
+                        </button>
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={() => remove(l.variantId, l.unit)}
+                        aria-label={`Hapus ${l.name}`}
+                        className="tap flex items-center gap-1 text-[12px] text-muted hover:text-danger"
+                      >
+                        <Trash size={16} /> Hapus
+                      </button>
+                    </div>
+                  </div>
+                </li>
+              );
+            })}
+          </ul>
+        </div>
+
+        {/* Section 4: Metode Pembayaran */}
+        <div className="card rounded-[var(--radius-media)] p-5 sm:p-6">
+          <div className="flex items-center justify-between border-b border-line pb-3">
+            <div className="flex items-center gap-2">
+              <CreditCard size={20} weight="bold" className="text-brand shrink-0" aria-hidden />
+              <h2 className="text-[16px] font-bold text-ink">Metode Pembayaran</h2>
+            </div>
+            {payDana && (
+              <span className="rounded-full bg-blue-100 dark:bg-blue-950 px-2.5 py-0.5 text-[11px] font-bold text-[#108EE9]">
+                DANA Auto-Pay
+              </span>
+            )}
+          </div>
+
+          <div className="mt-4 grid gap-2.5">
+            {danaReady && (
+              <label
+                className={`flex cursor-pointer items-center justify-between rounded-tag border p-3.5 transition-all ${
+                  payDana ? 'border-brand bg-brand-tint shadow-xs' : 'border-field bg-surface hover:border-line-strong'
+                }`}
+              >
+                <div className="flex items-center gap-3 min-w-0">
+                  <input
+                    type="radio"
+                    name="payment_method"
+                    value="dana"
+                    checked={payDana}
+                    onChange={() => setCustomer({ paymentMethod: 'dana' })}
+                    className="size-4.5 accent-[var(--color-brand)]"
+                  />
+                  <Wallet size={24} weight="bold" className="shrink-0 text-[#108EE9]" aria-hidden />
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2">
+                      <span className="font-bold text-[14px] text-ink">DANA (Bayar Langsung Online)</span>
+                      <span className="rounded bg-[#108EE9] px-1.5 py-0.2 text-[10px] font-bold text-white">INSTAN</span>
+                    </div>
+                    <p className="mt-0.5 text-[12px] text-muted">
+                      Bayar langsung via aplikasi/QRIS DANA. Pesanan otomatis lunas dan langsung disiapkan toko.
+                    </p>
+                  </div>
+                </div>
+              </label>
+            )}
+
+            <label
+              className={`flex cursor-pointer items-center justify-between rounded-tag border p-3.5 transition-all ${
+                !payDana ? 'border-brand bg-brand-tint shadow-xs' : 'border-field bg-surface hover:border-line-strong'
+              }`}
+            >
+              <div className="flex items-center gap-3 min-w-0">
+                <input
+                  type="radio"
+                  name="payment_method"
+                  value="wa"
+                  checked={!payDana}
+                  onChange={() => setCustomer({ paymentMethod: 'wa' })}
+                  className="size-4.5 accent-[var(--color-brand)]"
+                />
+                <WhatsappLogo size={24} weight="bold" className="shrink-0 text-wa-text" aria-hidden />
+                <div className="min-w-0">
+                  <div className="flex items-center gap-2">
+                    <span className="font-bold text-[14px] text-ink">Bayar di Tempat / Konfirmasi WhatsApp</span>
+                  </div>
+                  <p className="mt-0.5 text-[12px] text-muted">
+                    Bayar tunai/QRIS saat ambil barang di toko atau transfer langsung saat konfirmasi via WhatsApp.
+                  </p>
+                </div>
+              </div>
+            </label>
+          </div>
+        </div>
+
+        {/* Honeypot anti-bot */}
         <div aria-hidden className="absolute -left-[9999px]">
           <label>
             Website
@@ -595,50 +745,99 @@ export function CartView({ hours, timezone }: { hours: WeeklyHours; timezone: st
         </div>
 
         {error && (
-          <p role="alert" className="mt-4 text-[14px] font-medium text-danger">
+          <div role="alert" className="rounded-tag border border-danger/40 bg-danger/10 p-3.5 text-[13px] font-medium text-danger">
             {error}
-          </p>
+          </div>
         )}
+      </form>
 
-        <div className="mt-5 space-y-2.5 rounded-tag bg-sunken/60 p-3 text-[12px] text-muted">
-          <div className="flex items-start gap-2.5">
-            <Storefront size={16} weight="bold" className="mt-0.5 shrink-0 text-brand" aria-hidden />
-            <p>
-              <strong className="font-semibold text-ink">Lokasi Toko:</strong> Jl. DR. Ratulangi No.52, Makassar.
-            </p>
+      {/* Kolom Kanan: Ringkasan Belanja (Sticky ala Tokopedia/Shopee) */}
+      <div className="h-fit lg:sticky lg:top-24 space-y-4">
+        <div className="card rounded-[var(--radius-media)] p-5 sm:p-6 shadow-sm">
+          <h2 className="text-[17px] font-bold text-ink border-b border-line pb-3">Ringkasan Belanja</h2>
+
+          <div className="mt-4 space-y-2.5 text-[14px]">
+            <div className="flex items-center justify-between text-muted">
+              <span>Total Harga ({lines.length} jenis barang)</span>
+              <span className="text-ink font-medium">{formatRupiah(itemsTotal)}</span>
+            </div>
+
+            {isDelivery && (
+              <div className="flex items-center justify-between text-muted">
+                <div className="min-w-0">
+                  <span>Ongkos Kirim</span>
+                  <span className="block text-[11px] text-brand-text truncate">
+                    {customer.shippingCourier ? `${customer.shippingCourier} (${customer.shippingService})` : 'Kurir'}
+                  </span>
+                </div>
+                <span className="text-ink font-medium shrink-0 ml-2">
+                  {formatRupiah(shippingCost)}
+                </span>
+              </div>
+            )}
+
+            <div className="flex items-center justify-between text-muted">
+              <span>Biaya Layanan & Aplikasi</span>
+              <span className="font-bold text-ok text-[12px] uppercase">GRATIS</span>
+            </div>
+
+            <hr className="receipt-rule my-3.5" />
+
+            <div className="flex items-baseline justify-between pt-1">
+              <div>
+                <span className="block text-[15px] font-bold text-ink">Total Tagihan</span>
+                <span className="block text-[11px] text-muted">Termasuk ongkir dan pajak</span>
+              </div>
+              <Price value={grandTotal} className="text-[26px] font-extrabold text-brand sm:text-[28px]" />
+            </div>
           </div>
-          <div className="flex items-start gap-2.5">
-            <CreditCard size={16} weight="bold" className="mt-0.5 shrink-0 text-brand" aria-hidden />
-            <p>
-              <strong className="font-semibold text-ink">Pembayaran fleksibel:</strong> DANA instan, atau tunai/transfer saat barang diambil/diterima.
-            </p>
-          </div>
-          <div className="flex items-start gap-2.5">
-            <ChatCircleDots size={16} weight="bold" className="mt-0.5 shrink-0 text-wa-text" aria-hidden />
-            <p>
-              <strong className="font-semibold text-ink">Konfirmasi cepat:</strong> Ketersediaan stok fisik dicek langsung oleh tim via WhatsApp.
+
+          <div className="mt-6">
+            {payDana ? (
+              <button
+                type="submit"
+                form="checkout-form"
+                disabled={busy}
+                className="btn btn-primary btn-lg w-full flex items-center justify-center gap-2 shadow-md hover:shadow-lg transition-all"
+              >
+                <Wallet size={22} weight="bold" aria-hidden />
+                {busy ? 'Membuka DANA…' : `Bayar ${formatRupiah(grandTotal)} dengan DANA`}
+              </button>
+            ) : (
+              <button
+                type="submit"
+                form="checkout-form"
+                disabled={busy}
+                className="btn btn-wa btn-lg w-full flex items-center justify-center gap-2 shadow-md hover:shadow-lg transition-all"
+              >
+                <WhatsappLogo size={22} weight="bold" aria-hidden />
+                {busy ? 'Menyimpan pesanan…' : 'Kirim Pesanan via WhatsApp'}
+              </button>
+            )}
+            <p className="mt-2.5 text-center text-[11px] text-muted">
+              {payDana
+                ? '🔒 Anda akan diarahkan ke halaman pembayaran resmi DANA Indonesia.'
+                : '📲 Rincian lengkap pesanan akan otomatis terkirim ke WhatsApp toko.'}
             </p>
           </div>
         </div>
 
-        {payDana ? (
-          <>
-            <button type="submit" disabled={busy} className="btn btn-primary btn-lg mt-4 w-full">
-              <Wallet size={22} weight="bold" aria-hidden />
-              {busy ? 'Membuka halaman bayar…' : `Bayar ${formatRupiah(grandTotal)} dengan DANA`}
-            </button>
-            <p className="mt-2 text-center text-[12px] text-muted">Anda akan diarahkan ke halaman pembayaran DANA yang aman.</p>
-          </>
-        ) : (
-          <>
-            <button type="submit" disabled={busy} className="btn btn-wa btn-lg mt-4 w-full">
-              <WhatsappLogo size={22} weight="bold" aria-hidden />
-              {busy ? 'Menyimpan pesanan…' : 'Kirim pesanan via WhatsApp'}
-            </button>
-            <p className="mt-2 text-center text-[12px] text-muted">WhatsApp akan terbuka dengan rincian pesanan Anda. Tekan Kirim untuk menyelesaikan pesanan.</p>
-          </>
-        )}
-      </form>
+        {/* Badge Kepercayaan Tokopedia Style */}
+        <div className="card rounded-[var(--radius-media)] p-4 text-[12px] space-y-2.5 bg-sunken/40">
+          <div className="flex items-start gap-2.5">
+            <ShieldCheck size={18} weight="fill" className="text-ok shrink-0 mt-0.5" />
+            <p className="text-muted">
+              <strong className="text-ink font-semibold">Jaminan Transaksi Aman:</strong> Data dan rincian belanja Anda tersimpan langsung di sistem toko.
+            </p>
+          </div>
+          <div className="flex items-start gap-2.5">
+            <Storefront size={18} weight="fill" className="text-brand shrink-0 mt-0.5" />
+            <p className="text-muted">
+              <strong className="text-ink font-semibold">Toko Fisik Resmi:</strong> Toko New Agung, Jl. DR. Ratulangi No.52 Makassar.
+            </p>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

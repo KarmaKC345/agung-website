@@ -16,24 +16,23 @@ const store: StoreInfo = {
 };
 
 describe('shipping rates', () => {
-  it('returns fallback flat rate when BITESHIP_API_KEY is empty', async () => {
+  it('calculates GoSend, GrabExpress, and Flat Kurir when coordinates are provided', async () => {
     const env = loadEnv({ DATABASE_URL: 'x', BITESHIP_API_KEY: '', SHIPPING_FLAT_COST: '15000' } as NodeJS.ProcessEnv);
     const rates = await fetchShippingRates(env, store, { lat: -5.15, lng: 119.42 });
-    expect(rates).toHaveLength(1);
-    expect(rates[0]).toEqual({
-      courierCode: 'toko',
-      courierName: 'Kurir Toko Makassar',
-      serviceName: 'Flat Makassar',
-      price: 15000,
-      duration: 'Hari yang sama',
-      isFallback: true,
-    });
+    expect(rates).toHaveLength(3);
+    const couriers = rates.map((r) => r.courierCode);
+    expect(couriers).toContain('gojek');
+    expect(couriers).toContain('grab');
+    expect(couriers).toContain('toko');
+    const flat = rates.find((r) => r.courierCode === 'toko');
+    expect(flat?.price).toBe(15000);
   });
 
   it('returns fallback flat rate when destination coordinates are missing', async () => {
     const env = loadEnv({ DATABASE_URL: 'x', BITESHIP_API_KEY: 'test-key' } as NodeJS.ProcessEnv);
     const rates = await fetchShippingRates(env, store, {});
     expect(rates).toHaveLength(1);
+    expect(rates[0]!.courierCode).toBe('toko');
     expect(rates[0]!.isFallback).toBe(true);
   });
 
