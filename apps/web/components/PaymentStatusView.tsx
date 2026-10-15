@@ -7,6 +7,7 @@ import { formatRupiah } from '@newagung/shared';
 import { API_URL } from '@/lib/config';
 import { CenteredLoading } from './CenteredLoading';
 import { Confetti } from './Confetti';
+import { OrderTimeline } from './OrderTimeline';
 
 interface Payment {
   code: string;
@@ -62,6 +63,13 @@ export function PaymentStatusView({ code }: { code: string }) {
         </div>
         <h1 className="mt-4 text-[22px] font-bold">{view.title}</h1>
         <p className="mt-2 leading-relaxed text-muted">{view.text}</p>
+
+        {p.paymentStatus !== 'failed' && p.paymentStatus !== 'expired' && (
+          <div className="mt-6 rounded-tag border border-line bg-sunken/60 p-3 sm:px-4">
+            <OrderTimeline status={(p.status as any) || 'baru'} />
+          </div>
+        )}
+
         <dl className="mt-6 grid grid-cols-2 gap-y-2 rounded-tag bg-sunken p-4 text-left text-[14px]">
           <dt className="text-muted">Kode pesanan</dt>
           <dd className="text-right font-mono font-medium">{p.code}</dd>

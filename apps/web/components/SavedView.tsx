@@ -18,6 +18,7 @@ import { useShop, type CartLine, type PastOrder } from '@/lib/cart';
 import { API_URL } from '@/lib/config';
 import { useHydrated } from '@/lib/use-hydrated';
 import { ProductCard } from './ProductCard';
+import { OrderTimeline } from './OrderTimeline';
 
 const dateFmt = new Intl.DateTimeFormat('id-ID', {
   day: 'numeric',
@@ -168,10 +169,18 @@ function OrderCard({
         </span>
       </div>
 
-      <div className="pt-2">
+      <div className="pt-2 flex items-center justify-between">
         <p className="font-mono text-[12px] text-muted">
           Kode: <span className="font-medium text-ink select-all">{order.code}</span>
         </p>
+      </div>
+
+      {/* Timeline Stepper Status Pesanan */}
+      <div className="mt-2.5 mb-1 rounded-tag bg-sunken/40 px-3 py-1.5 border border-line/60">
+        <OrderTimeline
+          status={status}
+          fulfilment={order.deliveryAddress || order.shippingCourier ? 'antar' : 'ambil'}
+        />
       </div>
 
       {/* Daftar Produk dengan Gambar & Link Produk */}
