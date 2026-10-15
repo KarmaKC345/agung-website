@@ -1,6 +1,7 @@
 'use client';
 
 import {
+  ArrowRight,
   CaretDown,
   CaretUp,
   MagnifyingGlass,
@@ -170,9 +171,18 @@ function OrderCard({
       </div>
 
       <div className="pt-2 flex items-center justify-between">
-        <p className="font-mono text-[12px] text-muted">
-          Kode: <span className="font-medium text-ink select-all">{order.code}</span>
-        </p>
+        <Link
+          href={`/pesanan/${order.code}`}
+          className="font-mono text-[12px] text-muted hover:text-brand-text group"
+        >
+          Kode: <span className="font-medium text-ink select-all group-hover:underline">{order.code}</span>
+        </Link>
+        <Link
+          href={`/pesanan/${order.code}`}
+          className="tap inline-flex items-center gap-1 text-[12px] font-semibold text-brand-text hover:underline"
+        >
+          Rincian Pesanan <ArrowRight size={13} weight="bold" />
+        </Link>
       </div>
 
       {/* Timeline Stepper Status Pesanan */}

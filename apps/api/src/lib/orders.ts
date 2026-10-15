@@ -4,6 +4,7 @@ import {
   waLink,
   type CurrentPrice,
   type OrderInput,
+  type OrderItemView,
   type OrderStatus,
   type OrderView,
   type StockStatus,
@@ -203,4 +204,46 @@ export async function listOrders(
 export async function setOrderStatus(db: Queryable, id: string, status: OrderStatus): Promise<void> {
   const { rowCount } = await db.query('update orders set status = $2 where id = $1', [id, status]);
   if (!rowCount) throw new HttpError(404, 'Pesanan tidak ditemukan');
+}
+
+export interface PublicOrderDetailItem extends OrderItemView {
+  slug?: string;
+  image?: string | null;
+}
+
+export interface PublicOrderDetail extends Omit<OrderView, 'items'> {
+  items: PublicOrderDetailItem[];
+}
+
+export async function getOrderByCode(db: Queryable, code: string): Promise<PublicOrderDetail | null> {
+  const { rows } = await db.query<PublicOrderDetail>(
+    `select o.id, o.code, o.customer_name as "customerName", o.fulfilment, o.pickup_note as "pickupNote",
+            o.status, o.estimated_total as "estimatedTotal", o.created_at as "createdAt",
+            o.payment_method as "paymentMethod", o.payment_status as "paymentStatus",
+            o.shipping_courier as "shippingCourier", o.shipping_service as "shippingService",
+            o.shipping_cost as "shippingCost", o.delivery_address as "deliveryAddress",
+            o.delivery_lat as "deliveryLat", o.delivery_lng as "deliveryLng",
+            coalesce((select json_agg(json_build_object(
+                       'variantId', i.variant_id,
+                       'name', i.name_snapshot,
+                       'unit', i.unit_snapshot,
+                       'price', i.price_snapshot,
+                       'qty', i.qty,
+                       'slug', p.slug,
+                       'image', (select url from product_images img where img.product_id = p.id order by img.position limit 1)
+                     ) order by i.name_snapshot)
+                      from order_items i
+                      left join product_variants pv on pv.id = i.variant_id
+                      left join products p on p.id = pv.product_id
+                      where i.order_id = o.id), '[]') as items
+       from orders o
+      where o.code = $1`,
+    [code],
+  );
+  if (!rows[0]) return null;
+  const o = rows[0];
+  return {
+    ...o,
+    createdAt: new Date(o.createdAt).toISOString(),
+  };
 }

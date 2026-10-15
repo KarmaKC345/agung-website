@@ -6,7 +6,7 @@ import type { Ctx } from '../app';
 import { notFound, HttpError } from '../errors';
 import { getProduct, listBanners, listBrands, listCategories, listProducts, productSummariesByIds, recordSearchMiss, suggest } from '../lib/catalog';
 import { createDanaPayment, danaEnabled, parseDanaNotify, queryDanaPayment, type PaymentStatus } from '../lib/dana';
-import { createOrder, currentPrices } from '../lib/orders';
+import { createOrder, currentPrices, getOrderByCode } from '../lib/orders';
 import { fetchShippingRates, reverseGeocode } from '../lib/shipping';
 import { getStore } from '../lib/store';
 
@@ -188,6 +188,13 @@ export function publicRoutes({ db, env }: Ctx): Router {
     const map: Record<string, string> = {};
     for (const r of rows) map[r.code] = r.status;
     res.json(map);
+  });
+
+  r.get('/orders/:code', async (req, res) => {
+    const code = z.string().max(40).parse(req.params.code);
+    const order = await getOrderByCode(db, code);
+    if (!order) throw notFound('Pesanan');
+    res.json(order);
   });
 
   return r;
