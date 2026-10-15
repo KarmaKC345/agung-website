@@ -5,6 +5,7 @@ import { formatRupiah, ORDER_STATUS_LABEL, type OrderStatus, type OrderView } fr
 import { btnSecondary, inputCls, PageTitle } from '@/components/panel/PanelShell';
 import { useDialog } from '@/components/panel/Dialog';
 import { adminFetch } from '@/lib/admin';
+import { API_URL } from '@/lib/config';
 
 const FLOW: OrderStatus[] = ['baru', 'disiapkan', 'siap', 'selesai'];
 const NEXT_LABEL: Partial<Record<OrderStatus, string>> = {
@@ -28,6 +29,7 @@ export default function OrdersPage() {
   const [data, setData] = useState<{ items: OrderView[]; total: number; pageSize: number } | null>(null);
   const [counts, setCounts] = useState<Record<string, number>>({});
   const [error, setError] = useState<string | null>(null);
+  const [checkingDana, setCheckingDana] = useState<string | null>(null);
   const dialog = useDialog();
 
   const load = useCallback(async () => {
@@ -56,6 +58,18 @@ export default function OrdersPage() {
   async function update(id: string, s: OrderStatus) {
     await adminFetch(`/orders/${id}`, { method: 'PATCH', json: { status: s } });
     await load();
+  }
+
+  async function checkDana(code: string) {
+    setCheckingDana(code);
+    try {
+      const res = await fetch(`${API_URL}/api/payments/${encodeURIComponent(code)}`);
+      if (res.ok) {
+        await load();
+      }
+    } finally {
+      setCheckingDana(null);
+    }
   }
 
   return (
@@ -103,9 +117,22 @@ export default function OrdersPage() {
                 <span className="font-mono text-[16px] font-medium">{o.code}</span>
                 <span className={`rounded-full px-2 py-0.5 text-[12px] font-semibold ${STATUS_STYLE[o.status]}`}>{ORDER_STATUS_LABEL[o.status]}</span>
                 {o.paymentMethod === 'dana' && (
-                  <span className={`rounded-full px-2 py-0.5 text-[12px] font-semibold ${o.paymentStatus === 'paid' ? 'bg-ok text-white' : 'bg-sunken text-muted'}`}>
-                    DANA · {{ paid: 'Lunas', pending: 'Belum dibayar', failed: 'Gagal', expired: 'Kedaluwarsa', none: '' }[o.paymentStatus]}
-                  </span>
+                  <div className="flex items-center gap-1.5">
+                    <span className={`rounded-full px-2 py-0.5 text-[12px] font-semibold ${o.paymentStatus === 'paid' ? 'bg-ok text-white' : 'bg-sunken text-muted'}`}>
+                      DANA · {{ paid: 'Lunas', pending: 'Belum dibayar', failed: 'Gagal', expired: 'Kedaluwarsa', none: '' }[o.paymentStatus]}
+                    </span>
+                    {o.paymentStatus === 'pending' && (
+                      <button
+                        type="button"
+                        disabled={checkingDana === o.code}
+                        onClick={() => checkDana(o.code)}
+                        className="tap text-[11px] font-semibold text-brand-text underline hover:text-ink disabled:opacity-50"
+                        title="Cek status terkini ke server DANA"
+                      >
+                        {checkingDana === o.code ? 'Mengecek…' : '↻ Cek status DANA'}
+                      </button>
+                    )}
+                  </div>
                 )}
                 <span className="ml-auto text-[13px] text-muted">{timeFmt.format(new Date(o.createdAt))}</span>
               </div>
@@ -143,7 +170,30 @@ export default function OrdersPage() {
                 </span>
                 <div className="ml-auto flex gap-2">
                   {NEXT_LABEL[o.status] && (
-                    <button className={btnSecondary} onClick={() => update(o.id, FLOW[FLOW.indexOf(o.status) + 1]!)}>
+                    <button
+                      className={btnSecondary}
+                      onClick={async () => {
+                        const nextStatus = FLOW[FLOW.indexOf(o.status) + 1]!;
+                        if (o.paymentMethod === 'dana' && o.paymentStatus !== 'paid' && o.status === 'baru') {
+                          const statusLabel =
+                            {
+                              pending: 'belum dibayar (masih menunggu pembayaran)',
+                              failed: 'gagal bayar',
+                              expired: 'sudah kedaluwarsa',
+                              none: 'belum ada status pembayaran',
+                            }[o.paymentStatus] || 'belum lunas';
+
+                          const proceed = await dialog.confirm({
+                            title: 'Peringatan: Pembayaran Belum Lunas',
+                            message: `Pesanan ${o.code} (${o.customerName}) memilih pembayaran DANA, tetapi statusnya masih ${statusLabel}. Apakah Anda yakin ingin mulai memproses pesanan ini?`,
+                            confirmLabel: 'Tetap Siapkan Pesanan',
+                            danger: true,
+                          });
+                          if (!proceed) return;
+                        }
+                        await update(o.id, nextStatus);
+                      }}
+                    >
                       {NEXT_LABEL[o.status]}
                     </button>
                   )}
