@@ -1,6 +1,7 @@
 'use client';
 
 import { Check, Minus, Plus, WhatsappLogo } from '@phosphor-icons/react';
+import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useMemo, useRef, useState } from 'react';
@@ -336,37 +337,85 @@ export function ProductPurchase({
       <div
         aria-hidden={inlineVisible || undefined}
         inert={inlineVisible}
-        className={`fixed inset-x-0 bottom-0 z-30 border-t border-line bg-surface/95 pb-[env(safe-area-inset-bottom)] backdrop-blur-md transition-[transform,opacity] duration-200 lg:hidden ${
+        className={`fixed inset-x-0 bottom-0 z-30 border-t border-line bg-surface/95 pb-[env(safe-area-inset-bottom)] shadow-[0_-4px_24px_rgba(0,0,0,0.08)] dark:shadow-[0_-4px_24px_rgba(0,0,0,0.35)] backdrop-blur-md transition-[transform,opacity] duration-200 lg:hidden ${
           inlineVisible ? 'pointer-events-none translate-y-full opacity-0' : 'translate-y-0 opacity-100'
         }`}
       >
         {added && !inlineVisible && (
-          <p role="status" className="border-b border-line px-4 py-2 text-[13px]">
-            {added} berhasil ditambahkan ke keranjang.{' '}
+          <p role="status" className="border-b border-line bg-sunken/80 px-4 py-1.5 text-[12px] flex items-center justify-between">
+            <span>
+              <b>{added}</b> masuk keranjang.
+            </span>
             <Link href="/keranjang" className="font-semibold text-brand-text underline underline-offset-4">
               Lihat keranjang
             </Link>
           </p>
         )}
-        <div className="mx-auto flex max-w-7xl items-center gap-2 px-4 py-2.5">
-          <a href={waHref} target="_blank" rel="noopener" aria-label="Tanyakan produk ini via WhatsApp" className="grid size-11 shrink-0 place-items-center rounded-tag border border-field text-wa-text">
-            <WhatsappLogo size={22} weight="bold" aria-hidden />
-          </a>
-          {out ? (
-            <a href={waHref} target="_blank" rel="noopener" className="btn btn-secondary flex-1">
-              Tanyakan ketersediaan
-            </a>
-          ) : (
-            <>
-              <button type="button" onClick={buyNow} className="btn flex-1 border-brand bg-surface px-3 text-brand-text">
-                Beli langsung
-              </button>
-              <button type="button" onClick={addToCart} className="btn btn-primary flex-1 px-3">
-                <Plus size={18} weight="bold" aria-hidden />
-                Keranjang
-              </button>
-            </>
+        <div className="mx-auto flex max-w-7xl flex-col gap-2 px-4 py-2.5">
+          {/* Header ringkas di mobile: Foto mini, varian aktif & stepper jumlah */}
+          {!out && (
+            <div className="flex items-center justify-between gap-2 border-b border-line/60 pb-2">
+              <div className="flex items-center gap-2.5 min-w-0">
+                {product.images[0] && (
+                  <div className="relative size-9 shrink-0 overflow-hidden rounded-[6px] border border-line bg-white">
+                    <Image
+                      src={product.images[0]}
+                      alt=""
+                      fill
+                      sizes="36px"
+                      className="object-contain p-0.5"
+                    />
+                  </div>
+                )}
+                <div className="min-w-0">
+                  <p className="truncate text-[12px] font-medium text-ink">
+                    {variant.label ? `${variant.label} · ` : ''}{price.unit}
+                  </p>
+                  <p className="price text-[13px] font-bold text-ink">
+                    {formatRupiah(price.price * qty)}
+                  </p>
+                </div>
+              </div>
+
+              {/* Stepper jumlah langsung di sticky bar */}
+              <Stepper qty={qty} setQty={setQty} size="sm" />
+            </div>
           )}
+
+          <div className="flex items-center gap-2">
+            <a
+              href={waHref}
+              target="_blank"
+              rel="noopener"
+              aria-label="Tanyakan produk ini via WhatsApp"
+              className="tap grid size-11 shrink-0 place-items-center rounded-tag border border-field text-wa-text active:scale-95 transition-transform"
+            >
+              <WhatsappLogo size={22} weight="bold" aria-hidden />
+            </a>
+            {out ? (
+              <a href={waHref} target="_blank" rel="noopener" className="btn btn-secondary flex-1 active:scale-95 transition-transform">
+                Tanyakan ketersediaan
+              </a>
+            ) : (
+              <>
+                <button
+                  type="button"
+                  onClick={buyNow}
+                  className="btn flex-1 border-brand bg-surface px-3 text-[14px] font-semibold text-brand-text active:scale-95 transition-transform"
+                >
+                  Beli langsung
+                </button>
+                <button
+                  type="button"
+                  onClick={addToCart}
+                  className="btn btn-primary flex-1 px-3 text-[14px] font-semibold active:scale-95 transition-transform"
+                >
+                  <Plus size={18} weight="bold" aria-hidden />
+                  + Keranjang
+                </button>
+              </>
+            )}
+          </div>
         </div>
       </div>
     </div>

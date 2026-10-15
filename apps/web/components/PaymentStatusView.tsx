@@ -6,6 +6,7 @@ import { useEffect, useState } from 'react';
 import { formatRupiah } from '@newagung/shared';
 import { API_URL } from '@/lib/config';
 import { CenteredLoading } from './CenteredLoading';
+import { Confetti } from './Confetti';
 
 interface Payment {
   code: string;
@@ -53,26 +54,29 @@ export function PaymentStatusView({ code }: { code: string }) {
   }[p.paymentStatus];
 
   return (
-    <div className="card mx-auto max-w-lg rounded-[var(--radius-media)] p-6 text-center sm:p-8" role="status" aria-live="polite">
-      <div className="flex justify-center" aria-hidden>
-        {view.icon}
+    <>
+      {p.paymentStatus === 'paid' && <Confetti />}
+      <div className="card mx-auto max-w-lg rounded-[var(--radius-media)] p-6 text-center sm:p-8" role="status" aria-live="polite">
+        <div className="flex justify-center" aria-hidden>
+          {view.icon}
+        </div>
+        <h1 className="mt-4 text-[22px] font-bold">{view.title}</h1>
+        <p className="mt-2 leading-relaxed text-muted">{view.text}</p>
+        <dl className="mt-6 grid grid-cols-2 gap-y-2 rounded-tag bg-sunken p-4 text-left text-[14px]">
+          <dt className="text-muted">Kode pesanan</dt>
+          <dd className="text-right font-mono font-medium">{p.code}</dd>
+          <dt className="text-muted">Total</dt>
+          <dd className="price text-right">{formatRupiah(p.total)}</dd>
+        </dl>
+        <div className="mt-6 flex flex-wrap justify-center gap-2">
+          <Link href="/favorit?tab=riwayat" className="btn btn-primary">
+            Lihat riwayat pesanan
+          </Link>
+          <Link href="/" className="btn btn-secondary">
+            Lanjut belanja
+          </Link>
+        </div>
       </div>
-      <h1 className="mt-4 text-[22px] font-bold">{view.title}</h1>
-      <p className="mt-2 leading-relaxed text-muted">{view.text}</p>
-      <dl className="mt-6 grid grid-cols-2 gap-y-2 rounded-tag bg-sunken p-4 text-left text-[14px]">
-        <dt className="text-muted">Kode pesanan</dt>
-        <dd className="text-right font-mono font-medium">{p.code}</dd>
-        <dt className="text-muted">Total</dt>
-        <dd className="price text-right">{formatRupiah(p.total)}</dd>
-      </dl>
-      <div className="mt-6 flex flex-wrap justify-center gap-2">
-        <Link href="/favorit?tab=riwayat" className="btn btn-primary">
-          Lihat riwayat pesanan
-        </Link>
-        <Link href="/" className="btn btn-secondary">
-          Lanjut belanja
-        </Link>
-      </div>
-    </div>
+    </>
   );
 }
