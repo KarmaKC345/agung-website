@@ -2,6 +2,7 @@
 
 import { ArrowLeft, Crosshair, MapPin, Minus, Plus } from '@phosphor-icons/react';
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import 'leaflet/dist/leaflet.css';
 import { API_URL } from '@/lib/config';
 
@@ -33,9 +34,11 @@ export function MapPickerModal({
   const [fullAddress, setFullAddress] = useState(initialAddress || 'Mengambil alamat…');
   const [loadingAddress, setLoadingAddress] = useState(false);
   const [gpsLoading, setGpsLoading] = useState(false);
+  const [mounted, setMounted] = useState(false);
 
   // Kunci scroll halaman belakang dan dukung tombol Escape
   useEffect(() => {
+    setMounted(true);
     const orig = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -186,14 +189,23 @@ export function MapPickerModal({
     onClose();
   }
 
-  return (
+  if (!mounted) return null;
+
+  return createPortal(
     <div
       role="dialog"
       aria-modal="true"
       aria-label="Tentukan titik di peta"
-      className="fixed inset-0 z-50 flex h-dvh w-full flex-col bg-surface sm:inset-auto sm:top-1/2 sm:left-1/2 sm:h-[88vh] sm:w-[560px] sm:-translate-x-1/2 sm:-translate-y-1/2 sm:rounded-[20px] sm:shadow-2xl sm:border sm:border-line overflow-hidden"
+      className="fixed inset-0 z-[100] flex items-center justify-center p-0 sm:p-4 bg-black/75 backdrop-blur-sm"
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
     >
-      {/* Header Bar ala Shopee/Tokopedia */}
+      <div
+        className="relative flex h-dvh w-full flex-col bg-surface sm:h-[88vh] sm:max-w-[560px] sm:rounded-[20px] sm:shadow-2xl sm:border sm:border-line overflow-hidden"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Header Bar ala Shopee/Tokopedia */}
       <div className="flex h-14 shrink-0 items-center justify-between border-b border-line bg-surface px-4 z-20">
         <button
           type="button"
@@ -292,5 +304,7 @@ export function MapPickerModal({
         </button>
       </div>
     </div>
+    </div>,
+    document.body,
   );
 }

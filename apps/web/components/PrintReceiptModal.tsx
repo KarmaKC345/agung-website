@@ -2,6 +2,7 @@
 
 import { Barcode, Check, Copy, Printer, Tag, X } from '@phosphor-icons/react';
 import { useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { formatRupiah } from '@newagung/shared';
 
 export interface PrintableOrder {
@@ -76,9 +77,11 @@ export function PrintReceiptModal({ order, initialMode = 'receipt', onClose }: P
   );
   const [paperWidth, setPaperWidth] = useState<'58mm' | '80mm'>('80mm');
   const [copied, setCopied] = useState(false);
+  const [mounted, setMounted] = useState(false);
 
   // Kunci scroll body saat modal buka + dukung Escape
   useEffect(() => {
+    setMounted(true);
     const orig = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
     const onKey = (e: KeyboardEvent) => {
@@ -115,14 +118,22 @@ export function PrintReceiptModal({ order, initialMode = 'receipt', onClose }: P
   const itemsSubtotal = order.items.reduce((acc, it) => acc + it.price * it.qty, 0);
   const shippingCost = order.shippingCost || 0;
 
-  return (
+  if (!mounted) return null;
+
+  return createPortal(
     <div
       role="dialog"
       aria-modal="true"
       aria-label="Cetak Struk dan Label Pengiriman"
-      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-black/70 backdrop-blur-xs"
+      className="fixed inset-0 z-[100] flex items-center justify-center p-3 sm:p-6 bg-black/75 backdrop-blur-sm"
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
     >
-      <div className="flex flex-col w-full max-w-xl max-h-[92vh] rounded-[var(--radius-media)] border border-line bg-surface shadow-2xl overflow-hidden">
+      <div
+        className="flex flex-col w-full max-w-xl max-h-[92vh] rounded-[var(--radius-media)] border border-line bg-surface shadow-2xl overflow-hidden"
+        onClick={(e) => e.stopPropagation()}
+      >
         {/* Header Modal */}
         <div className="flex h-14 shrink-0 items-center justify-between border-b border-line px-4 sm:px-5 bg-surface">
           <div className="flex items-center gap-2">
@@ -390,6 +401,7 @@ export function PrintReceiptModal({ order, initialMode = 'receipt', onClose }: P
           </div>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }
