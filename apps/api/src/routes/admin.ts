@@ -482,6 +482,8 @@ export function adminRoutes(ctx: Ctx): Router {
               shipping_courier, status, estimated_total
          from orders
         where created_at > now() - ($1 || ' days')::interval
+          and status <> 'batal'
+          and payment_status not in ('failed', 'expired')
         order by created_at desc`,
       [days],
     );
@@ -509,6 +511,8 @@ export function adminRoutes(ctx: Ctx): Router {
               shipping_courier, status, estimated_total
          from orders
         where created_at > now() - ($1 || ' days')::interval
+          and status <> 'batal'
+          and payment_status not in ('failed', 'expired')
         order by created_at desc`,
       [days],
     );

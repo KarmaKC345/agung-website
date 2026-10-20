@@ -45,7 +45,7 @@ export async function generateSalesReportXlsx(rows: OrderReportRow[], days: numb
   // 2. Subtitle / Timestamp
   ws.mergeCells('A2:I2');
   const subCell = ws.getCell('A2');
-  subCell.value = `Periode: ${days} Hari Terakhir (WITA) · Diunduh pada: ${nowStr}`;
+  subCell.value = `Periode: ${days} Hari Terakhir (WITA) · Transaksi Penjualan Sah (Tidak Termasuk Pesanan Batal) · Diunduh pada: ${nowStr}`;
   subCell.font = { name: 'Arial', size: 10, italic: true, color: { argb: 'FF475569' } };
   subCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF1F5F9' } };
   subCell.alignment = { horizontal: 'center', vertical: 'middle' };
