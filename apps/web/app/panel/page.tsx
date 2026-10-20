@@ -1,9 +1,11 @@
 'use client';
 
+import { Printer, Tag } from '@phosphor-icons/react';
 import { useCallback, useEffect, useState } from 'react';
 import { formatRupiah, ORDER_STATUS_LABEL, type OrderStatus, type OrderView } from '@newagung/shared';
 import { btnSecondary, inputCls, PageTitle } from '@/components/panel/PanelShell';
 import { useDialog } from '@/components/panel/Dialog';
+import { PrintReceiptModal } from '@/components/PrintReceiptModal';
 import { adminFetch } from '@/lib/admin';
 import { API_URL } from '@/lib/config';
 
@@ -30,6 +32,7 @@ export default function OrdersPage() {
   const [counts, setCounts] = useState<Record<string, number>>({});
   const [error, setError] = useState<string | null>(null);
   const [checkingDana, setCheckingDana] = useState<string | null>(null);
+  const [printTarget, setPrintTarget] = useState<{ order: OrderView; mode: 'receipt' | 'label' } | null>(null);
   const dialog = useDialog();
 
   const load = useCallback(async () => {
@@ -168,7 +171,25 @@ export default function OrdersPage() {
                 <span className="text-[14px]">
                   Total <b className="tabular-nums">{formatRupiah(o.estimatedTotal)}</b>
                 </span>
-                <div className="ml-auto flex gap-2">
+                <div className="ml-auto flex flex-wrap items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setPrintTarget({ order: o, mode: 'receipt' })}
+                    className="tap h-9 px-2.5 rounded-tag border border-field bg-surface text-[12px] font-semibold text-ink hover:bg-sunken flex items-center gap-1.5"
+                    title="Cetak struk kasir thermal"
+                  >
+                    <Printer size={15} weight="bold" /> Struk
+                  </button>
+                  {o.fulfilment === 'antar' && (
+                    <button
+                      type="button"
+                      onClick={() => setPrintTarget({ order: o, mode: 'label' })}
+                      className="tap h-9 px-2.5 rounded-tag border border-field bg-surface text-[12px] font-semibold text-brand-text hover:bg-brand-tint flex items-center gap-1.5"
+                      title="Cetak label alamat paket kurir"
+                    >
+                      <Tag size={15} weight="bold" /> Label Paket
+                    </button>
+                  )}
                   {NEXT_LABEL[o.status] && (
                     <button
                       className={btnSecondary}
@@ -232,6 +253,14 @@ export default function OrdersPage() {
             Berikutnya →
           </button>
         </div>
+      )}
+
+      {printTarget && (
+        <PrintReceiptModal
+          order={printTarget.order}
+          initialMode={printTarget.mode}
+          onClose={() => setPrintTarget(null)}
+        />
       )}
     </>
   );

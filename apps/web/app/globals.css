@@ -299,3 +299,36 @@
     transform: none;
   }
 }
+
+/* Dukungan Cetak Struk Kasir Thermal & Label Pengiriman */
+@media print {
+  body > * {
+    visibility: hidden !important;
+  }
+
+  #printable-thermal-area,
+  #printable-thermal-area * {
+    visibility: visible !important;
+  }
+
+  #printable-thermal-area {
+    position: fixed !important;
+    left: 0 !important;
+    top: 0 !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: #ffffff !important;
+    color: #000000 !important;
+    border: none !important;
+    box-shadow: none !important;
+    display: flex !important;
+    justify-content: center !important;
+    z-index: 99999 !important;
+  }
+
+  @page {
+    margin: 3mm;
+    size: auto;
+  }
+}

@@ -9,6 +9,7 @@ import {
   CreditCard,
   MapPin,
   Package,
+  Printer,
   ShoppingBag,
   Storefront,
   Truck,
@@ -31,6 +32,7 @@ import { API_URL } from '@/lib/config';
 import { CenteredLoading } from './CenteredLoading';
 import { OrderTimeline } from './OrderTimeline';
 import { Price } from './Price';
+import { PrintReceiptModal } from './PrintReceiptModal';
 
 interface OrderItemDetail {
   variantId?: string;
@@ -126,6 +128,7 @@ export function OrderDetailView({ code }: { code: string }) {
   const [loading, setLoading] = useState(true);
   const [copied, setCopied] = useState(false);
   const [reorderBusy, setReorderBusy] = useState(false);
+  const [showPrintModal, setShowPrintModal] = useState(false);
 
   useEffect(() => {
     let active = true;
@@ -486,17 +489,29 @@ export function OrderDetailView({ code }: { code: string }) {
 
       {/* 6. Action Footer Bar */}
       <div className="card rounded-[var(--radius-media)] p-4 flex flex-wrap items-center justify-between gap-3">
-        <a
-          href={`https://wa.me/6282348485101?text=${encodeURIComponent(
-            `Halo Toko New Agung, saya ingin menanyakan rincian pesanan saya dengan nomor ${order.code}.`,
-          )}`}
-          target="_blank"
-          rel="noopener"
-          className="btn btn-secondary flex-1 sm:flex-initial h-11 text-[14px] font-semibold"
-        >
-          <WhatsappLogo size={20} weight="bold" className="text-wa-text" />
-          Hubungi Toko via WhatsApp
-        </a>
+        <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+          <a
+            href={`https://wa.me/6282348485101?text=${encodeURIComponent(
+              `Halo Toko New Agung, saya ingin menanyakan rincian pesanan saya dengan nomor ${order.code}.`,
+            )}`}
+            target="_blank"
+            rel="noopener"
+            className="btn btn-secondary flex-1 sm:flex-initial h-11 text-[14px] font-semibold"
+          >
+            <WhatsappLogo size={20} weight="bold" className="text-wa-text" />
+            Hubungi Toko via WhatsApp
+          </a>
+
+          <button
+            type="button"
+            onClick={() => setShowPrintModal(true)}
+            className="btn btn-secondary flex-1 sm:flex-initial h-11 text-[14px] font-semibold flex items-center justify-center gap-1.5"
+            title="Cetak struk nota belanja"
+          >
+            <Printer size={18} weight="bold" />
+            Cetak Nota / Struk
+          </button>
+        </div>
 
         <div className="flex items-center gap-2 w-full sm:w-auto">
           <Link href="/barang" className="btn btn-secondary flex-1 sm:flex-initial h-11 text-[14px]">
@@ -512,6 +527,29 @@ export function OrderDetailView({ code }: { code: string }) {
           </button>
         </div>
       </div>
+
+      {showPrintModal && (
+        <PrintReceiptModal
+          order={{
+            code: order.code,
+            customerName: order.customerName,
+            fulfilment: order.fulfilment,
+            pickupNote: order.pickupNote,
+            status: order.status,
+            estimatedTotal: order.estimatedTotal,
+            createdAt: order.createdAt,
+            paymentMethod: order.paymentMethod,
+            paymentStatus: order.paymentStatus,
+            shippingCourier: order.shippingCourier,
+            shippingService: order.shippingService,
+            shippingCost: order.shippingCost,
+            deliveryAddress: order.deliveryAddress,
+            items: order.items,
+          }}
+          initialMode="receipt"
+          onClose={() => setShowPrintModal(false)}
+        />
+      )}
     </div>
   );
 }
