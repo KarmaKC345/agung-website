@@ -117,6 +117,28 @@ export function MapPickerModal({
 
       mapInstanceRef.current = map;
       void updateAddress(startLat, startLng);
+
+      // Jika belum ada titik sebelumnya, otomatis minta live location browser
+      if (!initialLat && typeof window !== 'undefined' && navigator.geolocation) {
+        setGpsLoading(true);
+        navigator.geolocation.getCurrentPosition(
+          (pos) => {
+            if (!active) return;
+            setGpsLoading(false);
+            const { latitude, longitude } = pos.coords;
+            setCurrentLat(latitude);
+            setCurrentLng(longitude);
+            if (mapInstanceRef.current) {
+              mapInstanceRef.current.flyTo([latitude, longitude], 17, { duration: 1.2 });
+            }
+          },
+          () => {
+            if (!active) return;
+            setGpsLoading(false);
+          },
+          { enableHighAccuracy: true, timeout: 8000 },
+        );
+      }
     });
 
     return () => {

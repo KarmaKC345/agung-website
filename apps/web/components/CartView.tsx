@@ -5,6 +5,7 @@ import {
   ChatCircleDots,
   CheckCircle,
   CreditCard,
+  Crosshair,
   MapPin,
   Minus,
   Motorcycle,
@@ -481,10 +482,10 @@ export function CartView({ hours, timezone }: { hours: WeeklyHours; timezone: st
                         <button
                           type="button"
                           onClick={() => setShowMapModal(true)}
-                          className="btn btn-secondary w-full h-11 flex items-center justify-center gap-2 border-dashed border-2 text-[13px] font-semibold text-brand-text"
+                          className="btn btn-secondary w-full h-11 flex items-center justify-center gap-2 border-dashed border-2 text-[13px] font-semibold text-brand-text hover:bg-brand-tint/60 transition-colors"
                         >
-                          <MapPin size={18} weight="bold" />
-                          Pilih Titik Lokasi di Peta (Real-Time)
+                          <Crosshair size={18} weight="bold" />
+                          Gunakan Lokasi Saat Ini (Peta GPS)
                         </button>
                       </div>
                     )}
