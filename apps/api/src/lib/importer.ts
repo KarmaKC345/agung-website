@@ -221,7 +221,7 @@ export async function exportRows(db: Queryable): Promise<string> {
 
 export function templateCsv(): string {
   return (
-    '﻿' +
+    '\uFEFFsep=,\n' +
     Papa.unparse({
       fields: [...COLUMNS],
       data: [
@@ -232,4 +232,107 @@ export function templateCsv(): string {
       ],
     })
   );
+}
+
+export async function templateXlsx(): Promise<Buffer> {
+  const wb = new ExcelJS.Workbook();
+  const ws = wb.addWorksheet('Template Barang', { views: [{ showGridLines: true }] });
+
+  ws.columns = [
+    { header: 'kategori', key: 'kategori', width: 16 },
+    { header: 'merek', key: 'merek', width: 16 },
+    { header: 'nama', key: 'nama', width: 28 },
+    { header: 'varian', key: 'varian', width: 16 },
+    { header: 'warna', key: 'warna', width: 12 },
+    { header: 'sku', key: 'sku', width: 14 },
+    { header: 'satuan', key: 'satuan', width: 10 },
+    { header: 'isi', key: 'isi', width: 8 },
+    { header: 'harga', key: 'harga', width: 14 },
+    { header: 'harga_coret', key: 'harga_coret', width: 14 },
+    { header: 'stok', key: 'stok', width: 10 },
+    { header: 'deskripsi', key: 'deskripsi', width: 30 },
+  ];
+
+  const headerRow = ws.getRow(1);
+  headerRow.height = 24;
+  headerRow.eachCell((cell) => {
+    cell.font = { name: 'Arial', size: 10, bold: true, color: { argb: 'FFFFFFFF' } };
+    cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF282C83' } };
+    cell.alignment = { vertical: 'middle', horizontal: 'center' };
+  });
+
+  const sampleData = [
+    { kategori: 'Pulpen', merek: 'Standard', nama: 'Standard AE7 Alfa Tip 0.5', varian: 'Hitam', warna: '#1B1B1B', sku: '', satuan: 'pcs', isi: 1, harga: 2500, harga_coret: 3000, stok: 'ada', deskripsi: 'Pulpen sehari-hari' },
+    { kategori: 'Pulpen', merek: 'Standard', nama: 'Standard AE7 Alfa Tip 0.5', varian: 'Hitam', warna: '#1B1B1B', sku: '', satuan: 'lusin', isi: 12, harga: 27000, harga_coret: null, stok: 'ada', deskripsi: '' },
+    { kategori: 'Pulpen', merek: 'Standard', nama: 'Standard AE7 Alfa Tip 0.5', varian: 'Biru', warna: '#1F3FAE', sku: '', satuan: 'pcs', isi: 1, harga: 2500, harga_coret: null, stok: 'ada', deskripsi: '' },
+    { kategori: 'Kertas', merek: 'SiDU', nama: 'Kertas HVS SiDU A4 70 gsm', varian: 'A4', warna: '', sku: '', satuan: 'rim', isi: 1, harga: 52000, harga_coret: null, stok: 'ada', deskripsi: '500 lembar per rim' },
+  ];
+
+  sampleData.forEach((row) => {
+    const r = ws.addRow(row);
+    r.height = 20;
+    r.eachCell((cell, col) => {
+      cell.font = { name: 'Arial', size: 10 };
+      cell.alignment = { vertical: 'middle', horizontal: col === 7 || col === 8 || col === 11 ? 'center' : col === 9 || col === 10 ? 'right' : 'left' };
+      if (col === 9 || col === 10) cell.numFmt = '#,##0';
+    });
+  });
+
+  const buf = await wb.xlsx.writeBuffer();
+  return Buffer.from(buf);
+}
+
+export async function exportXlsx(db: Queryable): Promise<Buffer> {
+  const { rows } = await db.query<Record<Column, string | number | null>>(
+    `select coalesce(c.name, '') as kategori, coalesce(b.name, '') as merek, p.name as nama, v.label as varian,
+            coalesce(v.color_hex, '') as warna, coalesce(v.sku, '') as sku, vp.unit as satuan, vp.qty_per_unit as isi,
+            vp.price as harga, coalesce(vp.original_price, null) as harga_coret, v.stock_status as stok, p.description as deskripsi
+       from products p
+       join product_variants v on v.product_id = p.id
+       join variant_prices vp on vp.variant_id = v.id
+       left join categories c on c.id = p.category_id
+       left join brands b on b.id = p.brand_id
+      order by p.name, v.sort_order, vp.qty_per_unit`,
+  );
+
+  const wb = new ExcelJS.Workbook();
+  const ws = wb.addWorksheet('Katalog Produk', { views: [{ showGridLines: true }] });
+
+  ws.columns = [
+    { header: 'kategori', key: 'kategori', width: 16 },
+    { header: 'merek', key: 'merek', width: 16 },
+    { header: 'nama', key: 'nama', width: 28 },
+    { header: 'varian', key: 'varian', width: 16 },
+    { header: 'warna', key: 'warna', width: 12 },
+    { header: 'sku', key: 'sku', width: 14 },
+    { header: 'satuan', key: 'satuan', width: 10 },
+    { header: 'isi', key: 'isi', width: 8 },
+    { header: 'harga', key: 'harga', width: 14 },
+    { header: 'harga_coret', key: 'harga_coret', width: 14 },
+    { header: 'stok', key: 'stok', width: 10 },
+    { header: 'deskripsi', key: 'deskripsi', width: 30 },
+  ];
+
+  const headerRow = ws.getRow(1);
+  headerRow.height = 24;
+  headerRow.eachCell((cell) => {
+    cell.font = { name: 'Arial', size: 10, bold: true, color: { argb: 'FFFFFFFF' } };
+    cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF282C83' } };
+    cell.alignment = { vertical: 'middle', horizontal: 'center' };
+  });
+
+  rows.forEach((row, idx) => {
+    const r = ws.addRow(row);
+    r.height = 20;
+    const isZebra = idx % 2 === 1;
+    r.eachCell((cell, col) => {
+      cell.font = { name: 'Arial', size: 10 };
+      cell.alignment = { vertical: 'middle', horizontal: col === 7 || col === 8 || col === 11 ? 'center' : col === 9 || col === 10 ? 'right' : 'left' };
+      if (col === 9 || col === 10) cell.numFmt = '#,##0';
+      if (isZebra) cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF8FAFC' } };
+    });
+  });
+
+  const buf = await wb.xlsx.writeBuffer();
+  return Buffer.from(buf);
 }

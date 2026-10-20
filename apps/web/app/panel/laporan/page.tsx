@@ -79,10 +79,14 @@ export default function LaporanPenjualanPage() {
     void load(days);
   }, [days, load]);
 
-  async function handleExport() {
+  async function handleExport(format: 'excel' | 'csv' = 'excel') {
     setExporting(true);
     try {
-      await adminDownload(`/reports/export-csv?days=${days}`, `laporan-penjualan-new-agung-${days}hari.csv`);
+      if (format === 'excel') {
+        await adminDownload(`/reports/export-excel?days=${days}`, `laporan-penjualan-new-agung-${days}hari.xlsx`);
+      } else {
+        await adminDownload(`/reports/export-csv?days=${days}`, `laporan-penjualan-new-agung-${days}hari.csv`);
+      }
     } catch (e) {
       alert(e instanceof Error ? e.message : 'Gagal mengekspor laporan');
     } finally {
@@ -121,16 +125,28 @@ export default function LaporanPenjualanPage() {
             ))}
           </div>
 
-          {/* Tombol Ekspor Excel/CSV */}
-          <button
-            type="button"
-            disabled={exporting || loading}
-            onClick={handleExport}
-            className={`${btnSecondary} text-[13px]`}
-          >
-            <DownloadSimple size={16} weight="bold" />
-            {exporting ? 'Mengunduh…' : 'Ekspor CSV/Excel'}
-          </button>
+          {/* Tombol Ekspor Excel (.xlsx) & CSV */}
+          <div className="flex items-center gap-1.5">
+            <button
+              type="button"
+              disabled={exporting || loading}
+              onClick={() => handleExport('excel')}
+              className="btn btn-primary h-9 px-3.5 text-[13px] font-bold flex items-center gap-1.5 shadow-xs"
+              title="Unduh laporan rapi berformat Microsoft Excel (.xlsx)"
+            >
+              <DownloadSimple size={16} weight="bold" />
+              {exporting ? 'Mengunduh…' : 'Unduh Excel (.xlsx)'}
+            </button>
+            <button
+              type="button"
+              disabled={exporting || loading}
+              onClick={() => handleExport('csv')}
+              className={`${btnSecondary} h-9 px-2.5 text-[12px] font-semibold text-muted hover:text-ink`}
+              title="Unduh file format CSV"
+            >
+              CSV
+            </button>
+          </div>
         </div>
       </div>
 

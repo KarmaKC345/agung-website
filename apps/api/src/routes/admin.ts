@@ -20,9 +20,10 @@ import { createAuth, ownerOnly } from '../auth';
 import { withTx } from '../db';
 import { HttpError, notFound } from '../errors';
 import { getProduct, listBanners, listBrands, listCategories } from '../lib/catalog';
-import { exportRows, importRows, parseSheet, templateCsv } from '../lib/importer';
+import { exportRows, exportXlsx, importRows, parseSheet, templateCsv, templateXlsx } from '../lib/importer';
 import { listOrders, setOrderStatus } from '../lib/orders';
 import { listPriceRows, saveProduct, uniqueSlug } from '../lib/products-admin';
+import { generateSalesReportXlsx } from '../lib/reports-excel';
 import { getStore } from '../lib/store';
 
 const idParam = z.object({ id: z.uuid() });
@@ -464,6 +465,33 @@ export function adminRoutes(ctx: Ctx): Router {
     });
   });
 
+  r.get('/reports/export-excel', ownerOnly, async (req, res) => {
+    const days = z.coerce.number().int().min(1).max(365).default(30).parse(req.query.days);
+    const { rows } = await db.query<{
+      code: string;
+      created_at: string;
+      customer_name: string;
+      payment_method: string;
+      payment_status: string;
+      fulfilment: string;
+      shipping_courier: string | null;
+      status: string;
+      estimated_total: number;
+    }>(
+      `select code, created_at, customer_name, payment_method, payment_status, fulfilment,
+              shipping_courier, status, estimated_total
+         from orders
+        where created_at > now() - ($1 || ' days')::interval
+        order by created_at desc`,
+      [days],
+    );
+
+    const buffer = await generateSalesReportXlsx(rows, days);
+    res.set('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    res.set('Content-Disposition', `attachment; filename="laporan-penjualan-new-agung-${days}hari.xlsx"`);
+    res.send(buffer);
+  });
+
   r.get('/reports/export-csv', ownerOnly, async (req, res) => {
     const days = z.coerce.number().int().min(1).max(365).default(30).parse(req.query.days);
     const { rows } = await db.query<{
@@ -486,6 +514,7 @@ export function adminRoutes(ctx: Ctx): Router {
     );
 
     const lines = [
+      'sep=,',
       'Kode Pesanan,Waktu (WITA),Nama Pelanggan,Metode Bayar,Status Bayar,Pengiriman,Status Pesanan,Total (Rp)',
       ...rows.map((r) => {
         const timeStr = new Intl.DateTimeFormat('id-ID', {
@@ -500,7 +529,7 @@ export function adminRoutes(ctx: Ctx): Router {
 
     res.set('Content-Type', 'text/csv; charset=utf-8');
     res.set('Content-Disposition', `attachment; filename="laporan-penjualan-new-agung-${days}hari.csv"`);
-    res.send(lines.join('\n'));
+    res.send('\uFEFF' + lines.join('\n'));
   });
 
   // ---------------------------------------------------------------- toko
@@ -526,6 +555,13 @@ export function adminRoutes(ctx: Ctx): Router {
     res.send(templateCsv());
   });
 
+  r.get('/import/template.xlsx', async (_req, res) => {
+    const buf = await templateXlsx();
+    res.set('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    res.set('Content-Disposition', 'attachment; filename="template-barang-new-agung.xlsx"');
+    res.send(buf);
+  });
+
   r.post('/import', ownerOnly, sheets.single('file'), async (req, res) => {
     if (!req.file) throw new HttpError(400, 'Pilih file .csv atau .xlsx terlebih dahulu');
     const rows = await parseSheet(req.file.buffer, req.file.originalname);
@@ -539,6 +575,14 @@ export function adminRoutes(ctx: Ctx): Router {
     res.set('Content-Type', 'text/csv; charset=utf-8');
     res.set('Content-Disposition', `attachment; filename="barang-new-agung-${date}.csv"`);
     res.send(await exportRows(db));
+  });
+
+  r.get('/export.xlsx', async (_req, res) => {
+    const date = new Date().toISOString().slice(0, 10);
+    const buf = await exportXlsx(db);
+    res.set('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    res.set('Content-Disposition', `attachment; filename="barang-new-agung-${date}.xlsx"`);
+    res.send(buf);
   });
 
   r.get('/search-misses', async (_req, res) => {

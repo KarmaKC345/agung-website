@@ -36,9 +36,20 @@ export default function ImportPage() {
             Satu baris = satu harga. Kolom: <code className="text-[13px]">kategori, merek, nama, varian, warna, sku, satuan, isi, harga, harga_coret, stok, deskripsi</code>.
             Produk dengan nama yang sama digabung menjadi satu. Varian yang tidak tercantum di file tidak dihapus.
           </p>
-          <button className={`${btnSecondary} mt-3`} onClick={() => adminDownload('/import/template', 'template-barang-new-agung.csv')}>
-            Unduh template
-          </button>
+          <div className="mt-3 flex flex-wrap items-center gap-2">
+            <button
+              className={`${btnPrimary} text-[13px] h-9 px-3`}
+              onClick={() => adminDownload('/import/template.xlsx', 'template-barang-new-agung.xlsx')}
+            >
+              Unduh Template Excel (.xlsx)
+            </button>
+            <button
+              className={`${btnSecondary} text-[13px] h-9 px-3`}
+              onClick={() => adminDownload('/import/template', 'template-barang-new-agung.csv')}
+            >
+              Unduh CSV
+            </button>
+          </div>
           {me.role === 'owner' ? (
             <form
               className="mt-4 space-y-3"
@@ -93,9 +104,20 @@ export default function ImportPage() {
           <div className="rounded-tag border border-line bg-surface p-4">
             <h2 className="font-semibold">Export / cadangan</h2>
             <p className="mt-1 text-[14px] text-muted">Seluruh produk dan harga dalam format yang sama dengan file import, dan dapat dibuka di Excel.</p>
-            <button className={`${btnSecondary} mt-3`} onClick={() => adminDownload('/export', `barang-new-agung-${new Date().toISOString().slice(0, 10)}.csv`)}>
-              Unduh semua produk (CSV)
-            </button>
+            <div className="mt-3 flex flex-wrap items-center gap-2">
+              <button
+                className={`${btnPrimary} text-[13px] h-9 px-3`}
+                onClick={() => adminDownload('/export.xlsx', `barang-new-agung-${new Date().toISOString().slice(0, 10)}.xlsx`)}
+              >
+                Unduh Semua Produk (.xlsx)
+              </button>
+              <button
+                className={`${btnSecondary} text-[13px] h-9 px-3`}
+                onClick={() => adminDownload('/export', `barang-new-agung-${new Date().toISOString().slice(0, 10)}.csv`)}
+              >
+                Unduh CSV
+              </button>
+            </div>
           </div>
           <div className="rounded-tag border border-line bg-surface p-4">
             <h2 className="font-semibold">Dicari pelanggan, belum tersedia di website</h2>
