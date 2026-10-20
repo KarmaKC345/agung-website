@@ -83,7 +83,7 @@ export function ProductCard({ product, priority }: { product: ProductSummary; pr
               product.brand ?? ''
             )}
           </p>
-          {product.quickAdd && !out && (
+          {!out && (
             <div className="relative z-10 -mb-0.5">
               <QuickAdd product={product} />
             </div>
