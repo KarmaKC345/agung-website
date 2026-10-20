@@ -354,6 +354,14 @@ export function adminRoutes(ctx: Ctx): Router {
   r.get('/reports/sales', ownerOnly, async (req, res) => {
     const days = z.coerce.number().int().min(1).max(365).default(30).parse(req.query.days);
 
+    // Kriteria Penjualan Sah (Omzet Riil):
+    // 1. Sudah lunas via DANA (payment_status = 'paid')
+    // 2. Ambil di toko non-DANA: status wajib 'selesai' (sudah dibayar tunai di kasir)
+    // 3. Diantar non-DANA: status 'siap' atau 'selesai'
+    // (Pesanan batal, gagal, expired, atau ambil toko yang belum selesai tidak dihitung)
+    const validSales = `(status <> 'batal' and payment_status not in ('failed', 'expired') and (payment_status = 'paid' or (fulfilment = 'ambil' and status = 'selesai') or (fulfilment = 'antar' and status in ('siap', 'selesai'))))`;
+    const validSalesJoined = `(o.status <> 'batal' and o.payment_status not in ('failed', 'expired') and (o.payment_status = 'paid' or (o.fulfilment = 'ambil' and o.status = 'selesai') or (o.fulfilment = 'antar' and o.status in ('siap', 'selesai'))))`;
+
     const [summaryRes, dailyRes, topProductsRes, paymentRes, fulfilmentRes] = await Promise.all([
       db.query<{
         totalRevenue: string;
@@ -364,12 +372,12 @@ export function adminRoutes(ctx: Ctx): Router {
         averageOrderValue: number;
       }>(
         `select
-           coalesce(sum(case when status in ('selesai', 'siap') or payment_status = 'paid' then estimated_total else 0 end), 0)::text as "totalRevenue",
-           count(case when status in ('selesai', 'siap') or payment_status = 'paid' then 1 end)::int as "paidOrdersCount",
-           count(case when status = 'baru' and payment_status <> 'paid' then 1 end)::int as "pendingOrdersCount",
-           count(case when status = 'batal' then 1 end)::int as "canceledOrdersCount",
+           coalesce(sum(case when ${validSales} then estimated_total else 0 end), 0)::text as "totalRevenue",
+           count(case when ${validSales} then 1 end)::int as "paidOrdersCount",
+           count(case when not ${validSales} and status <> 'batal' and payment_status not in ('failed', 'expired') then 1 end)::int as "pendingOrdersCount",
+           count(case when status = 'batal' or payment_status in ('failed', 'expired') then 1 end)::int as "canceledOrdersCount",
            count(*)::int as "totalOrdersCount",
-           coalesce(avg(case when status in ('selesai', 'siap') or payment_status = 'paid' then estimated_total end), 0)::int as "averageOrderValue"
+           coalesce(avg(case when ${validSales} then estimated_total end), 0)::int as "averageOrderValue"
          from orders
          where created_at > now() - ($1 || ' days')::interval`,
         [days],
@@ -383,8 +391,8 @@ export function adminRoutes(ctx: Ctx): Router {
         `select
            to_char(created_at at time zone 'Asia/Makassar', 'YYYY-MM-DD') as "date",
            to_char(created_at at time zone 'Asia/Makassar', 'DD Mon') as "label",
-           coalesce(sum(case when status in ('selesai', 'siap') or payment_status = 'paid' then estimated_total else 0 end), 0)::int as "revenue",
-           count(case when status in ('selesai', 'siap') or payment_status = 'paid' then 1 end)::int as "ordersCount"
+           coalesce(sum(case when ${validSales} then estimated_total else 0 end), 0)::int as "revenue",
+           count(case when ${validSales} then 1 end)::int as "ordersCount"
          from orders
          where created_at > now() - ($1 || ' days')::interval
          group by 1, 2
@@ -405,7 +413,7 @@ export function adminRoutes(ctx: Ctx): Router {
          from order_items i
          join orders o on o.id = i.order_id
          where o.created_at > now() - ($1 || ' days')::interval
-           and (o.status in ('selesai', 'siap') or o.payment_status = 'paid')
+           and ${validSalesJoined}
          group by i.name_snapshot, i.unit_snapshot
          order by "totalRevenue" desc
          limit 10`,
@@ -422,7 +430,7 @@ export function adminRoutes(ctx: Ctx): Router {
            coalesce(sum(estimated_total), 0)::text as "total"
          from orders
          where created_at > now() - ($1 || ' days')::interval
-           and (status in ('selesai', 'siap') or payment_status = 'paid')
+           and ${validSales}
          group by 1`,
         [days],
       ),
@@ -437,7 +445,7 @@ export function adminRoutes(ctx: Ctx): Router {
            coalesce(sum(estimated_total), 0)::text as "total"
          from orders
          where created_at > now() - ($1 || ' days')::interval
-           and (status in ('selesai', 'siap') or payment_status = 'paid')
+           and ${validSales}
          group by 1`,
         [days],
       ),
@@ -484,6 +492,11 @@ export function adminRoutes(ctx: Ctx): Router {
         where created_at > now() - ($1 || ' days')::interval
           and status <> 'batal'
           and payment_status not in ('failed', 'expired')
+          and (
+            payment_status = 'paid'
+            or (fulfilment = 'ambil' and status = 'selesai')
+            or (fulfilment = 'antar' and status in ('siap', 'selesai'))
+          )
         order by created_at desc`,
       [days],
     );
@@ -513,6 +526,11 @@ export function adminRoutes(ctx: Ctx): Router {
         where created_at > now() - ($1 || ' days')::interval
           and status <> 'batal'
           and payment_status not in ('failed', 'expired')
+          and (
+            payment_status = 'paid'
+            or (fulfilment = 'ambil' and status = 'selesai')
+            or (fulfilment = 'antar' and status in ('siap', 'selesai'))
+          )
         order by created_at desc`,
       [days],
     );
