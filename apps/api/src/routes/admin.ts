@@ -349,6 +349,160 @@ export function adminRoutes(ctx: Ctx): Router {
     res.json({ id, status });
   });
 
+  // ---------------------------------------------------------------- laporan
+  r.get('/reports/sales', ownerOnly, async (req, res) => {
+    const days = z.coerce.number().int().min(1).max(365).default(30).parse(req.query.days);
+
+    const [summaryRes, dailyRes, topProductsRes, paymentRes, fulfilmentRes] = await Promise.all([
+      db.query<{
+        totalRevenue: string;
+        paidOrdersCount: number;
+        pendingOrdersCount: number;
+        canceledOrdersCount: number;
+        totalOrdersCount: number;
+        averageOrderValue: number;
+      }>(
+        `select
+           coalesce(sum(case when status in ('selesai', 'siap') or payment_status = 'paid' then estimated_total else 0 end), 0)::text as "totalRevenue",
+           count(case when status in ('selesai', 'siap') or payment_status = 'paid' then 1 end)::int as "paidOrdersCount",
+           count(case when status = 'baru' and payment_status <> 'paid' then 1 end)::int as "pendingOrdersCount",
+           count(case when status = 'batal' then 1 end)::int as "canceledOrdersCount",
+           count(*)::int as "totalOrdersCount",
+           coalesce(avg(case when status in ('selesai', 'siap') or payment_status = 'paid' then estimated_total end), 0)::int as "averageOrderValue"
+         from orders
+         where created_at > now() - ($1 || ' days')::interval`,
+        [days],
+      ),
+      db.query<{
+        date: string;
+        label: string;
+        revenue: number;
+        ordersCount: number;
+      }>(
+        `select
+           to_char(created_at at time zone 'Asia/Makassar', 'YYYY-MM-DD') as "date",
+           to_char(created_at at time zone 'Asia/Makassar', 'DD Mon') as "label",
+           coalesce(sum(case when status in ('selesai', 'siap') or payment_status = 'paid' then estimated_total else 0 end), 0)::int as "revenue",
+           count(case when status in ('selesai', 'siap') or payment_status = 'paid' then 1 end)::int as "ordersCount"
+         from orders
+         where created_at > now() - ($1 || ' days')::interval
+         group by 1, 2
+         order by 1 asc`,
+        [days],
+      ),
+      db.query<{
+        name: string;
+        unit: string;
+        totalQty: number;
+        totalRevenue: number;
+      }>(
+        `select
+           i.name_snapshot as "name",
+           i.unit_snapshot as "unit",
+           sum(i.qty)::int as "totalQty",
+           sum(i.price_snapshot * i.qty)::int as "totalRevenue"
+         from order_items i
+         join orders o on o.id = i.order_id
+         where o.created_at > now() - ($1 || ' days')::interval
+           and (o.status in ('selesai', 'siap') or o.payment_status = 'paid')
+         group by i.name_snapshot, i.unit_snapshot
+         order by "totalRevenue" desc
+         limit 10`,
+        [days],
+      ),
+      db.query<{
+        method: string;
+        count: number;
+        total: string;
+      }>(
+        `select
+           coalesce(payment_method, 'wa') as "method",
+           count(*)::int as "count",
+           coalesce(sum(estimated_total), 0)::text as "total"
+         from orders
+         where created_at > now() - ($1 || ' days')::interval
+           and (status in ('selesai', 'siap') or payment_status = 'paid')
+         group by 1`,
+        [days],
+      ),
+      db.query<{
+        fulfilment: string;
+        count: number;
+        total: string;
+      }>(
+        `select
+           fulfilment,
+           count(*)::int as "count",
+           coalesce(sum(estimated_total), 0)::text as "total"
+         from orders
+         where created_at > now() - ($1 || ' days')::interval
+           and (status in ('selesai', 'siap') or payment_status = 'paid')
+         group by 1`,
+        [days],
+      ),
+    ]);
+
+    const summary = summaryRes.rows[0] ?? {
+      totalRevenue: '0',
+      paidOrdersCount: 0,
+      pendingOrdersCount: 0,
+      canceledOrdersCount: 0,
+      totalOrdersCount: 0,
+      averageOrderValue: 0,
+    };
+
+    res.json({
+      days,
+      summary: {
+        ...summary,
+        totalRevenue: Number(summary.totalRevenue) || 0,
+      },
+      daily: dailyRes.rows,
+      topProducts: topProductsRes.rows,
+      paymentBreakdown: paymentRes.rows.map((r) => ({ ...r, total: Number(r.total) || 0 })),
+      fulfilmentBreakdown: fulfilmentRes.rows.map((r) => ({ ...r, total: Number(r.total) || 0 })),
+    });
+  });
+
+  r.get('/reports/export-csv', ownerOnly, async (req, res) => {
+    const days = z.coerce.number().int().min(1).max(365).default(30).parse(req.query.days);
+    const { rows } = await db.query<{
+      code: string;
+      created_at: string;
+      customer_name: string;
+      payment_method: string;
+      payment_status: string;
+      fulfilment: string;
+      shipping_courier: string | null;
+      status: string;
+      estimated_total: number;
+    }>(
+      `select code, created_at, customer_name, payment_method, payment_status, fulfilment,
+              shipping_courier, status, estimated_total
+         from orders
+        where created_at > now() - ($1 || ' days')::interval
+        order by created_at desc`,
+      [days],
+    );
+
+    const lines = [
+      'Kode Pesanan,Waktu (WITA),Nama Pelanggan,Metode Bayar,Status Bayar,Pengiriman,Status Pesanan,Total (Rp)',
+      ...rows.map((r) => {
+        const timeStr = new Intl.DateTimeFormat('id-ID', {
+          dateStyle: 'medium',
+          timeStyle: 'short',
+          timeZone: 'Asia/Makassar',
+        }).format(new Date(r.created_at));
+        const courierStr = r.fulfilment === 'antar' ? r.shipping_courier || 'Kurir' : 'Ambil di Toko';
+        return `"${r.code}","${timeStr}","${r.customer_name.replace(/"/g, '""')}","${r.payment_method}","${r.payment_status}","${courierStr}","${r.status}",${r.estimated_total}`;
+      }),
+    ];
+
+    res.set('Content-Type', 'text/csv; charset=utf-8');
+    res.set('Content-Disposition', `attachment; filename="laporan-penjualan-new-agung-${days}hari.csv"`);
+    res.send(lines.join('\n'));
+  });
+
   // ---------------------------------------------------------------- toko
   r.get('/store', async (_req, res) => {
     res.json(await getStore(db));

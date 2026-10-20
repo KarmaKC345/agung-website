@@ -20,6 +20,7 @@ export const useMe = () => useContext(MeContext)!;
 
 const NAV: { href: string; label: string; owner?: boolean }[] = [
   { href: '/panel', label: 'Pesanan masuk' },
+  { href: '/panel/laporan', label: 'Laporan penjualan', owner: true },
   { href: '/panel/barang', label: 'Produk' },
   { href: '/panel/harga', label: 'Ubah harga' },
   { href: '/panel/banner', label: 'Banner beranda' },
