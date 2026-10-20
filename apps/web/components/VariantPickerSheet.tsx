@@ -4,6 +4,7 @@ import { Check, Minus, Plus, ShoppingBag, X } from '@phosphor-icons/react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useEffect, useMemo, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { formatRupiah, STOCK_LABEL, type ProductDetail, type ProductSummary } from '@newagung/shared';
 import { useShop } from '@/lib/cart';
 import { API_URL } from '@/lib/config';
@@ -28,9 +29,11 @@ export function VariantPickerSheet({ product, onClose }: Props) {
   const [unit, setUnit] = useState('pcs');
   const [qty, setQty] = useState(1);
   const [submitting, setSubmitting] = useState(false);
+  const [mounted, setMounted] = useState(false);
 
   // Kunci scroll body saat sheet terbuka & dukung Escape
   useEffect(() => {
+    setMounted(true);
     const orig = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
     const onKey = (e: KeyboardEvent) => {
@@ -126,12 +129,14 @@ export function VariantPickerSheet({ product, onClose }: Props) {
     }
   }
 
-  return (
+  if (!mounted) return null;
+
+  return createPortal(
     <div
       role="dialog"
       aria-modal="true"
       aria-label={`Pilih varian ${product.name}`}
-      className="fixed inset-0 z-50 flex flex-col justify-end sm:items-center sm:justify-center p-0 sm:p-4 bg-black/65 backdrop-blur-xs transition-opacity duration-200"
+      className="fixed inset-0 z-[100] flex flex-col justify-end sm:items-center sm:justify-center p-0 sm:p-4 bg-black/75 backdrop-blur-sm transition-opacity duration-200"
       onClick={(e) => {
         if (e.target === e.currentTarget) onClose();
       }}
@@ -324,7 +329,7 @@ export function VariantPickerSheet({ product, onClose }: Props) {
                 className="btn btn-secondary flex-1 h-11 text-[13.5px] font-bold flex items-center justify-center gap-1.5"
               >
                 <Plus size={16} weight="bold" />
-                + Keranjang
+                Keranjang
               </button>
 
               <button
@@ -340,6 +345,7 @@ export function VariantPickerSheet({ product, onClose }: Props) {
           </>
         )}
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }
