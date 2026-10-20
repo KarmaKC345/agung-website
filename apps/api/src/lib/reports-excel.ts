@@ -14,9 +14,10 @@ export interface OrderReportRow {
 
 export async function generateSalesReportXlsx(rows: OrderReportRow[], days: number): Promise<Buffer> {
   const wb = new ExcelJS.Workbook();
-  wb.creator = 'Toko New Agung';
+  wb.creator = 'Toko New Agung Makassar';
   wb.lastModifiedBy = 'Admin Panel';
   wb.created = new Date();
+  wb.calcProperties.fullCalcOnLoad = true;
 
   const ws = wb.addWorksheet(`Laporan ${days} Hari`, {
     views: [{ showGridLines: true }],
@@ -27,6 +28,10 @@ export async function generateSalesReportXlsx(rows: OrderReportRow[], days: numb
     timeStyle: 'short',
     timeZone: 'Asia/Makassar',
   }).format(new Date());
+
+  const totalRevenue = rows.reduce((acc, r) => acc + (Number(r.estimated_total) || 0), 0);
+  const paidCount = rows.filter((r) => r.payment_status === 'paid' || r.status === 'selesai' || r.status === 'siap').length;
+  const totalCount = rows.length;
 
   // 1. Title Banner
   ws.mergeCells('A1:I1');
@@ -185,7 +190,11 @@ export async function generateSalesReportXlsx(rows: OrderReportRow[], days: numb
     };
 
     const sumCell = totalRow.getCell(9);
-    sumCell.value = { formula: `SUM(I5:I${curRowIdx - 1})` };
+    // Masukkan formula DAN precalculated result agar langsung tampil di Protected View sebelum Enable Editing
+    sumCell.value = {
+      formula: `SUM(I5:I${curRowIdx - 1})`,
+      result: totalRevenue,
+    };
     sumCell.font = { name: 'Arial', size: 11, bold: true, color: { argb: 'FF282C83' } };
     sumCell.alignment = { horizontal: 'right', vertical: 'middle' };
     sumCell.numFmt = '#,##0';
